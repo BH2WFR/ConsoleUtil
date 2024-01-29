@@ -1,4 +1,4 @@
-﻿/*
+/*    UTF-8 encoding
 	* Project URL: https://github.com/BH2WFR/ConsoleUtil
 	* Author:		BH2WFR
 */
