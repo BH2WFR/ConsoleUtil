@@ -1,6 +1,8 @@
 /*    UTF-8 encoding
 	* Project URL: https://github.com/BH2WFR/ConsoleUtil
 	* Author:		BH2WFR
+	* 引用说明: 若源文件使用了 fmtlib 或 Qt 等库, 请将其头文件 include 放到本头文件上方.
+	* If source file includes libs like fmtlib or Qt, pls put those headers ABOVE this header #include.
 */
 #ifndef CONSOLE_UTIL_H__
 #define CONSOLE_UTIL_H__
@@ -19,9 +21,9 @@
 
 
 // include winapi headers
-#if defined(_WIN32) || defined(WIN32) || defined(__WIN32)
-	#include <windows.h>
-#endif // WinAPI 适配
+// #if defined(_WIN32) || defined(WIN32) || defined(__WIN32)
+// 	#include <windows.h>
+// #endif // WinAPI 适配
 
 
 // #ifdef _MSC_VER
@@ -239,6 +241,14 @@ Instruction:
 #define RETURN_NULLPTR(ptr, ...) \
 	if(ptr == NULL) return __VA_ARGS__;
 
+// 判断是否为 debug 模式
+#if (defined(_DEBUG) || defined(IS_DEBUG)) && !defined(NDEBUG)
+	#define GET_IS_DEBUG_BUILD() 1
+#else // defined(NDEBUG)
+	#define GET_IS_DEBUG_BUILD() 0
+#endif
+
+
 //==================== CUDA: 部分懒人包 ==========================
 #ifdef __CUDA_RUNTIME_H__ //* CUDA 错误检查与退出机制
 
@@ -328,24 +338,41 @@ Instruction:
 	}
 	
 	//* delete[] 裸指针并置空
-	template <typename P> void DeleteAndSetNull_Array(P& p){
+	template <typename P> void DeleteArrayAndSetNull(P& p){
 		static_assert(std::is_pointer<P>::value, "Parameter must be a pointer type.");
 		delete[] p;
 		p = nullptr;
 	}
 #endif // __cplusplus < 201103L
 
+//* 仅在 debug 模式下打印输出的宏定义
+#if GET_IS_DEBUG_BUILD() // Debug Build
+	#if CPP_VER_HIGHER_EQUAL_THAN(202302) && defined(_PRINT_) // C++23 std::print
+		#define DEBUG_PRINTLN(...) std::println(__VA_ARGS__)
+		#define DEBUG_PRINT(...)   std::print(__VA_ARGS__)
+	#elif defined(FMT_VERSION) // fmtlib
+		#define DEBUG_PRINTLN(...) fmt::println(__VA_ARGS__)
+		#define DEBUG_PRINT(...)   fmt::print(__VA_ARGS__)
+	#else // no FMT
+		#define DEBUG_PRINTLN(...)
+		#define DEBUG_PRINT(...)
+	#endif // _PRINT_
+	#define DEBUG_COUT(...)   std::cout << __VA_ARGS__
+	#define DEBUG_COUTLN(...) DEBUG_COUT(__VA_ARGS__) << "\n"
+	#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
+#else // Release Build
+	#define DEBUG_PRINTLN(...)
+	#define DEBUG_PRINT(...)
+	#define DEBUG_COUT(...)
+	#define DEBUG_COUTLN(...)
+	#define DEBUG_PRINTF(...)
+#endif
+
 
 #endif // __cplusplus
 
 
 
-#ifdef _DEBUG
-	
-	
-	
-#endif //_DEBUG
 
 
-
-#endif //CONSOLE_UTIL_H__
+#endif // CONSOLE_UTIL_H__
