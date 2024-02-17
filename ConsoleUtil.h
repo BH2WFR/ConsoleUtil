@@ -261,7 +261,7 @@ Instruction:
 
 //* get C++ language standard version, do not add "L" suffix after param number
  // in MSVC compiler, __cplusplus always equals to 199711L, but _MSVC_LANG(Prior to VS2015) equals to cpp standard version
-#ifdef _MSVC_LANG // sample: CPP_VER_HIGHER_EQUAL_THAN(201103)
+#ifdef _MSVC_LANG // example: CPP_VER_HIGHER_EQUAL_THAN(201103)
 	#define CPP_VER_HIGHER_EQUAL_THAN(_VER) \
 		( (defined __cplusplus) && (_MSVC_LANG >= _VER##L) )
 	#define CPP_VER_LOWER_THAN(_VER) \
@@ -330,7 +330,7 @@ Instruction:
 	#if defined(FMT_VERSION) // fmt::print(), fmt::println()
 		#define DEBUG_PRINT(...)   fmt::print(__VA_ARGS__)
 		#define DEBUG_PRINTLN(...) fmt::println(__VA_ARGS__)
-	#elif CPP_VER_HIGHER_EQUAL_THAN(202302)) // C++23 std::print(), std::println()
+	#elif CPP_VER_HIGHER_EQUAL_THAN(202302) // C++23 std::print(), std::println()
 		#if __has_include(<print>) // && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 			#define DEBUG_PRINT(...)   std::print(__VA_ARGS__)
 			#define DEBUG_PRINTLN(...) std::println(__VA_ARGS__)
