@@ -290,8 +290,8 @@ Instruction:
 
 //* print all argc and argv[n] arguments for main() function
 #define PRINT_ARGV(argc, argv) { \
-		printf("\n" CLYellow); \
-		printf(FBlack BLYellow CBold "====== Print Program params, all " FLRed "argc" FBlack " and " FLRed "argv[i]" FBlack " =====" CReset "\n");\
+		printf(CReset "\n"); \
+		printf(FBlack BLYellow FLYellow CBold "====== Print Program params, all " FLRed "argc" FBlack " and " FLRed "argv[i]" FBlack " =====" CReset "\n");\
 		printf(FLMagenta "    argc:   " FLWhite "%d\n", argc); \
 		printf(FLGreen   "    argv[  0]: " FLBlue "%.256s\n", argv[0]); \
 		for(int i = 1; i < argc; i++) { \
