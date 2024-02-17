@@ -290,8 +290,8 @@ Instruction:
 
 //* print all argc and argv[n] arguments for main() function
 #define PRINT_ARGV(argc, argv) { \
-		printf("\n" CLYellow); \
-		printf(FBlack BLYellow CBold "====== Print Program params, all " FLRed "argc" FBlack " and " FLRed "argv[i]" FBlack " =====" CReset "\n");\
+		printf(CReset "\n"); \
+		printf(FBlack BLYellow FLYellow CBold "====== Print Program params, all " FLRed "argc" FBlack " and " FLRed "argv[i]" FBlack " =====" CReset "\n");\
 		printf(FLMagenta "    argc:   " FLWhite "%d\n", argc); \
 		printf(FLGreen   "    argv[  0]: " FLBlue "%.256s\n", argv[0]); \
 		for(int i = 1; i < argc; i++) { \
@@ -330,7 +330,7 @@ Instruction:
 	#if defined(FMT_VERSION) // fmt::print(), fmt::println()
 		#define DEBUG_PRINT(...)   fmt::print(__VA_ARGS__)
 		#define DEBUG_PRINTLN(...) fmt::println(__VA_ARGS__)
-	#elif CPP_VER_HIGHER_EQUAL_THAN(202302)) // C++23 std::print(), std::println()
+	#elif CPP_VER_HIGHER_EQUAL_THAN(202302) // C++23 std::print(), std::println()
 		#if __has_include(<print>) // && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 			#define DEBUG_PRINT(...)   std::print(__VA_ARGS__)
 			#define DEBUG_PRINTLN(...) std::println(__VA_ARGS__)
