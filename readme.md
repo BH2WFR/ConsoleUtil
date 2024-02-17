@@ -1,8 +1,10 @@
 # ConsoleUtil
 
-一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**, 且含一些常见懒人包
+一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**, 利用 ANSI 控制字符, 且含一些常见懒人包
 
-A **HEADER FILE** with macros that can change text color/style and move corsor in CONSOLE, and some utility macros for CUDA and Qt
+A **HEADER FILE** with macros that can change text color/style and move corsor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt
+
+WARNINT: for Windows system, **Only Windows 10/11 is supported**. These macros cannot work properly in Windows 8/7/vista/xp or prior versions.
 
 
 
@@ -62,32 +64,34 @@ A **HEADER FILE** with macros that can change text color/style and move corsor i
 
 
 
-### 使用样例 Using Sample:
+### 使用样例 Example of using:
 
 ```cpp
 int main(int argc, char* argv[]){
-	CONSOLE_UTF_8(); 			// 命令行编码改为 UTF_8
-	CONSOLE_TITLE("MyProject");// 设置命令行窗口标题, 仅限 windows
-	CONSOLE_SIZE(100, 30);		// 设置命令行窗口大小为 宽度 100 字符, 高度 30 行
-	CONSOLE_CLEAR();			// 清空命令行
-
-	PRINT_ARGV(argc, argv);		// 打印出程序的所有命令行参数
-
-	printf(SETCOLOR(CLGreen, "Hello World!\n")); // 使用明亮的黄色输出 "Hello World"
-	printf(CLGreen "Hello World!\n" CDefault); // 等价
-	CPRINTF(CLGreen, "Hello World!\n"); // 等价
-	CNPRINTF(CLGreen, "Hello World!");  // 等价
-
-	std::cout << SETCOLOR(CLRed, "Error\n");
-	std::cout << CLRed "Error\n" CDefault; // 与上等价, "CDefault" 时命令行字符颜色恢复默认
-
-	printf(SETCOLOR(BRed CGreen CQFlash, "test\n")); // 红底绿色, 并快速闪烁
-	printf(BRed CGreen CQFlash "test\n" CDefault); // 等价
-
-	printf(CRight(2)); // 光标上移两行
-
-	PRINT_ERR("错误信息"); // 打印一条错误信息, 并且附上文件名, 函数名, 和行数
-	CONSOLE_PAUSE() // system("pause");
+	CONSOLE_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
+	CONSOLE_TITLE("MyProject"); // set console window title
+	CONSOLE_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
+	CONSOLE_CLEAR();			// clear console (system("cls"))
+	
+	PRINT_ARGV(argc, argv);		// print all argc and argv[n] of main() function
+	
+	printf(FLGreen "Hello World!\n" CReset);   // print "Hello World" with light yellow console color formatting
+												//	you should put "CReset" at the end of string to RESET console font color to DEFAULT
+	printf(CStyle(FLGreen, "Hello World!\n")); // Equivalent
+	
+	std::cout << FLRed "ERROR\n" CReset;  // print "ERROR" with font color light red, "CReset" is also needed to revert font color to default
+	std::cout << CStyle(FLRed, "ERROR\n");// Equivalent
+	
+	printf(BRed FGreen CQFlash "test\n" CReset);  // Print text with green font and red background, and quickly flashing
+	printf(CStyle(BRed FGreen CQFlash, "test\n"));// Equivalent
+	
+	
+	printf(CRight(2)); // move thr cursor up 2 lines
+	
+	PRINT_ERR("error occured!"); // print an error message with filename, function name and line number ATTACHED.
+	
+	CONSOLE_PAUSE(); 			 // system("pause");
+	
 	return 0;
 }
 ```
@@ -98,7 +102,7 @@ int main(int argc, char* argv[]){
 
 ![image-20231205152753735](./assets/image-20231205152753735.png)
 
-
+![image-20240218101655956](./assets/image-20240218101655956.png)
 
 
 
