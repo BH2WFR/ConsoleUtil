@@ -24,18 +24,7 @@
 
 
 //* ==== customize parameters:
-	// #define CONSOLE_UTIL_USE_DEPRECATED	  		1  //* using deprecated macros
 	// #define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED	1  // set 0 to disable style changing
-
-// include winapi headers
-// #if defined(_WIN32) || defined(WIN32) || defined(__WIN32)
-// 	#include <windows.h>
-// #endif // WinAPI 适配
-
-
-// #ifdef _MSC_VER
-// 	#pragma warning( disable: 4003 4996 )
-// #endif
 
 
 
@@ -178,42 +167,6 @@
 	#define CHideCursor		CAnsiEscStr("\033?25l")
 
 
-//* deprecated macros
-#if CONSOLE_UTIL_USE_DEPRECATED == 1
-	#define CDefault 	CReset
-
-	#define BPurple		BMagenta
-	#define BLPurple	BLMagenta
-
-	#define CBlack		FBlack
-	#define CRed 		FRed
-	#define CGreen 		FGreen
-	#define CBrown		FBrown
-	#define CYellow		FYellow
-	#define CBlue		FBlue
-	#define CMagenta	FMagenta
-	#define CPurple		CMagenta
-	#define CCyan		FCyan
-	#define CWhite		FWhite
-	#define CGray		FGray
-	#define CLBlack		FLBlack
-	#define CLRed 		FLRed
-	#define CLGreen 	FLGreen
-	#define CLYellow 	FLYellow
-	#define CLBlue 		FLBlue
-	#define CLMagenta 	FLMagenta
-	#define CLPurple 	CLMagenta
-	#define CLCyan 		FLCyan
-	#define CLWhite 	FLWhite
-	
-	#define CInverce	CInvert
-	#define SETCOLOR(_STYLE, _STR) 	CStyle(_STYLE, _STR)
-	
-	#define CRight 		CForward
-	#define CLeft  		CBack
-	
-#endif // CONSOLE_UTIL_USE_DEPRECATED
-
 //* macros for console window/application and streams
 #if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in windows
 	#define CUTIL_ENCODING_UTF8() 		system("chcp 65001");	//* set console encoding to UTF-8 in windows
@@ -277,31 +230,10 @@
 #endif
 
 
-#if CONSOLE_UTIL_USE_DEPRECATED == 1
-	#define CONSOLE_UTF_8()		CONSOLE_ENCODING_UTF8() // deprecated
-	
-#endif // CONSOLE_UTIL_USE_DEPRECATED
-
-
 // 吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容
 //* Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
 #define CUTIL_FLUSH_INPUT_BUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
 
-
-
-
-#if CONSOLE_UTIL_USE_DEPRECATED == 1
-	#define CONSOLE_ABSORB()		CUTIL_FLUSH_INPUT_BUFFER() // deprecated
-	
-	// 行尾附着换行符的 printf
-	#define NPRINTF(str, ...) 				printf(str "\n",  ##__VA_ARGS__ );
-
-	// 可自定义颜色, 输出后恢复默认的 printf
-	#define CPRINTF(color, str, ... ) 		printf(color str CReset, ##__VA_ARGS__ );
-
-	// 可自定义颜色, 输出后恢复默认, 行尾附着换行符的 printf
-	#define CNPRINTF(color, str, ... ) 		printf(color str CReset "\n", ##__VA_ARGS__ );
-#endif // CONSOLE_UTIL_USE_DEPRECATED
 
 
 /*
@@ -415,33 +347,17 @@ Instruction:
 #define CUTIL_ABORT_ERR(_STR) 	 	{CUTIL_PRINT_ERR(_STR); exit(-1);}
 #define CUTIL_ABORT_ERR_ASM(_STR) 	{CUTIL_PRINT_ERR(_STR); asm("exit");}
 
-#if CONSOLE_UTIL_USE_DEPRECATED == 1
-	#define PRINT_ARGV(argc, argv) 	CUTIL_PRINT_ARGV(argc, argv)
-	#define PRINT_ERR(_STR) 		CUTIL_PRINT_ERR(_STR)
-	#define ABORT_ERR(_STR) 		CUTIL_ABORT_ERR(_STR)
-	#define ABORT_ASM(_STR) 		CUTIL_ABORT_ERR_ASM(_STR)
-	
-	// 如果指针为空, 则强行退出程序
-	#define ABORT_IF_NULLPTR(p, _STR) \
-		{if((p) == NULL) CUTIL_ABORT_ERR(_STR) }
-		
-	// 如果指针为空, 则退出函数
-	#define RETURN_IF_NULLPTR(p, ...) \
-		{if((p) == NULL) return __VA_ARGS__;}
-	
-#endif // CONSOLE_UTIL_USE_DEPRECATED
-
 
 //* bit calculating macros
-#define CUTIL_GET_BIT(_NUM, BIT_IDX)	((_NUM) & (1 << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
-#define CUTIL_SET_BIT(_NUM, BIT_IDX)	((_NUM) |=  (1 << (BIT_IDX)));	// must use in a seperate line
-#define CUTIL_CLEAR_BIT(_NUM, BIT_IDX)	((_NUM) &= ~(1 << (BIT_IDX)));
-#define CUTIL_TOGGLE_BIT(_NUM, BIT_IDX)	((_NUM) ^=  (1 << (BIT_IDX)));
+#define CUTIL_GET_BIT(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
+#define CUTIL_SET_BIT(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use in a seperate line
+#define CUTIL_CLEAR_BIT(_NUM, BIT_IDX)	((_NUM) &= ~(1u << (BIT_IDX)));
+#define CUTIL_TOGGLE_BIT(_NUM, BIT_IDX)	((_NUM) ^=  (1u << (BIT_IDX)));
 
 
 //* swap items, only for C, do not use in C++ (use std::swap())
-#define CUTIL_SWAP_VARS(TYPE, VAR1, VAR2) {TYPE sw = VAR2; VAR2 = VAR1; VAR1 = sw;}
-#define CUTIL_SWAP_VARS_GNU(VAR1, VAR2)	  {typeof(VAR1) sw = VAR2; VAR2 = VAR1; VAR1 = sw;} // GNU C only
+#define CUTIL_SWAP_VARS(_VAR1, _VAR2, _TYPE) {_TYPE sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;}
+#define CUTIL_SWAP_VARS_GNU(_VAR1, _VAR2)	 {typeof(_VAR1) sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;} // GNU C only
 	// CUTIL_SWAP_VARS(int, a, b);
 
 
