@@ -2,21 +2,25 @@
 
 A **HEADER FILE** with macros that can change text color/style and move cursor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt
 
-WARNINT: for Windows system, **Only Windows 10/11 is supported**. These macros cannot work properly in Windows 8/7/vista/xp or prior versions.
+WARNING: for Windows system, **Only Windows 10/11 is supported**. These macros cannot work properly in Windows 8/7/vista/xp or prior versions.
 
 一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**, 利用 ANSI Escape 控制字符, 且含一些常见懒人包
 
 
 
-WARNING: 
+WARNING:
 
 - features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10**.
+    - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED  1` before `#include <ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
+
 - Pls **#include other headers previously**, especially headers of Qt/fmtlib.
 
 警告：
 
 - 一些利用 Ansi 控制字符的功能（如颜色自定义、光标移动等）无法在 Windows 10 以下版本的 Windows 中使用。
-- 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 最后 #include 此头文件.
+    - 如果正在使用这些操作系统，请加入宏定义  `#define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED  1` before `#include <ConsoleUtil.h>` 以禁用这些通过打印 Ansi 控制字符来实现的功能。
+
+- 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件，最后 #include 此头文件。
 
 
 
@@ -72,10 +76,10 @@ WARNING:
     ```
 
     ```c++
-    // avaliable encodings:
+    // available encodings:
     CUTIL_ENCODING_UTF8();
     CUTIL_ENCODING_GB2312();
-    CUTIL_ENCODING_BIG5();		
+    CUTIL_ENCODING_BIG5();
     CUTIL_ENCODING_KOR();
     CUTIL_ENCODING_JIS();
     CUTIL_ENCODING_LATIN1();
@@ -90,7 +94,21 @@ WARNING:
 
     
 
-4. 按顺序打印 main 函数的 argc 和 argv 参数
+4. Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
+
+    吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容
+
+    ```c++
+    // #define CUTIL_FLUSH_INPUT_BUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
+    int num1, num2;
+    scanf("%d", &num1);
+    CUTIL_FLUSH_INPUT_BUFFER(); // flush input buffer
+    scanf("%d", &num2);
+    ```
+
+    
+
+5. 按顺序打印 main 函数的 argc 和 argv 参数
 
     **print argc and argv arguments** of main(int argc, char* argv[]) function in sequence.
 
@@ -107,7 +125,7 @@ WARNING:
 
     
 
-5. **Print costom Error Message** with filename, line number and function name
+6. **Print custom Error Message** with filename, line number and function name
 
     打印错误信息，并输出当前文件名、行号、函数名
 
@@ -115,7 +133,7 @@ WARNING:
 
     
 
-6. Other useful C/C++ Macros
+7. Other useful C/C++ Macros
 
     -  decide if the project is in debug build mode (you should use MSVC, otherwise predefine `IS_DEBUG` macro in project in debug mode.
 
@@ -184,7 +202,7 @@ WARNING:
 
         
 
-7. **Some Macros for Qt**:
+8. **Some Macros for Qt Projects**:
 
     - Enable **High DPI Support for Qt5** programs (enable since Qt5.6.0, and fractional scaling since Qt5.14.0). Qt6 supports it by default.
 
@@ -209,7 +227,7 @@ WARNING:
         	return app.exec();
         }
         
-        /* avaliable encodings:
+        /* available encodings:
             CUTIL_QT5_TEXTCODEC_UTF8()
             CUTIL_QT5_TEXTCODEC_GBK()
             CUTIL_QT5_TEXTCODEC_BIG5()
@@ -223,9 +241,9 @@ WARNING:
 
      
 
-8. CUDA 中，检测部分函数的返回状态，如 != cudaSuccess 则输出错误信息，或强行退出程序
+9. CUDA 中，检测部分函数的返回状态，如 != cudaSuccess 则输出错误信息，或强行退出程序
 
-     
+      
 
 Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -266,7 +284,7 @@ int main(int argc, char* argv[]){
 	printf(CForward(2)); // move thr cursor 2 characters right
 	
 	
-	CUTIL_PRINT_ERR("error occured!"); // print an error message with filename, function name and line number ATTACHED.
+	CUTIL_PRINT_ERR("error occurred!"); // print an error message with filename, function name and line number ATTACHED.
 	
 	CUTIL_PAUSE(); 			 // system("pause");
 	
@@ -281,6 +299,3 @@ int main(int argc, char* argv[]){
 ![image-20231205152753735](./assets/image-20231205152753735.png)
 
 <img src="./assets/image-20240218101655956.png" alt="image-20240218101655956" style="zoom:67%;" />
-
-
-

@@ -29,7 +29,7 @@
 
 
 
-//====================== CONSOLE COSTOMIZING MACROS =========================
+//====================== CONSOLE CUSTOMIZING MACROS =========================
 //* reference:    https://en.wikipedia.org/wiki/ANSI_escape_code
 			   // https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97
 			   
@@ -56,7 +56,7 @@
 	#define FBlack		CAnsiEsc("30m")
 	#define FRed 		CAnsiEsc("31m")
 	#define FGreen 		CAnsiEsc("32m")
-	#define FYellow		CAnsiEsc("33m")	// in some ternimals, it renders like brown.
+	#define FYellow		CAnsiEsc("33m")	// in some terminals, it renders like brown.
 	#define FBlue		CAnsiEsc("34m")
 	#define FMagenta	CAnsiEsc("35m")
 	#define FCyan		CAnsiEsc("36m")
@@ -71,7 +71,7 @@
 	#define FLMagenta 	CAnsiEsc("95m")
 	#define FLCyan 		CAnsiEsc("96m")
 	#define FLWhite 	CAnsiEsc("97m")
-	#define FGray		FLBlack 	// equls to "CLBlack"
+	#define FGray		FLBlack 	// equals to "CLBlack"
 	#define FGrey		FLBlack
 	
 // font color: custom RGB values CRGB
@@ -108,26 +108,26 @@
 	#define BDefault		CAnsiEsc("49m") 	// default background color
 
 //* font styles
-	#define CBold		CAnsiEsc("1m")	// 加粗
-	#define CWeak		CAnsiEsc("2m")	// 变暗
-	#define CItalic		CAnsiEsc("3m")	// 斜体
-	#define CUnderLine	CAnsiEsc("4m")	// 下划线
-	#define CFlash		CAnsiEsc("5m")	// 闪烁
-	#define CQFlash		CAnsiEsc("6m")	// quick flashing
-	#define CInvert		CAnsiEsc("7m")	// Swap foreground and background colors
-	#define CHide		CAnsiEsc("8m")	// Hide or Conceal
+	#define CBold			CAnsiEsc("1m")	// 加粗
+	#define CWeak			CAnsiEsc("2m")	// 变暗
+	#define CItalic			CAnsiEsc("3m")	// 斜体
+	#define CUnderLine		CAnsiEsc("4m")	// 下划线
+	#define CFlash			CAnsiEsc("5m")	// 闪烁
+	#define CQFlash			CAnsiEsc("6m")	// quick flashing
+	#define CInvert			CAnsiEsc("7m")	// Swap foreground and background colors
+	#define CHide			CAnsiEsc("8m")	// Hide or Conceal
 	// actually, "\033[1;31m" means bold and red text, these props can be stacked in this way.
 	
 	#define CDblUnderline	CAnsiEsc("21m")
 	#define CNotUnderline	CAnsiEsc("24m")
 	
 //=== special foreground and background color combinations
-	#define CTurn 		CAnsiEsc("107;30m")	// 白底黑字, white text on a black background
-	#define CLYelBold 	CAnsiEsc("1;93m")	// bold, and light yellow
-	#define CInvLYel	CAnsiEsc("1;30;103m")
-	#define CLRedBold	CAnsiEsc("1;91m")
-	#define CLightBold	CAnsiEsc("1;97;100m")
-	#define CInvBold	CAnsiEsc("1;30;107m")
+	#define CTurn 			CAnsiEsc("107;30m")	// 白底黑字, white text on a black background
+	#define CLYelBold 		CAnsiEsc("1;93m")	// bold, and light yellow
+	#define CInvLYel		CAnsiEsc("1;30;103m")
+	#define CLRedBold		CAnsiEsc("1;91m")
+	#define CLightBold		CAnsiEsc("1;97;100m")
+	#define CInvBold		CAnsiEsc("1;30;107m")
 
 	
 //* Cursor control
@@ -161,86 +161,76 @@
 	#define CScrollUp(n)	CAnsiEsc(#n"S") // Scroll whole page up by n (default 1) lines. New lines are added at the bottom.
 	#define CScrollDn(n)	CAnsiEsc(#n"T") // Scroll whole page down by n (default 1) lines. New lines are added at the top.
 	
-	#define CSaveCursurPos	CAnsiEsc("s")
-	#define CReadCursurPos  CAnsiEsc("u")
+	#define CSaveCursorPos	CAnsiEsc("s")
+	#define CReadCursorPos  CAnsiEsc("u")
 	
 	#define CShowCursor		CAnsiEscStr("\033?25h")
 	#define CHideCursor		CAnsiEscStr("\033?25l")
 
 
+//* ==============================================================
+
+
 //* macros for console window/application and streams
-#if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in windows
-	#define CUTIL_ENCODING_UTF8() 		system("chcp 65001");	//* set console encoding to UTF-8 in windows
-	#define CUTIL_ENCODING_GB2312()		system("chcp 936"); 	//  Simp. Chinese, or 54936 for GB18030
-	#define CUTIL_ENCODING_BIG5()		system("chcp 950");		//  Trad. Chinese
-	#define CUTIL_ENCODING_KOR()		system("chcp 949");		//  Korean
-	#define CUTIL_ENCODING_JIS()		system("chcp 932");		//  Shift_JIS,
-	#define CUTIL_ENCODING_LATIN1()		system("chcp 850");		//  Latin 1 multilingual
-	#define CUTIL_ENCODING_LATIN2()		system("chcp 852");		//  Latin 2 multilingual (Slavic)
-	#define CUTIL_ENCODING_CYR()		system("chcp 855");		//  Cyrillic / Russian
-	#define CUTIL_ENCODING_WIN1250()	system("chcp 1250");	//  windows 1250, Central European
-	#define CUTIL_ENCODING_WIN1251()	system("chcp 1251");	//  windows 1251, Cyrillic
-	#define CUTIL_ENCODING_WIN1252()	system("chcp 1252");	//  windows 1252, western European
-	#define CUTIL_ENCODING_CHCP(_NUM)	system("chcp "#_NUM);	//  costum encoding chcp number
-	
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in Windows
+	#define CUTIL_ENCODING_CHCP(_NUM)	system("chcp "#_NUM);	//  custom chcp encoding (number) in Windows
 	#define CUTIL_CLEAR()		system("cls");			//  clear the screen (console)
-
 	#define CUTIL_SIZE(X, Y) 	system("mode con cols=" #X "lines=" #Y); // set console window size
-
 	#define CUTIL_PAUSE()		system("pause");		// pause the console application
 
-#else 	// in Linux
-	#define CUTIL_ENCODING_UTF8()
-	#define CUTIL_ENCODING_GB2312()
-	#define CUTIL_ENCODING_BIG5()
-	#define CUTIL_ENCODING_KOR()
-	#define CUTIL_ENCODING_JIS()
-	#define CUTIL_ENCODING_LATIN1()
-	#define CUTIL_ENCODING_LATIN2()
-	#define CUTIL_ENCODING_CYR()
-	#define CUTIL_ENCODING_WIN1250()
-	#define CUTIL_ENCODING_WIN1251()
-	#define CUTIL_ENCODING_WIN1252()
+#else 	// in Linux/MacOS
 	#define CUTIL_ENCODING_CHCP(_NUM)
-	
 	#define CUTIL_CLEAR()		system("clear"); 		//  clear the screen (console)
-
 	#define CUTIL_SIZE(X, Y)
-
 	#define CUTIL_PAUSE()		getchar();				// pause the console application
 	
 #endif
 
-#if defined(_WINDOWS_) || defined(WINAPI) // with win32api
+
+//* Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
+#define CUTIL_FLUSH_INPUTBUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
+	// 吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容
+
+//* Set Console Encoding by "chcp" command in Windows
+#define CUTIL_ENCODING_UTF8()       CUTIL_ENCODING_CHCP(65001);   //* set console encoding to UTF-8 in windows
+#define CUTIL_ENCODING_GB2312()     CUTIL_ENCODING_CHCP(936);     //  Simp. Chinese, or 54936 for GB18030
+#define CUTIL_ENCODING_BIG5()       CUTIL_ENCODING_CHCP(950);     //  Trad. Chinese
+#define CUTIL_ENCODING_KOR()        CUTIL_ENCODING_CHCP(949);     //  Korean
+#define CUTIL_ENCODING_JIS()        CUTIL_ENCODING_CHCP(932);     //  Shift_JIS,
+#define CUTIL_ENCODING_LATIN1()     CUTIL_ENCODING_CHCP(850);     //  Latin 1 multilingual
+#define CUTIL_ENCODING_LATIN2()     CUTIL_ENCODING_CHCP(852);     //  Latin 2 multilingual (Slavic)
+#define CUTIL_ENCODING_CYR()        CUTIL_ENCODING_CHCP(855);     //  Cyrillic / Russian
+#define CUTIL_ENCODING_WIN1250()    CUTIL_ENCODING_CHCP(1250);    //  windows 1250, Central European
+#define CUTIL_ENCODING_WIN1251()    CUTIL_ENCODING_CHCP(1251);    //  windows 1251, Cyrillic
+#define CUTIL_ENCODING_WIN1252()    CUTIL_ENCODING_CHCP(1252);    //  windows 1252, western European
+
+
+//* features with win32api
+#if defined(_WINDOWS_) || defined(WINAPI)
 	#define CUTIL_TITLE(_STR)			SetConsoleTitleA(_STR);        // set console title in windows
 	#define CUTIL_CURSOR_POS(x, y)	\
-		{COORD pos; pos.X=x; pos.Y=y; SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
-		
+		{COORD pos; pos.X=x; pos.Y=y;   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
 	#define CUTIL_CONSOLE_ATTR(_ATTR)	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
-	//#define CONSOLE_RESET_STYLE()			CUTIL_SET_CONSOLE_ATTR(0)
+	#define CONSOLE_RESET_STYLE()		CUTIL_SET_CONSOLE_ATTR(0)
 	
 //#else // without win32api, or in Linux
 #elif (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // without win32api, or in Linux
-	#define CUTIL_TITLE(_STR)		printf("\033]0;%s\007", _STR); // set console title in linux
-	#define CUTIL_CURSOR_POS(x, y)	printf(CCursorPos(x, y));
+	#define CUTIL_TITLE(_STR)			printf("\033]0;%s\007", _STR); // set console title in linux
+	#define CUTIL_CURSOR_POS(x, y)		printf(CCursorPos(x, y));
 	#define CUTIL_CONSOLE_ATTR(_ATTR)
+	#define CONSOLE_RESET_STYLE()		printf(CReset);
 	
 #else
 	#define CUTIL_TITLE(_STR)
 	#define CUTIL_CURSOR_POS(x, y)
 	#define CUTIL_CONSOLE_ATTR(_ATTR)
+	#define CONSOLE_RESET_STYLE()
 	
 #endif
 
 
-// 吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容
-//* Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
-#define CUTIL_FLUSH_INPUT_BUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
-
-
-
 /*
-Instruction:
+* Instruction:
 	#include <print.h>			// C++23
 	#include <windows.h>		// include other headers first
 	#include <fmt/core.h>		// include other headers first
@@ -248,10 +238,10 @@ Instruction:
 	#include <ConsoleUtil.h> 	// include this header at last
 	
 	int main(int argc, char* argv[]){
-		CUTIL_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
-		CUTIL_TITLE("MyProject"); // set console window title
+		CUTIL_ENCODING_UTF8(); 		// switch console encoding to UTF-8 (windows)
+		CUTIL_TITLE("MyProject"); 	// set console window title
 		CUTIL_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
-		CUTIL_CLEAR();			// clear console (system("cls"))
+		CUTIL_CLEAR();				// clear console (system("cls"))
 		
 		CUTIL_PRINT_ARGV(argc, argv);	// print all argc and argv[n] of main() function
 		
@@ -280,7 +270,6 @@ Instruction:
 
 
 
-
 //===================== C++ Utils ==========================
 #ifdef __cplusplus
 
@@ -297,7 +286,8 @@ Instruction:
 	#define CUTIL_CPP_VER_LOWER_THAN(_VER) \
 		(__cplusplus <  _VER##L)
 #endif // _MSVC_LANG
-/*	example:
+/*
+* example:
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(199711) 	// do not add "L" after number
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)	// C++11
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201402)	// C++14
@@ -305,7 +295,7 @@ Instruction:
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202002)	// C++20
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302)	// C++23 (temporary not supported)
 */
-// example: #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)
+
 
 //* delete a heap pointer, and set it nullptr. arg "p" must be a pointer inited by "new" or "new[]".
 #define CUTIL_DELETE_AND_NULL(p)		{delete   p; p = NULL;}
@@ -353,7 +343,7 @@ Instruction:
 
 //* bit calculating macros
 #define CUTIL_GET_BIT(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
-#define CUTIL_SET_BIT(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in seperate lines
+#define CUTIL_SET_BIT(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in separate lines
 #define CUTIL_CLEAR_BIT(_NUM, BIT_IDX)	((_NUM) &= ~(1u << (BIT_IDX)));
 #define CUTIL_TOGGLE_BIT(_NUM, BIT_IDX)	((_NUM) ^=  (1u << (BIT_IDX)));
 
@@ -403,7 +393,7 @@ Instruction:
 /* instruction:
 	if you want to print some debug message to console, and only do this in DEBUG BUILD,
 	use these macros above, they will do nothing in release build.
-example:
+* example:
 	CUTIL_DEBUG_COUT("this is: " << 5); // expand to std::cout in debug build, and nothing in release build
 	CUTIL_DEBUG_COUTLN("");             // with a line break ( << '\n')
 	CUTIL_DEBUG_PRINTLN("this is {}", 5); // expand to fmt::println(if you include fmtlib headers above
@@ -443,24 +433,18 @@ example:
 //  	in CMake, you should add "set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")"
 //  In Qt6, QTextCodec module is deleted and contained in Qt5 Compatibility Module.
 #if defined(QTEXTCODEC_H)
-	#define CUTIL_QT5_TEXTCODEC_UTF8()	QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
-	#define CUTIL_QT5_TEXTCODEC_GBK()	QTextCodec::setCodecForLocale(QTextCodec::codecForName("GB18030"));
-	#define CUTIL_QT5_TEXTCODEC_BIG5()	QTextCodec::setCodecForLocale(QTextCodec::codecForName("Big5"));
-	#define CUTIL_QT5_TEXTCODEC_EUCKR()	QTextCodec::setCodecForLocale(QTextCodec::codecForName("EUC-KR"));
-	#define CUTIL_QT5_TEXTCODEC_EUCJP()	QTextCodec::setCodecForLocale(QTextCodec::codecForName("EUC-JP"));
-	#define CUTIL_QT5_TEXTCODEC_JIS()	QTextCodec::setCodecForLocale(QTextCodec::codecForName("Shift-JIS"));
 	#define CUTIL_QT5_TEXTCODEC_SET(_STR)	QTextCodec::setCodecForLocale(QTextCodec::codecForName(_STR));
-	
 #else //. !QTEXTCODEC_H
-	#define CUTIL_QT5_TEXTCODEC_UTF8()
-	#define CUTIL_QT5_TEXTCODEC_GBK()
-	#define CUTIL_QT5_TEXTCODEC_BIG5()
-	#define CUTIL_QT5_TEXTCODEC_EUCKR()
-	#define CUTIL_QT5_TEXTCODEC_EUCJP()
-	#define CUTIL_QT5_TEXTCODEC_JIS()
 	#define CUTIL_QT5_TEXTCODEC_SET(_STR)
-	
 #endif // QTEXTCODEC_H
+
+#define CUTIL_QT5_TEXTCODEC_UTF8()		CUTIL_QT5_TEXTCODEC_SET("UTF-8");
+#define CUTIL_QT5_TEXTCODEC_GBK()		CUTIL_QT5_TEXTCODEC_SET("GB18030");
+#define CUTIL_QT5_TEXTCODEC_BIG5()		CUTIL_QT5_TEXTCODEC_SET("Big5");
+#define CUTIL_QT5_TEXTCODEC_EUCKR()		CUTIL_QT5_TEXTCODEC_SET("EUC-KR");
+#define CUTIL_QT5_TEXTCODEC_EUCJP()		CUTIL_QT5_TEXTCODEC_SET("EUC-JP");
+#define CUTIL_QT5_TEXTCODEC_JIS()		CUTIL_QT5_TEXTCODEC_SET("Shift-JIS");
+
 
 //* qDebug() without spaces or quotes
 //  pls #include<QDebug> first before this header #include
@@ -471,8 +455,8 @@ example:
 	
 #endif
 
-
-/* example:
+/*
+* example:
 	#include <qglobal.h>
 	#include <QApplication>
 	#include <QDebug>
