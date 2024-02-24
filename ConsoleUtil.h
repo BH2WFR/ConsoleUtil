@@ -387,7 +387,7 @@ Instruction:
 	#define CUTIL_DEBUG_COUTLN(...)			 std::cout << __VA_ARGS__ << '\n';
 	
 	#define CUTIL_DEBUG_PRINTF(_STR, ...)    printf(_STR, ##__VA_ARGS__);
-	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)  printf(_STR '\n', ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)  printf(_STR "\n", ##__VA_ARGS__);
 	
 #else // Do nothing in Release Build
 	#define CUTIL_DEBUG_PRINT(_STR, ...)
