@@ -1,8 +1,9 @@
 /*    UTF-8 encoding
 	* Project URL: https://github.com/BH2WFR/ConsoleUtil
 	* Author:		BH2WFR
-	* 引用说明: 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 再 #include 此头文件.
+	
 	* If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
+	* 引用说明: 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 最后再 #include 此头文件.
 */
 #ifndef CONSOLE_UTIL_H__
 #define CONSOLE_UTIL_H__
@@ -10,8 +11,8 @@
 #define CONSOLE_UTIL_VER	3
 
 
-
-#ifdef __cplusplus // include vital C headers
+// include vital C headers
+#ifdef __cplusplus
 	#include <cstdio>
 	#include <cstdlib>
 	#include <cstdint>
@@ -130,35 +131,35 @@
 
 	
 //* Cursor control
-	#define CUp(n)			CAnsiEsc(""#n"A") // cursor Up:   Moves the cursor n (default 1) cells in the given direction.
-	#define CDown(n)		CAnsiEsc(""#n"B") // cursor Down: e.g. std::cout << CDown("2") // moves cursor 2 cells down
-	#define CForward(n)		CAnsiEsc(""#n"C") // cursor Forward:
-	#define CBack(n)		CAnsiEsc(""#n"D") // cursor Back
+	#define CUp(n)			CAnsiEsc(#n"A") // cursor Up:   Moves the cursor n (default 1) cells in the given direction.
+	#define CDown(n)		CAnsiEsc(#n"B") // cursor Down: e.g. std::cout << CDown("2") // moves cursor 2 cells down
+	#define CForward(n)		CAnsiEsc(#n"C") // cursor Forward:
+	#define CBack(n)		CAnsiEsc(#n"D") // cursor Back
 	#define CFwd(n)			CForward(n)  // alias
 
-	#define CNextLn(n)		CAnsiEsc(""#n"E") // Moves cursor to beginning of the line n (default 1) lines down
-	#define CPrevLn(n)		CAnsiEsc(""#n"F") // Moves cursor to beginning of the line n (default 1) lines up.
-	#define CHorzPos(n)		CAnsiEsc(""#n"G") // Moves the cursor to column n (default 1, absolute).
+	#define CNextLn(n)		CAnsiEsc(#n"E") // Moves cursor to beginning of the line n (default 1) lines down
+	#define CPrevLn(n)		CAnsiEsc(#n"F") // Moves cursor to beginning of the line n (default 1) lines up.
+	#define CHorzPos(n)		CAnsiEsc(#n"G") // Moves the cursor to column n (default 1, absolute).
 
-	#define CCursorPos(x, y) CAnsiEsc(""#x";"#y"H") // Moves the cursor to row n, column m
-	#define CPos(x, y) 		CCursorPos(x, y) // alias
+	#define CCursorPos(x, y) CAnsiEsc(#x";"#y"H") // Moves the cursor to row n, column m
+	#define CPos(x, y) 		 CCursorPos(x, y) // alias
 
 //* clear the screen or line
-	#define CClear(n)		CAnsiEsc(""#n"J") //  If the cursor is already at the edge of the screen, this has no effect.
+	#define CClear(n)		CAnsiEsc(#n"J") //  If the cursor is already at the edge of the screen, this has no effect.
 	#define CClearAfter		CClear(0)   // clear from cursor to end of screen
 	#define CClearBefore	CClear(1)   // clear from cursor to beginning of the screen
 	#define CClearScr		CClear(2) 	// clear screen(console), and moves cursor to upper left on DOS ANSI.SYS.
 	#define CClearAll		CClear(3) 	// erase screen(console), and delete all lines saved in the scrollback buffer
 
 
-	#define CEraseLn(n)		CAnsiEsc(""#n"K") // Erases part of the line. Cursor position does not change.
+	#define CEraseLn(n)		CAnsiEsc(#n"K") // Erases part of the line. Cursor position does not change.
 	#define CEraseLnAfter	CEraseLn(0)  // clear from cursor to the end of the line
 	#define CEraseLnBefore	CEraseLn(1)  // clear from cursor to beginning of the line
 	#define CEraseLnAll		CEraseLn(2)  // clear entire line
 
 //* scroll control
-	#define CScrollUp(n)	CAnsiEsc(""#n"S") // Scroll whole page up by n (default 1) lines. New lines are added at the bottom.
-	#define CScrollDn(n)	CAnsiEsc(""#n"T") // Scroll whole page down by n (default 1) lines. New lines are added at the top.
+	#define CScrollUp(n)	CAnsiEsc(#n"S") // Scroll whole page up by n (default 1) lines. New lines are added at the bottom.
+	#define CScrollDn(n)	CAnsiEsc(#n"T") // Scroll whole page down by n (default 1) lines. New lines are added at the top.
 	
 	#define CSaveCursurPos	CAnsiEsc("s")
 	#define CReadCursurPos  CAnsiEsc("u")
@@ -170,16 +171,17 @@
 //* macros for console window/application and streams
 #if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in windows
 	#define CUTIL_ENCODING_UTF8() 		system("chcp 65001");	//* set console encoding to UTF-8 in windows
-	#define CUTIL_ENCODING_GB2312()		system("chcp 936") 		//  Simp. Chinese, or 54936 for GB18030
-	#define CUTIL_ENCODING_BIG5()		system("chcp 950")		//  Trad. Chinese
-	#define CUTIL_ENCODING_KOR()		system("chcp 949")		//  Korean
-	#define CUTIL_ENCODING_JIS()		system("chcp 932")		//  Shift_JIS,
-	#define CUTIL_ENCODING_LATIN1()		system("chcp 850")		//  Latin 1 multilingual
-	#define CUTIL_ENCODING_LATIN2()		system("chcp 852")		//  Latin 2 multilingual (Slavic)
-	#define CUTIL_ENCODING_CYR()		system("chcp 855")		//  Cyrillic / Russian
-	#define CUTIL_ENCODING_WIN1250()	system("chcp 1250")		//  windows 1250, Central European
-	#define CUTIL_ENCODING_WIN1251()	system("chcp 1251")		//  windows 1251, Cyrillic
-	#define CUTIL_ENCODING_WIN1252()	system("chcp 1252")		//  windows 1252, western European
+	#define CUTIL_ENCODING_GB2312()		system("chcp 936"); 	//  Simp. Chinese, or 54936 for GB18030
+	#define CUTIL_ENCODING_BIG5()		system("chcp 950");		//  Trad. Chinese
+	#define CUTIL_ENCODING_KOR()		system("chcp 949");		//  Korean
+	#define CUTIL_ENCODING_JIS()		system("chcp 932");		//  Shift_JIS,
+	#define CUTIL_ENCODING_LATIN1()		system("chcp 850");		//  Latin 1 multilingual
+	#define CUTIL_ENCODING_LATIN2()		system("chcp 852");		//  Latin 2 multilingual (Slavic)
+	#define CUTIL_ENCODING_CYR()		system("chcp 855");		//  Cyrillic / Russian
+	#define CUTIL_ENCODING_WIN1250()	system("chcp 1250");	//  windows 1250, Central European
+	#define CUTIL_ENCODING_WIN1251()	system("chcp 1251");	//  windows 1251, Cyrillic
+	#define CUTIL_ENCODING_WIN1252()	system("chcp 1252");	//  windows 1252, western European
+	#define CUTIL_ENCODING_CHCP(_NUM)	system("chcp "#_NUM);	//  costum encoding chcp number
 	
 	#define CUTIL_CLEAR()		system("cls");			//  clear the screen (console)
 
@@ -199,6 +201,7 @@
 	#define CUTIL_ENCODING_WIN1250()
 	#define CUTIL_ENCODING_WIN1251()
 	#define CUTIL_ENCODING_WIN1252()
+	#define CUTIL_ENCODING_CHCP(_NUM)
 	
 	#define CUTIL_CLEAR()		system("clear"); 		//  clear the screen (console)
 
@@ -242,7 +245,7 @@ Instruction:
 	#include <windows.h>		// include other headers first
 	#include <fmt/core.h>		// include other headers first
 	
-	#include <ConsoleUtil.h>
+	#include <ConsoleUtil.h> 	// include this header at last
 	
 	int main(int argc, char* argv[]){
 		CUTIL_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
@@ -263,7 +266,7 @@ Instruction:
 		printf(CStyle(BRed FGreen CQFlash, "test\n"));// Equivalent
 		
 		
-		printf(CRight(2)); // move thr cursor up 2 lines
+		printf(CForward(2)); // move thr cursor 2 characters right
 		
 		
 		CUTIL_PRINT_ERR("error occured!"); // print an error message with filename, function name and line number ATTACHED.
@@ -322,7 +325,7 @@ Instruction:
 #endif
 // example: #if CUTIL_GET_IS_DEBUG_BUILD
 
-//* print all argc and argv[n] arguments for main() function
+//* print all argc and argv[n] arguments for main(int argc, char* argv[]) function
 #define CUTIL_PRINT_ARGV(_argc, _argv) { \
 		printf(CReset "\n"); \
 		printf(FBlack BLYellow FLYellow CBold "====== Print Program params, all " FLRed "argc" FBlack " and " FLRed "argv[i]" FBlack " =====" CReset "\n");\
@@ -350,7 +353,7 @@ Instruction:
 
 //* bit calculating macros
 #define CUTIL_GET_BIT(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
-#define CUTIL_SET_BIT(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use in a seperate line
+#define CUTIL_SET_BIT(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in seperate lines
 #define CUTIL_CLEAR_BIT(_NUM, BIT_IDX)	((_NUM) &= ~(1u << (BIT_IDX)));
 #define CUTIL_TOGGLE_BIT(_NUM, BIT_IDX)	((_NUM) ^=  (1u << (BIT_IDX)));
 
@@ -364,37 +367,37 @@ Instruction:
 //* macros for print something ONLY IN DEBUG BUILD
 #if CUTIL_GET_IS_DEBUG_BUILD // print in Debug Build
 	#if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
-		#define CUTIL_DEBUG_PRINT(...)		 fmt::print(__VA_ARGS__);
-		#define CUTIL_DEBUG_PRINTLN(...)	 fmt::println(__VA_ARGS__);
+		#define CUTIL_DEBUG_PRINT(_STR, ...)	   fmt::print(_STR, ##__VA_ARGS__);
+		#define CUTIL_DEBUG_PRINTLN(_STR, ...)	   fmt::println(_STR, ##__VA_ARGS__);
 	#elif CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302) // C++23 std::print(), std::println()
 		#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
-			#define CUTIL_DEBUG_PRINT(...)	 std::print(__VA_ARGS__);
-			#define CUTIL_DEBUG_PRINTLN(...) std::println(__VA_ARGS__);
+			#define CUTIL_DEBUG_PRINT(_STR, ...)   std::print(_STR, ##__VA_ARGS__);
+			#define CUTIL_DEBUG_PRINTLN(_STR, ...) std::println(_STR, ##__VA_ARGS__);
 		#else // no fmtlib, and after C++23
-			#define CUTIL_DEBUG_PRINT(...)
-			#define CUTIL_DEBUG_PRINTLN(...)
+			#define CUTIL_DEBUG_PRINT(_STR, ...)
+			#define CUTIL_DEBUG_PRINTLN(_STR, ...)
 		#endif
 	#else // no fmtlib, and before C++23
-		#define CUTIL_DEBUG_PRINT(...)
-		#define CUTIL_DEBUG_PRINTLN(...)
+		#define CUTIL_DEBUG_PRINT(_STR, ...)
+		#define CUTIL_DEBUG_PRINTLN(_STR, ...)
 	#endif // _PRINT_
 	
 	// for std::cout, and printf()
-	#define CUTIL_DEBUG_COUT(...)           std::cout << __VA_ARGS__;
-	#define CUTIL_DEBUG_COUTLN(...)         std::cout << __VA_ARGS__ << '\n';
+	#define CUTIL_DEBUG_COUT(...)			 std::cout << __VA_ARGS__;
+	#define CUTIL_DEBUG_COUTLN(...)			 std::cout << __VA_ARGS__ << '\n';
 	
-	#define CUTIL_DEBUG_PRINTF(STR, ...)    printf(STR, ##__VA_ARGS__);
-	#define CUTIL_DEBUG_PRINTFLN(STR, ...)  printf(STR '\n', ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTF(_STR, ...)    printf(_STR, ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)  printf(_STR '\n', ##__VA_ARGS__);
 	
 #else // Do nothing in Release Build
-	#define CUTIL_DEBUG_PRINT(...)
-	#define CUTIL_DEBUG_PRINTLN(...)
+	#define CUTIL_DEBUG_PRINT(_STR, ...)
+	#define CUTIL_DEBUG_PRINTLN(_STR, ...)
 	
 	#define CUTIL_DEBUG_COUT(...)
 	#define CUTIL_DEBUG_COUTLN(...)
 	
-	#define CUTIL_DEBUG_PRINTF(...)
-	#define CUTIL_DEBUG_PRINTFLN(...)
+	#define CUTIL_DEBUG_PRINTF(_STR, ...)
+	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)
 	
 #endif // CUTIL_GET_IS_DEBUG_BUILD
 /* instruction:
@@ -462,9 +465,10 @@ example:
 //* qDebug() without spaces or quotes
 //  pls #include<QDebug> first before this header #include
 #ifdef QDEBUG_H
-	#define CUTIL_QDEBUGNN qDebug().nospace().noquote() // 不输出空格和引号的 qDebug()
-	#define CUTIL_QDEBUGN  qDebug().noquote() 		  // 不加引号的 qDebug()
-	// example: CUTIL_QDEBUGNN << "test" << 1;
+	#define CUTIL_QDEBUG_N  qDebug().noquote() 		  	 // qDebug() without quotes
+	#define CUTIL_QDEBUG_NN qDebug().nospace().noquote() // qDebug() without spaces and quotes
+		// example: CUTIL_QDEBUG_N << "test" << 1;
+	
 #endif
 
 
@@ -479,6 +483,8 @@ example:
 	int main(int argc, char* argv[])
 	{
 		CUTIL_QT5_HIGH_DPI(); 	  	//* use Qt5 high DPI support
+		
+		CUTIL_ENCODING_UTF8();
 		CUTIL_QT5_TEXTCODEC_UTF8(); //* set Qt default text encoding to UTF-8
 		
 		QApplication app(argc, argv);

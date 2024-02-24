@@ -1,38 +1,92 @@
 # ConsoleUtil
 
-一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**, 利用 ANSI 控制字符, 且含一些常见懒人包
-
-A **HEADER FILE** with macros that can change text color/style and move corsor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt
+A **HEADER FILE** with macros that can change text color/style and move cursor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt
 
 WARNINT: for Windows system, **Only Windows 10/11 is supported**. These macros cannot work properly in Windows 8/7/vista/xp or prior versions.
 
+一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**, 利用 ANSI Escape 控制字符, 且含一些常见懒人包
 
 
-### 主要功能 Major Features:
 
-1. 向命令行 printf/cout 时 **设置输出文本的 颜色、背景颜色、特殊效果** （借助 ANSI 转义序列 命令行控制字符 `\033[**m`）
+WARNING: 
 
-   **Set Front Color, Back Color, and font style** for messages to print by printf/cout.
+- features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10**.
+- Pls **#include other headers previously**, especially headers of Qt/fmtlib.
 
-   例 Sample:
+警告：
+
+- 一些利用 Ansi 控制字符的功能（如颜色自定义、光标移动等）无法在 Windows 10 以下版本的 Windows 中使用。
+- 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 最后 #include 此头文件.
+
+
+
+---
+
+### Major Features 主要功能:
+
+1. **Set Front Color, Back Color, and font style** for messages to print by printf/cout.
+
+   向命令行 printf/cout 时 **设置输出文本的 颜色、背景颜色、特殊效果** （借助 ANSI 转义序列 命令行控制字符 `\033[**m`）
+
+   Example:
 
    ```c++
-   printf(SETCOLOR(BRed CGreen CQFlash, "test\n")); // 红底绿色, 并快速闪烁
-   std::cout << SETCOLOR(CCyan, "test\n");   // 字符颜色为 暗青色
-   fmt::println(SETCOLOR(CLYellow, "test")); // 字符颜色为 亮黄色
+   printf(BRed FLGreen CQFlash, "test" CReset "\n"); // Red Background, Light Green Text Forecolor, and flashing quickly
+   std::cout << CCyan "test" CReset << "\n"; // Text forecolor: cyan
+   fmt::println(CYellow "test" CReset);      // Text forecolor: yellow
    ```
 
    
 
-2. 控制命令行光标，部分擦除命令行内容（借助 ANSI 转义序列 命令行控制字符 `\033[**m`）
+2. **Control text cursor location** in console, or erase text.
 
-    **Control cursor location** in console, and erase text.
+    控制命令行光标，部分擦除命令行内容（借助 ANSI 转义序列 命令行控制字符 `\033[**m`）
+
+    Example:
+
+    ```c++
+    printf(CForward(2)); // move thr cursor 2 characters right
+    printf(CCursorPos(15, 20)); // move the text cursor to (15, 20) position
+    CUTIL_CURSOR_POS(15, 20); // equivalent, calls SetConsoleCursorPosition() in win32.
+    
+    ```
 
     
 
-3. 设置命令行编码为 UTF-8、清空命令行、设置命令行窗口大小、标题、暂停程序、强行退出程序（借助 stdlib.h 中的 system() 函数, 部分功能需要 windows 操作系统下才能完成）
+3. **set console encoding**, console **window size** (in windows), or **console title**, also with pause program and force abort the program.
 
-    **set console encoding to UTF-8**, console **window size** (in windows), or **console title**, also with pause program and force abort the program.
+    设置命令行编码、清空命令行、设置命令行窗口大小、标题、暂停程序、强行退出程序（借助 stdlib.h 中的 system() 函数, 部分功能需要 windows 操作系统下才能完成）
+
+    
+
+    Example:
+
+    ```c++
+    CUTIL_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
+    CUTIL_TITLE("MyProject"); // set console window title
+    CUTIL_SIZE(100, 30);	// set console window size to with of 30 chars and height of 30 lines.
+    CUTIL_CLEAR();			// clear console (calls system("cls") )
+    
+    printf("中文한글\n");	// you can correctly display this when the code saved in UTF-8 Encoding, especially in MSVC Compiler.
+    
+    ```
+
+    ```c++
+    // avaliable encodings:
+    CUTIL_ENCODING_UTF8();
+    CUTIL_ENCODING_GB2312();
+    CUTIL_ENCODING_BIG5();		
+    CUTIL_ENCODING_KOR();
+    CUTIL_ENCODING_JIS();
+    CUTIL_ENCODING_LATIN1();
+    CUTIL_ENCODING_LATIN2();
+    CUTIL_ENCODING_CYR();
+    CUTIL_ENCODING_WIN1250();
+    CUTIL_ENCODING_WIN1251();
+    CUTIL_ENCODING_WIN1252();
+    ```
+
+    
 
     
 
@@ -40,43 +94,166 @@ WARNINT: for Windows system, **Only Windows 10/11 is supported**. These macros c
 
     **print argc and argv arguments** of main(int argc, char* argv[]) function in sequence.
 
-    
+    Example:
 
-5. 打印错误信息，并输出当前文件名、行号、函数名
+    ```c++
+    int main(int argc, char* argv[]){
+    	CUTIL_PRINT_ARGV(argc, argv);// print all argc and argv[n] of main() function
+    	return 0;
+    }
+    ```
 
-    **Print costom Error Message** with filename, line number and function name
-
-    
-
-6. 其他一系列 C/C++ 语法糖懒人包
-
-    
-
-7. CUDA 中，检测部分函数的返回状态，如 != cudaSuccess 则输出错误信息，或强行退出程序
+    <img src="./assets/image-20240224195512767.png" alt="image-20240224195512767" style="zoom:67%;" />
 
     
 
-8. Qt 中，部分语法糖懒人包，和 Qt5 GUI 程序中的高分屏适配\
+5. **Print costom Error Message** with filename, line number and function name
+
+    打印错误信息，并输出当前文件名、行号、函数名
 
     
+
+    
+
+6. Other useful C/C++ Macros
+
+    -  decide if the project is in debug build mode (you should use MSVC, otherwise predefine `IS_DEBUG` macro in project in debug mode.
+
+        ```c++
+        #if (defined(_DEBUG) || defined(IS_DEBUG) || defined(DEBUG)) && !(defined(NDEBUG) || defined(_NDEBUG))
+        	#define CUTIL_GET_IS_DEBUG_BUILD 	 1
+        #else // defined(NDEBUG)
+        	#define CUTIL_GET_IS_DEBUG_BUILD 	 0
+        #endif
+        
+        
+        ```
+
+        ```c++
+        #if CUTIL_GET_IS_DEBUG_BUILD // debug build
+        #else // release build
+        #endif
+        ```
+
+        
+
+    - set bit to a unsigned integer variable in some hardware projects
+
+        ```c++
+        uint16_t num {0b00000000'00000001}; // C++14
+        
+        CUTIL_SET_BIT(num, 1);
+        CUTIL_CLEAR_BIT(num, 0);
+        CUTIL_TOGGLE_BIT(num, 2);
+        if(CUTIL_GET_BIT(num, 0) != 0){
+        	printf("%x\n", num);
+        }
+        ```
+
+    - swap variables in C (do not use in C++, pls replace with std::swap())
+
+        ```c++
+        int a = 1, b = 2;
+        CUTIL_SWAP_VARS(a, b, int); // declare type in 3rd arg.
+        CUTIL_SWAP_VARS(a, b, typeof(int)); // only in GNU C
+        CUTIL_SWAP_VARS_GNU(a, b); 			// only in GNU C
+        ```
+
+    - print text only in debug build
+
+        ```c++
+        int a{1};
+        CUTIL_DEBUG_PRINTLN("debug text {}", a); // calls fmt::println or std::println
+        CUTIL_DEBUG_COUT("debug text " << a << '\n'); // calls std::cout
+        CUTIL_DEBUG_PRINTF("debug text %d", a); // calls printf
+        // these macro funcs would DO NOTHING IN RELEASE BUILD.
+        ```
+
+    - match C++ language version, especially if you want to let the project build both by MSVC and G++.
+
+        equals to "`_MSVC_LANG`" in MSVC, and "`__cplusplus`" in other compilers.
+
+        ```
+        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(199711) 	// do not add "L" after number
+        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)	// C++11
+        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201402)	// C++14
+        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201703)	// C++17
+        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202002)	// C++20
+        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302)	// C++23 (temporary not supported)
+        ```
+
+        
+
+7. **Some Macros for Qt**:
+
+    - Enable **High DPI Support for Qt5** programs (enable since Qt5.6.0, and fractional scaling since Qt5.14.0). Qt6 supports it by default.
+
+    - Set **Qt5 TextCodec Encoding**, like UTF-8 or GBK to let qDebug() correctly displays Chinese characters with UTF-8 code page and MSVC compiler.
+
+        ```c++
+        #include <qglobal.h>
+        #include <QApplication>
+        #include <QDebug>
+        #include <QTextCodec> // include Qt headers first
+        
+        #include <ConsoleUtil.h> // include this header at last
+        
+        int main(int argc, char* argv[]){
+        	CUTIL_ENCODING_UTF8();
+        	CUTIL_QT5_TEXTCODEC_UTF8(); // this code saves in UTF-8 encoding
+        	
+        	CUTIL_QT5_HIGH_DPI(); // enable Qt5 high DPI support
+        	
+        	QApplication app(argc, argv); // declare QCoreApplication after these macros.
+            
+        	return app.exec();
+        }
+        
+        /* avaliable encodings:
+            CUTIL_QT5_TEXTCODEC_UTF8()
+            CUTIL_QT5_TEXTCODEC_GBK()
+            CUTIL_QT5_TEXTCODEC_BIG5()
+            CUTIL_QT5_TEXTCODEC_EUCKR()
+            CUTIL_QT5_TEXTCODEC_EUCJP()
+            CUTIL_QT5_TEXTCODEC_JIS()
+        */
+        ```
+
+        
+
+     
+
+8. CUDA 中，检测部分函数的返回状态，如 != cudaSuccess 则输出错误信息，或强行退出程序
+
+     
+
+Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 
 **ANSI 转义序列 参考**：https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97
 
 
 
-### 使用样例 Example of using:
+---
+
+### Example 使用样例:
 
 ```cpp
-int main(int argc, char* argv[]){
-	CONSOLE_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
-	CONSOLE_TITLE("MyProject"); // set console window title
-	CONSOLE_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
-	CONSOLE_CLEAR();			// clear console (system("cls"))
+#include <print.h>			// C++23
+#include <windows.h>		// include other headers first
+#include <fmt/core.h>		// include other headers first
 	
-	PRINT_ARGV(argc, argv);		// print all argc and argv[n] of main() function
+#include <ConsoleUtil.h> 	// include this header at last
+	
+int main(int argc, char* argv[]){
+	CUTIL_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
+	CUTIL_TITLE("MyProject"); // set console window title
+	CUTIL_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
+	CUTIL_CLEAR();			// clear console (system("cls"))
+	
+	CUTIL_PRINT_ARGV(argc, argv);	// print all argc and argv[n] of main() function
 	
 	printf(FLGreen "Hello World!\n" CReset);   // print "Hello World" with light yellow console color formatting
-												//	you should put "CReset" at the end of string to RESET console font color to DEFAULT
+													you should put "CReset" at the end of string to RESET console font color to DEFAULT
 	printf(CStyle(FLGreen, "Hello World!\n")); // Equivalent
 	
 	std::cout << FLRed "ERROR\n" CReset;  // print "ERROR" with font color light red, "CReset" is also needed to revert font color to default
@@ -86,11 +263,12 @@ int main(int argc, char* argv[]){
 	printf(CStyle(BRed FGreen CQFlash, "test\n"));// Equivalent
 	
 	
-	printf(CRight(2)); // move thr cursor up 2 lines
+	printf(CForward(2)); // move thr cursor 2 characters right
 	
-	PRINT_ERR("error occured!"); // print an error message with filename, function name and line number ATTACHED.
 	
-	CONSOLE_PAUSE(); 			 // system("pause");
+	CUTIL_PRINT_ERR("error occured!"); // print an error message with filename, function name and line number ATTACHED.
+	
+	CUTIL_PAUSE(); 			 // system("pause");
 	
 	return 0;
 }
@@ -98,45 +276,11 @@ int main(int argc, char* argv[]){
 
 
 
-**控制台效果 Console Effects:**
+**Console Effects 控制台效果** :
 
 ![image-20231205152753735](./assets/image-20231205152753735.png)
 
-![image-20240218101655956](./assets/image-20240218101655956.png)
+<img src="./assets/image-20240218101655956.png" alt="image-20240218101655956" style="zoom:67%;" />
 
 
 
-# DllExportTemplate
-
-使用说明:
-
-1. 在 **动态库项目 (target)** 中 增加全局宏定义 `BUILD_DLL`
-   CMake 样例: 添加到 target 项目中, `${PROJECT_NAME}` 改成自己的 target 项目名字
-
-   ``cmake target_compile_definitions(${PROJECT_NAME} PRIVATE BUILD_DLL=1) ``
-2. 将此文件复制到 DLL 项目中, 并确保 项目中 **所有头文件内都 include 这个文件**
-   且必须**将这里的 `OS_` 改成自己项目的名字**, 防止出现动态库交叉引用时的问题
-3. 在需要外部导出的类或函数中加入这个宏定义
-
-#### 如, 在一个叫 "TestProject" 的动态库项目中:
-
-1. 增加全局宏定义 `BUILD_DLL`，
-
-   ```cmake
-   target_compile_definitions(TestProject PRIVATE BUILD_DLL=1)
-   ```
-2. 需要创建一个单独的头文件 (这里叫 `TestProjectGlobal.h`)
-3. 向这个头文件里面拷贝上面的宏定义, 并**将宏定义名称 `OS_API` 全部根据项目名改为 `TEST_PROJECT_API`**
-4. 然后将 `TestProjectGlobal.h` **include 进动态库项目的所有头文件中**
-5. 在动态库头文件中，向需要外部暴露的所有类名/函数名等符号加入 `TEST_PROJECT_API` 这个宏定义, 如:
-
-   ```c++
-   // 动态库中的所有头文件
-   #include "TestProjectGlobal.h"
-   
-   class TEST_PROJECT_API MyClass {
-   
-   };
-   
-   void  TEST_PROJECT_API MyFunction();
-   ```
