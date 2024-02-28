@@ -1,14 +1,14 @@
 /*    UTF-8 encoding
 	* Project URL: https://github.com/BH2WFR/ConsoleUtil
 	* Author:		BH2WFR
-	
+	* Updated:		Feb 28, 2024
 	* If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
 	* 引用说明: 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 最后再 #include 此头文件.
 */
 #ifndef CONSOLE_UTIL_H__
 #define CONSOLE_UTIL_H__
 
-#define CONSOLE_UTIL_VER	3
+#define CONSOLE_UTIL_VER	4
 
 
 // include vital C headers
@@ -37,11 +37,13 @@
 //		If font or color customizing features is needed in Windows 7 or prior system, pls use SetConsoleTextAttribute() function.
 
 #if (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // || (WINVER >= 0x0A00)
-	#define CAnsiEsc(_STR)		"\033[" _STR
-	#define CAnsiEscStr(_STR)	_STR
+	#define CAnsiEsc(_STR)		"\033[" _STR //* C++ Ansi Escape Codes with prefix
+	#define CAnsiEscStr(_STR)	_STR 		 //  raw C++ Ansi EScape Code Strings
+	
 #else
-	#define CAnsiEsc(_STR)	// Windows 7 or older version do not supports "\033[" ANSI Escape code
+	#define CAnsiEsc(_STR)	// d"\033[" ANSI Escape code is UNSUPPORTED in Windows 7 or older versions
 	#define CAnsiEscStr(_STR)
+	
 #endif
 
 
@@ -53,26 +55,26 @@
 
 //* font foreground colors
 // dark font color series
-	#define FBlack		CAnsiEsc("30m")
-	#define FRed 		CAnsiEsc("31m")
-	#define FGreen 		CAnsiEsc("32m")
-	#define FYellow		CAnsiEsc("33m")	// in some terminals, it renders like brown.
-	#define FBlue		CAnsiEsc("34m")
-	#define FMagenta	CAnsiEsc("35m")
-	#define FCyan		CAnsiEsc("36m")
-	#define FWhite		CAnsiEsc("37m")
+	#define FBlack			CAnsiEsc("30m")
+	#define FRed 			CAnsiEsc("31m")
+	#define FGreen 			CAnsiEsc("32m")
+	#define FYellow			CAnsiEsc("33m")	// in some terminals, it renders like brown.
+	#define FBlue			CAnsiEsc("34m")
+	#define FMagenta		CAnsiEsc("35m")
+	#define FCyan			CAnsiEsc("36m")
+	#define FWhite			CAnsiEsc("37m")
 	
 // light font color series
-	#define FLBlack		CAnsiEsc("90m")	// it's gray.
-	#define FLRed 		CAnsiEsc("91m")
-	#define FLGreen 	CAnsiEsc("92m")
-	#define FLYellow 	CAnsiEsc("93m")
-	#define FLBlue 		CAnsiEsc("94m")
-	#define FLMagenta 	CAnsiEsc("95m")
-	#define FLCyan 		CAnsiEsc("96m")
-	#define FLWhite 	CAnsiEsc("97m")
-	#define FGray		FLBlack 	// equals to "CLBlack"
-	#define FGrey		FLBlack
+	#define FLBlack			CAnsiEsc("90m")	// it's gray.
+	#define FLRed 			CAnsiEsc("91m")
+	#define FLGreen 		CAnsiEsc("92m")
+	#define FLYellow 		CAnsiEsc("93m")
+	#define FLBlue 			CAnsiEsc("94m")
+	#define FLMagenta 		CAnsiEsc("95m")
+	#define FLCyan 			CAnsiEsc("96m")
+	#define FLWhite 		CAnsiEsc("97m")
+	#define FGray			FLBlack 	// equals to "CLBlack"
+	#define FGrey			FLBlack
 	
 // font color: custom RGB values CRGB
 	#define FRgb(R, G, B)	CAnsiEsc("38;2;" #R ";" #G ";" #B "m")
@@ -81,26 +83,26 @@
 
 //* font background colors, can be combined with foreground colors
 // dark font background color series
-	#define BBlack		CAnsiEsc("40m")
-	#define BRed 		CAnsiEsc("41m")
-	#define BGreen 		CAnsiEsc("42m")
-	#define BYellow		CAnsiEsc("43m")
-	#define BBlue		CAnsiEsc("44m")
-	#define BMagenta	CAnsiEsc("45m")
-	#define BCyan		CAnsiEsc("46m")
-	#define BWhite		CAnsiEsc("47m")
+	#define BBlack			CAnsiEsc("40m")
+	#define BRed 			CAnsiEsc("41m")
+	#define BGreen 			CAnsiEsc("42m")
+	#define BYellow			CAnsiEsc("43m")
+	#define BBlue			CAnsiEsc("44m")
+	#define BMagenta		CAnsiEsc("45m")
+	#define BCyan			CAnsiEsc("46m")
+	#define BWhite			CAnsiEsc("47m")
 	
 // light font background color series
-	#define BLBlack		CAnsiEsc("100m")  // actually it's gray
-	#define BLRed 		CAnsiEsc("101m")
-	#define BLGreen 	CAnsiEsc("102m")
-	#define BLYellow	CAnsiEsc("103m")
-	#define BLBlue		CAnsiEsc("104m")
-	#define BLMagenta	CAnsiEsc("105m")
-	#define BLCyan		CAnsiEsc("106m")
-	#define BLWhite		CAnsiEsc("107m")
-	#define BGray		BLBlack	 // equals to "BLBlack"
-	#define BGrey		BLBlack
+	#define BLBlack			CAnsiEsc("100m")  // actually it's gray
+	#define BLRed 			CAnsiEsc("101m")
+	#define BLGreen 		CAnsiEsc("102m")
+	#define BLYellow		CAnsiEsc("103m")
+	#define BLBlue			CAnsiEsc("104m")
+	#define BLMagenta		CAnsiEsc("105m")
+	#define BLCyan			CAnsiEsc("106m")
+	#define BLWhite			CAnsiEsc("107m")
+	#define BGray			BLBlack	 // equals to "BLBlack"
+	#define BGrey			BLBlack
 	
 // font background color: custom RGB values
 	#define BRgb(R, G, B)	CAnsiEsc("48;2;" #R ";" #G ";" #B "m")
@@ -121,7 +123,8 @@
 	#define CDblUnderline	CAnsiEsc("21m")
 	#define CNotUnderline	CAnsiEsc("24m")
 	
-//=== special foreground and background color combinations
+	
+//* ==== specific foreground and background color combinations
 	#define CTurn 			CAnsiEsc("107;30m")	// 白底黑字, white text on a black background
 	#define CLYelBold 		CAnsiEsc("1;93m")	// bold, and light yellow
 	#define CInvLYel		CAnsiEsc("1;30;103m")
@@ -129,7 +132,7 @@
 	#define CLightBold		CAnsiEsc("1;97;100m")
 	#define CInvBold		CAnsiEsc("1;30;107m")
 
-	
+//* ============
 //* Cursor control
 	#define CUp(n)			CAnsiEsc(#n"A") // cursor Up:   Moves the cursor n (default 1) cells in the given direction.
 	#define CDown(n)		CAnsiEsc(#n"B") // cursor Down: e.g. std::cout << CDown("2") // moves cursor 2 cells down
@@ -173,58 +176,64 @@
 
 //* macros for console window/application and streams
 #if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in Windows
-	#define CUTIL_ENCODING_CHCP(_NUM)	system("chcp "#_NUM);	//  custom chcp encoding (number) in Windows
-	#define CUTIL_CLEAR()		system("cls");			//  clear the screen (console)
-	#define CUTIL_SIZE(X, Y) 	system("mode con cols=" #X "lines=" #Y); // set console window size
-	#define CUTIL_PAUSE()		system("pause");		// pause the console application
-
+	#if defined(_WINDOWS_) || defined(WINAPI)
+		#define CUTIL_CHCP_ENCODING(_NUM)	{SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM);}
+	#else // in windows system, but without <windows.h> winapi
+		#define CUTIL_CHCP_ENCODING(_NUM)	system("chcp "#_NUM);	//  custom chcp encoding (number) in Windows
+	#endif
+	
+	#define CUTIL_CONSOLE_CLEAR()		system("cls");			//  clear the screen (console)
+	#define CUTIL_CONSOLE_SIZE(X, Y) 	system("mode con cols=" #X "lines=" #Y); // set console window size
+	#define CUTIL_CONSOLE_PAUSE()		system("pause");		// pause the console application
+	
 #else 	// in Linux/MacOS
-	#define CUTIL_ENCODING_CHCP(_NUM)
-	#define CUTIL_CLEAR()		system("clear"); 		//  clear the screen (console)
-	#define CUTIL_SIZE(X, Y)
-	#define CUTIL_PAUSE()		getchar();				// pause the console application
+	#define CUTIL_CHCP_ENCODING(_NUM)
+	#define CUTIL_CONSOLE_CLEAR()		system("clear"); 		//  clear the screen (console)
+	#define CUTIL_CONSOLE_SIZE(X, Y)
+	#define CUTIL_CONSOLE_PAUSE()		getchar();				// pause the console application
 	
 #endif
 
 
 //* Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
-#define CUTIL_FLUSH_INPUTBUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
+#define CUTIL_CONSOLE_FLUSH_INPUTBUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
 	// 吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容
 
 //* Set Console Encoding by "chcp" command in Windows
-#define CUTIL_ENCODING_UTF8()       CUTIL_ENCODING_CHCP(65001);   //* set console encoding to UTF-8 in windows
-#define CUTIL_ENCODING_GB2312()     CUTIL_ENCODING_CHCP(936);     //  Simp. Chinese, or 54936 for GB18030
-#define CUTIL_ENCODING_BIG5()       CUTIL_ENCODING_CHCP(950);     //  Trad. Chinese
-#define CUTIL_ENCODING_KOR()        CUTIL_ENCODING_CHCP(949);     //  Korean
-#define CUTIL_ENCODING_JIS()        CUTIL_ENCODING_CHCP(932);     //  Shift_JIS,
-#define CUTIL_ENCODING_LATIN1()     CUTIL_ENCODING_CHCP(850);     //  Latin 1 multilingual
-#define CUTIL_ENCODING_LATIN2()     CUTIL_ENCODING_CHCP(852);     //  Latin 2 multilingual (Slavic)
-#define CUTIL_ENCODING_CYR()        CUTIL_ENCODING_CHCP(855);     //  Cyrillic / Russian
-#define CUTIL_ENCODING_WIN1250()    CUTIL_ENCODING_CHCP(1250);    //  windows 1250, Central European
-#define CUTIL_ENCODING_WIN1251()    CUTIL_ENCODING_CHCP(1251);    //  windows 1251, Cyrillic
-#define CUTIL_ENCODING_WIN1252()    CUTIL_ENCODING_CHCP(1252);    //  windows 1252, western European
+#define CUTIL_CHCP_ENCODING_UTF8()       CUTIL_CHCP_ENCODING(65001);   //* set console encoding to UTF-8 in windows
+#define CUTIL_CHCP_ENCODING_GB2312()     CUTIL_CHCP_ENCODING(936);     //  Simp. Chinese, or 54936 for GB18030
+#define CUTIL_CHCP_ENCODING_BIG5()       CUTIL_CHCP_ENCODING(950);     //  Trad. Chinese
+#define CUTIL_CHCP_ENCODING_KOR()        CUTIL_CHCP_ENCODING(949);     //  Korean
+#define CUTIL_CHCP_ENCODING_JIS()        CUTIL_CHCP_ENCODING(932);     //  Shift_JIS,
+#define CUTIL_CHCP_ENCODING_LATIN1()     CUTIL_CHCP_ENCODING(850);     //  Latin 1 multilingual
+#define CUTIL_CHCP_ENCODING_LATIN2()     CUTIL_CHCP_ENCODING(852);     //  Latin 2 multilingual (Slavic)
+#define CUTIL_CHCP_ENCODING_CYR()        CUTIL_CHCP_ENCODING(855);     //  Cyrillic / Russian
+#define CUTIL_CHCP_ENCODING_WIN1250()    CUTIL_CHCP_ENCODING(1250);    //  windows 1250, Central European
+#define CUTIL_CHCP_ENCODING_WIN1251()    CUTIL_CHCP_ENCODING(1251);    //  windows 1251, Cyrillic
+#define CUTIL_CHCP_ENCODING_WIN1252()    CUTIL_CHCP_ENCODING(1252);    //  windows 1252, western European
 
 
 //* features with win32api
 #if defined(_WINDOWS_) || defined(WINAPI)
-	#define CUTIL_TITLE(_STR)			SetConsoleTitleA(_STR);        // set console title in windows
-	#define CUTIL_CURSOR_POS(x, y)	\
+	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitleA(_STR);        // set console title in windows
+	//#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR);
+	#define CUTIL_CONSOLE_CURSOR_POS(x, y)	\
 		{COORD pos; pos.X=x; pos.Y=y;   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
 	#define CUTIL_CONSOLE_ATTR(_ATTR)	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
-	#define CONSOLE_RESET_STYLE()		CUTIL_SET_CONSOLE_ATTR(0)
+	#define CUTIL_CONSOLE_RESET_STYLE()			CUTIL_SET_CONSOLE_ATTR(0)
 	
 //#else // without win32api, or in Linux
 #elif (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // without win32api, or in Linux
-	#define CUTIL_TITLE(_STR)			printf("\033]0;%s\007", _STR); // set console title in linux
-	#define CUTIL_CURSOR_POS(x, y)		printf(CCursorPos(x, y));
+	#define CUTIL_CONSOLE_TITLE(_STR)			printf("\033]0;%s\007", _STR); // set console title in linux
+	#define CUTIL_CONSOLE_CURSOR_POS(x, y)		printf(CCursorPos(x, y));
 	#define CUTIL_CONSOLE_ATTR(_ATTR)
-	#define CONSOLE_RESET_STYLE()		printf(CReset);
+	#define CUTIL_CONSOLE_RESET_STYLE()			printf(CReset);
 	
 #else
-	#define CUTIL_TITLE(_STR)
-	#define CUTIL_CURSOR_POS(x, y)
+	#define CUTIL_CONSOLE_TITLE(_STR)
+	#define CUTIL_CONSOLE_CURSOR_POS(x, y)
 	#define CUTIL_CONSOLE_ATTR(_ATTR)
-	#define CONSOLE_RESET_STYLE()
+	#define CUTIL_CONSOLE_RESET_STYLE()
 	
 #endif
 
@@ -238,10 +247,10 @@
 	#include <ConsoleUtil.h> 	// include this header at last
 	
 	int main(int argc, char* argv[]){
-		CUTIL_ENCODING_UTF8(); 		// switch console encoding to UTF-8 (windows)
-		CUTIL_TITLE("MyProject"); 	// set console window title
-		CUTIL_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
-		CUTIL_CLEAR();				// clear console (system("cls"))
+		CUTIL_CHCP_ENCODING_UTF8(); 		// switch console encoding to UTF-8 (windows)
+		CUTIL_CONSOLE_TITLE("MyProject"); 	// set console window title
+		CUTIL_CONSOLE_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
+		CUTIL_CONSOLE_CLEAR();				// clear console (system("cls"))
 		
 		CUTIL_PRINT_ARGV(argc, argv);	// print all argc and argv[n] of main() function
 		
@@ -261,12 +270,27 @@
 		
 		CUTIL_PRINT_ERR("error occured!"); // print an error message with filename, function name and line number ATTACHED.
 		
-		CUTIL_PAUSE(); 			 // system("pause");
+		CUTIL_CONSOLE_PAUSE(); 			 // system("pause");
 		
 		return 0;
 	}
 
 */
+
+//==================== C Utils ============================
+
+//* bit calculating macros
+#define CUTIL_BIT_GET(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
+#define CUTIL_BIT_SET(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in separate lines
+#define CUTIL_BIT_CLEAR(_NUM, BIT_IDX)	((_NUM) &= ~(1u << (BIT_IDX)));
+#define CUTIL_BIT_TOGGLE(_NUM, BIT_IDX)	((_NUM) ^=  (1u << (BIT_IDX)));
+
+
+//* swap items, only for C, do not use in C++ (use std::swap())
+#define CUTIL_SWAP_VARS(_VAR1, _VAR2, _TYPE) {_TYPE sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;}
+#define CUTIL_SWAP_VARS_GNU(_VAR1, _VAR2)	 {typeof(_VAR1) sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;} // GNU C only
+	// CUTIL_SWAP_VARS(int, a, b);
+
 
 
 
@@ -288,7 +312,7 @@
 #endif // _MSVC_LANG
 /*
 * example:
-	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(199711) 	// do not add "L" after number
+	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(199711) 	// do not add "L" as suffix after number
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)	// C++11
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201402)	// C++14
 	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201703)	// C++17
@@ -302,6 +326,65 @@
 #define CUTIL_DELETE_AND_NULL_ARR(p)	{delete[] p; p = NULL;}
 
 
+//* set C++11 class constructor/moving/copying to disabled/default
+#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103) //* >= C++11
+	// Default Constructor(no params) and Destructor
+	#define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME) \
+		_CLASS_NAME() = default; \
+		~_CLASS_NAME() = default;
+	
+	// Disable copy constructor and copy operator=
+	#define CUTIL_CLASS_DISABLE_COPY(_CLASS_NAME) \
+		_CLASS_NAME(const _CLASS_NAME & ) = delete;\
+		_CLASS_NAME& operator=(const _CLASS_NAME & ) = delete;
+	
+	// Default copy constructor and copy operator=
+	#define CUTIL_CLASS_DEFAULT_COPY(_CLASS_NAME) \
+		_CLASS_NAME(const _CLASS_NAME & ) = default;\
+		_CLASS_NAME& operator=(const _CLASS_NAME & ) = default;
+	
+	// Disable move constructor and move operator=
+	#define CUTIL_CLASS_DISABLE_MOVE(_CLASS_NAME) \
+		_CLASS_NAME(_CLASS_NAME && ) = delete; \
+		_CLASS_NAME& operator=(_CLASS_NAME && ) = delete;
+	
+	// Default move constructor and move operator=
+	#define CUTIL_CLASS_DEFAULT_MOVE(_CLASS_NAME) \
+		_CLASS_NAME(_CLASS_NAME && ) = default; \
+		_CLASS_NAME& operator=(_CLASS_NAME && ) = default;
+	
+	// Disable moving and copying
+	#define CUTIL_CLASS_DISABLE_COPY_MOVE(_CLASS_NAME) \
+		CUTIL_CLASS_DISABLE_COPY(_CLASS_NAME) \
+		CUTIL_CLASS_DISABLE_MOVE(_CLASS_NAME)
+	
+	// Default moving and copying
+	#define CUTIL_CLASS_DEFAULT_COPY_MOVE(_CLASS_NAME) \
+		CUTIL_CLASS_DEFAULT_COPY(_CLASS_NAME) \
+		CUTIL_CLASS_DEFAULT_MOVE(_CLASS_NAME)
+	
+	// Default Constructor, Destructor, Copying, Moving
+	#define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME) \
+		CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME) \
+		CUTIL_CLASS_DEFAULT_COPY_MOVE(_CLASS_NAME)
+	
+#else // C++98/03
+	#define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME)
+	#define CUTIL_CLASS_DISABLE_COPY(_CLASS_NAME)
+	#define CUTIL_CLASS_DEFAULT_COPY(_CLASS_NAME)
+	#define CUTIL_CLASS_DISABLE_MOVE(_CLASS_NAME)
+	#define CUTIL_CLASS_DEFAULT_MOVE(_CLASS_NAME)
+	#define CUTIL_CLASS_DISABLE_COPY_MOVE(_CLASS_NAME)
+	#define CUTIL_CLASS_DEFAULT_COPY_MOVE(_CLASS_NAME)
+	#define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
+	
+#endif // >= C++11
+
+
+
+		
+		
+		
 #endif // __cplusplus
 
 
@@ -341,19 +424,6 @@
 #define CUTIL_ABORT_ERR_ASM(_STR) 	{CUTIL_PRINT_ERR(_STR); asm("exit");}
 
 
-//* bit calculating macros
-#define CUTIL_GET_BIT(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
-#define CUTIL_SET_BIT(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in separate lines
-#define CUTIL_CLEAR_BIT(_NUM, BIT_IDX)	((_NUM) &= ~(1u << (BIT_IDX)));
-#define CUTIL_TOGGLE_BIT(_NUM, BIT_IDX)	((_NUM) ^=  (1u << (BIT_IDX)));
-
-
-//* swap items, only for C, do not use in C++ (use std::swap())
-#define CUTIL_SWAP_VARS(_VAR1, _VAR2, _TYPE) {_TYPE sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;}
-#define CUTIL_SWAP_VARS_GNU(_VAR1, _VAR2)	 {typeof(_VAR1) sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;} // GNU C only
-	// CUTIL_SWAP_VARS(int, a, b);
-
-
 //* macros for print something ONLY IN DEBUG BUILD
 #if CUTIL_GET_IS_DEBUG_BUILD // print in Debug Build
 	#if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
@@ -379,6 +449,8 @@
 	#define CUTIL_DEBUG_PRINTF(_STR, ...)    printf(_STR, ##__VA_ARGS__);
 	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)  printf(_STR "\n", ##__VA_ARGS__);
 	
+	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv) 	CUTIL_PRINT_ARGV(_argc, _argv)
+	
 #else // Do nothing in Release Build
 	#define CUTIL_DEBUG_PRINT(_STR, ...)
 	#define CUTIL_DEBUG_PRINTLN(_STR, ...)
@@ -388,6 +460,8 @@
 	
 	#define CUTIL_DEBUG_PRINTF(_STR, ...)
 	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)
+	
+	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv)
 	
 #endif // CUTIL_GET_IS_DEBUG_BUILD
 /* instruction:

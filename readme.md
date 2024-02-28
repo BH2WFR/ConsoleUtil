@@ -51,7 +51,7 @@ WARNING:
     ```c++
     printf(CForward(2)); // move thr cursor 2 characters right
     printf(CCursorPos(15, 20)); // move the text cursor to (15, 20) position
-    CUTIL_CURSOR_POS(15, 20); // equivalent, calls SetConsoleCursorPosition() in win32.
+    CUTIL_CONSOLE_CURSOR_POS(15, 20); // equivalent, calls SetConsoleCursorPosition() in win32.
     
     ```
 
@@ -66,10 +66,10 @@ WARNING:
     Example:
 
     ```c++
-    CUTIL_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
-    CUTIL_TITLE("MyProject"); // set console window title
-    CUTIL_SIZE(100, 30);	// set console window size to with of 30 chars and height of 30 lines.
-    CUTIL_CLEAR();			// clear console (calls system("cls") )
+    CUTIL_CHCP_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
+    CUTIL_CONSOLE_TITLE("MyProject"); // set console window title
+    CUTIL_CONSOLE_SIZE(100, 30);	// set console window size to with of 30 chars and height of 30 lines (only available in windows)
+    CUTIL_CONSOLE_CLEAR();			// clear console (calls system("cls") )
     
     printf("中文한글\n");	// you can correctly display this when the code saved in UTF-8 Encoding, especially in MSVC Compiler.
     
@@ -77,17 +77,17 @@ WARNING:
 
     ```c++
     // available encodings:
-    CUTIL_ENCODING_UTF8();
-    CUTIL_ENCODING_GB2312();
-    CUTIL_ENCODING_BIG5();
-    CUTIL_ENCODING_KOR();
-    CUTIL_ENCODING_JIS();
-    CUTIL_ENCODING_LATIN1();
-    CUTIL_ENCODING_LATIN2();
-    CUTIL_ENCODING_CYR();
-    CUTIL_ENCODING_WIN1250();
-    CUTIL_ENCODING_WIN1251();
-    CUTIL_ENCODING_WIN1252();
+    CUTIL_CHCP_ENCODING_UTF8();
+    CUTIL_CHCP_ENCODING_GB2312();
+    CUTIL_CHCP_ENCODING_BIG5();
+    CUTIL_CHCP_ENCODING_KOR();
+    CUTIL_CHCP_ENCODING_JIS();
+    CUTIL_CHCP_ENCODING_LATIN1();
+    CUTIL_CHCP_ENCODING_LATIN2();
+    CUTIL_CHCP_ENCODING_CYR();
+    CUTIL_CHCP_ENCODING_WIN1250();
+    CUTIL_CHCP_ENCODING_WIN1251();
+    CUTIL_CHCP_ENCODING_WIN1252();
     ```
 
     
@@ -102,7 +102,7 @@ WARNING:
     // #define CUTIL_FLUSH_INPUT_BUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
     int num1, num2;
     scanf("%d", &num1);
-    CUTIL_FLUSH_INPUT_BUFFER(); // flush input buffer
+    CUTIL_CONSOLE_FLUSH_INPUTBUFFER(); // flush input buffer
     scanf("%d", &num2);
     ```
 
@@ -159,26 +159,27 @@ WARNING:
 
         ```c++
         uint16_t num {0b00000000'00000001}; // C++14
+        // the 2nd parameter is the index of bit, starts at 0
+        CUTIL_BIT_SET(num, 0);		// equals to (num |=  (1u << 0));
+        CUTIL_BIT_CLEAR(num, 2);	// equals to (num &= ~(1u << 2));
+        CUTIL_BIT_TOGGLE(num, 3);	// equals to (num ^=  (1u << 3));
         
-        CUTIL_SET_BIT(num, 1);
-        CUTIL_CLEAR_BIT(num, 0);
-        CUTIL_TOGGLE_BIT(num, 2);
-        if(CUTIL_GET_BIT(num, 0) != 0){
+        if(CUTIL_BIT_GET(num, 0) != 0){ // reading bit, if bit is 1, returns (1<<BIT_IDX), NOT 1
         	printf("%x\n", num);
         }
         ```
-
+    
     - swap variables in C (do not use in C++, pls replace with std::swap())
-
+    
         ```c++
         int a = 1, b = 2;
         CUTIL_SWAP_VARS(a, b, int); // declare type in 3rd arg.
-        CUTIL_SWAP_VARS(a, b, typeof(int)); // only in GNU C
-        CUTIL_SWAP_VARS_GNU(a, b); 			// only in GNU C
+        CUTIL_SWAP_VARS(a, b, typeof(int)); // GNU C only
+        CUTIL_SWAP_VARS_GNU(a, b); 			// GNU C only
         ```
-
+    
     - print text only in debug build
-
+    
         ```c++
         int a{1};
         CUTIL_DEBUG_PRINTLN("debug text {}", a); // calls fmt::println or std::println
@@ -186,12 +187,12 @@ WARNING:
         CUTIL_DEBUG_PRINTF("debug text %d", a); // calls printf
         // these macro funcs would DO NOTHING IN RELEASE BUILD.
         ```
-
+    
     - match C++ language version, especially if you want to let the project build both by MSVC and G++.
-
+    
         equals to "`_MSVC_LANG`" in MSVC, and "`__cplusplus`" in other compilers.
-
-        ```
+    
+        ```c++
         #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(199711) 	// do not add "L" after number
         #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)	// C++11
         #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201402)	// C++14
@@ -199,10 +200,39 @@ WARNING:
         #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202002)	// C++20
         #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302)	// C++23 (temporary not supported)
         ```
-
+    
+    - set C++11 class constructor/moving/copying to disabled/default
+        ```c++
+        class MyClass{
+        public:
+            CUTIL_CLASS_DEFAULT_CONSTRUCTOR(MyClass) // generates MyClass(), ~MyClass() = default;
+            
+            CUTIL_CLASS_DISABLE_COPY_MOVE(MyClass) // cannot move or copy this class
+            // =delete: MyClass(const MyClass&), operator=(const MyClass&), MyClass(MyClass&&), operator=(MyClass&&),
+        }
         
+        class MyClass{
+        public:
+            CUTIL_CLASS_DEFAULT_FUNCTIONS(MyClass)
+            // generates 6 functions =default: MyClass(), ~MyClass(), MyClass(const MyClass&),
+            //     operator=(const MyClass&), MyClass(MyClass&&), operator=(MyClass&&)
+        }
+        /* available macros:
+        #define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME)
+        #define CUTIL_CLASS_DISABLE_COPY(_CLASS_NAME)
+        #define CUTIL_CLASS_DEFAULT_COPY(_CLASS_NAME)
+        #define CUTIL_CLASS_DISABLE_MOVE(_CLASS_NAME)
+        #define CUTIL_CLASS_DEFAULT_MOVE(_CLASS_NAME)
+        #define CUTIL_CLASS_DISABLE_COPY_MOVE(_CLASS_NAME)
+        #define CUTIL_CLASS_DEFAULT_COPY_MOVE(_CLASS_NAME)
+        #define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
+        */
+        ```
 
-8. **Some Macros for Qt Projects**:
+
+
+
+1. **Some Macros for Qt Projects**:
 
     - Enable **High DPI Support for Qt5** programs (enable since Qt5.6.0, and fractional scaling since Qt5.14.0). Qt6 supports it by default.
 
@@ -217,7 +247,7 @@ WARNING:
         #include <ConsoleUtil.h> // include this header at last
         
         int main(int argc, char* argv[]){
-        	CUTIL_ENCODING_UTF8();
+        	CUTIL_CHCP_ENCODING_UTF8();
         	CUTIL_QT5_TEXTCODEC_UTF8(); // this code saves in UTF-8 encoding
         	
         	CUTIL_QT5_HIGH_DPI(); // enable Qt5 high DPI support
@@ -243,7 +273,7 @@ WARNING:
 
 9. CUDA 中，检测部分函数的返回状态，如 != cudaSuccess 则输出错误信息，或强行退出程序
 
-      
+   
 
 Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -263,10 +293,10 @@ Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 #include <ConsoleUtil.h> 	// include this header at last
 	
 int main(int argc, char* argv[]){
-	CUTIL_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
-	CUTIL_TITLE("MyProject"); // set console window title
-	CUTIL_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
-	CUTIL_CLEAR();			// clear console (system("cls"))
+	CUTIL_CHCP_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
+	CUTIL_CONSOLE_TITLE("MyProject"); // set console window title
+	CUTIL_CONSOLE_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
+	CUTIL_CONSOLE_CLEAR();			// clear console (system("cls"))
 	
 	CUTIL_PRINT_ARGV(argc, argv);	// print all argc and argv[n] of main() function
 	
@@ -286,7 +316,7 @@ int main(int argc, char* argv[]){
 	
 	CUTIL_PRINT_ERR("error occurred!"); // print an error message with filename, function name and line number ATTACHED.
 	
-	CUTIL_PAUSE(); 			 // system("pause");
+	CUTIL_CONSOLE_PAUSE(); 			 // system("pause");
 	
 	return 0;
 }
