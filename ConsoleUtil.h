@@ -10,6 +10,12 @@
 
 #define CONSOLE_UTIL_VER	4
 
+//* ==== customize parameters:
+	// #define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED	1  // set 0 to disable style changing
+
+#if (!defined(__cplusplus)) && (__STDC_VERSION__ < 199901L || (!defined(__STDC_VERSION__)))
+	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
+#endif
 
 // include vital C headers
 #ifdef __cplusplus
@@ -22,10 +28,6 @@
 	#include <stdint.h>
 	#include <stdbool.h>
 #endif // __cplusplus
-
-
-//* ==== customize parameters:
-	// #define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED	1  // set 0 to disable style changing
 
 
 
@@ -46,10 +48,9 @@
 	
 #endif
 
-
 //* RESET color formatting and font styles to DEFAULT, you must add this after customizing font color
-	#define CReset 		CAnsiEsc("0m")
-	#define CRst		CReset 		// alias
+	#define CReset 			CAnsiEsc("0m")
+	#define CRst			CReset 		// alias
 	#define CStyle(_STYLE, _STR)	_STYLE _STR CReset
 	// example: printf(FYellow BBlue "yellow text" CRst);
 
@@ -188,9 +189,41 @@
 	
 #else 	// in Linux/MacOS
 	#define CUTIL_CHCP_ENCODING(_NUM)
+	
 	#define CUTIL_CONSOLE_CLEAR()		system("clear"); 		//  clear the screen (console)
 	#define CUTIL_CONSOLE_SIZE(X, Y)
 	#define CUTIL_CONSOLE_PAUSE()		getchar();				// pause the console application
+	
+#endif
+
+
+
+//* features with win32api
+#if defined(_WINDOWS_) || defined(WINAPI)
+	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitleA(_STR);        // set console title in windows
+	//#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR);
+	#define CUTIL_CONSOLE_CURSOR_POS(x, y)	\
+		{COORD pos; pos.X=x; pos.Y=y;   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
+	#define CUTIL_CONSOLE_ATTR(_ATTR)	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
+	#define CUTIL_CONSOLE_RESET_STYLE()			CUTIL_SET_CONSOLE_ATTR(0)
+	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()	\
+		{HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);DWORD mode;GetConsoleMode(handle, &mode); \
+		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;SetConsoleMode(handle, mode);}
+	
+//#else // without win32api, or in Linux
+#elif (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // without win32api, or in Linux
+	#define CUTIL_CONSOLE_TITLE(_STR)			printf("\033]0;%s\007", _STR); // set console title in linux
+	#define CUTIL_CONSOLE_CURSOR_POS(x, y)		printf(CCursorPos(x, y));
+	#define CUTIL_CONSOLE_ATTR(_ATTR)
+	#define CUTIL_CONSOLE_RESET_STYLE()			printf(CReset);
+	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()
+	
+#else
+	#define CUTIL_CONSOLE_TITLE(_STR)
+	#define CUTIL_CONSOLE_CURSOR_POS(x, y)
+	#define CUTIL_CONSOLE_ATTR(_ATTR)
+	#define CUTIL_CONSOLE_RESET_STYLE()
+	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()
 	
 #endif
 
@@ -211,31 +244,6 @@
 #define CUTIL_CHCP_ENCODING_WIN1250()    CUTIL_CHCP_ENCODING(1250);    //  windows 1250, Central European
 #define CUTIL_CHCP_ENCODING_WIN1251()    CUTIL_CHCP_ENCODING(1251);    //  windows 1251, Cyrillic
 #define CUTIL_CHCP_ENCODING_WIN1252()    CUTIL_CHCP_ENCODING(1252);    //  windows 1252, western European
-
-
-//* features with win32api
-#if defined(_WINDOWS_) || defined(WINAPI)
-	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitleA(_STR);        // set console title in windows
-	//#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR);
-	#define CUTIL_CONSOLE_CURSOR_POS(x, y)	\
-		{COORD pos; pos.X=x; pos.Y=y;   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
-	#define CUTIL_CONSOLE_ATTR(_ATTR)	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
-	#define CUTIL_CONSOLE_RESET_STYLE()			CUTIL_SET_CONSOLE_ATTR(0)
-	
-//#else // without win32api, or in Linux
-#elif (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // without win32api, or in Linux
-	#define CUTIL_CONSOLE_TITLE(_STR)			printf("\033]0;%s\007", _STR); // set console title in linux
-	#define CUTIL_CONSOLE_CURSOR_POS(x, y)		printf(CCursorPos(x, y));
-	#define CUTIL_CONSOLE_ATTR(_ATTR)
-	#define CUTIL_CONSOLE_RESET_STYLE()			printf(CReset);
-	
-#else
-	#define CUTIL_CONSOLE_TITLE(_STR)
-	#define CUTIL_CONSOLE_CURSOR_POS(x, y)
-	#define CUTIL_CONSOLE_ATTR(_ATTR)
-	#define CUTIL_CONSOLE_RESET_STYLE()
-	
-#endif
 
 
 /*
