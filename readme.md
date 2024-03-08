@@ -1,10 +1,10 @@
 # ConsoleUtil
 
-A **HEADER FILE** with macros that can change text color/style and move cursor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt
+A **HEADER FILE** project with macros that can change text color/style and move cursor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt
 
 WARNING: for Windows system, **Only Windows 10/11 is supported**. These macros cannot work properly in Windows 8/7/vista/xp or prior versions.
 
-一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**, 利用 ANSI Escape 控制字符, 且含一些常见懒人包
+一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**项目, 利用 ANSI Escape 控制字符, 且含一些常见懒人包
 
 
 
@@ -155,7 +155,7 @@ WARNING:
 
         
 
-    - set bit to a unsigned integer variable in some hardware projects
+    -  set bit to a unsigned integer variable in some hardware projects
 
         ```c++
         uint16_t num {0b00000000'00000001}; // C++14
@@ -169,16 +169,16 @@ WARNING:
         }
         ```
     
-    - swap variables in C (do not use in C++, pls replace with std::swap())
+    -  swap variables in C (do not use in C++, pls replace with std::swap())
     
-        ```c++
+        ```c
         int a = 1, b = 2;
         CUTIL_SWAP_VARS(a, b, int); // declare type in 3rd arg.
         CUTIL_SWAP_VARS(a, b, typeof(int)); // GNU C only
         CUTIL_SWAP_VARS_GNU(a, b); 			// GNU C only
         ```
     
-    - print text only in debug build
+    -  print text only in debug build
     
         ```c++
         int a{1};
@@ -188,7 +188,7 @@ WARNING:
         // these macro funcs would DO NOTHING IN RELEASE BUILD.
         ```
     
-    - match C++ language version, especially if you want to let the project build both by MSVC and G++.
+    -  match C++ language version, especially if you want to let the project build both by MSVC and G++.
     
         equals to "`_MSVC_LANG`" in MSVC, and "`__cplusplus`" in other compilers.
     
@@ -201,7 +201,7 @@ WARNING:
         #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302)	// C++23 (temporary not supported)
         ```
     
-    - set C++11 class constructor/moving/copying to disabled/default
+    -  set C++11 class constructor/moving/copying to disabled/default
         ```c++
         class MyClass{
         public:
@@ -228,11 +228,30 @@ WARNING:
         #define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
         */
         ```
+    
+    -  memory allocation and operations for C (wrapped `malloc()` `free()` `memset()` `memcpy()` with typename to macros)
+    
+        ```c
+        const size_t length = 20; // length of numbers
+        uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, length); // std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
+        uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, length); // std::vector<uint32_t> v1(20, 0x00000000);
+        uint32_t aD3[length]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
+        
+        uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, length, 0x66, aD1); // set all elements of aD1 to 0x66666666, returns aD3 == aD1
+        uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, length, aD2, aD1); // copy aD1 elements to aD2, returns aD4==aD2
+        uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, length, aD2, aD1);  // equivalents to above.
+        
+        int compResult = CUTIL_TYPE_MEMCMP(uint32_t, length, aD1, aD2); // returns 0, contents of mem blocks equal.
+        
+        CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap)
+        CUTIL_TYPE_FREE(aD2);
+        
+        ```
+    
+        
 
 
-
-
-1. **Some Macros for Qt Projects**:
+8. **Some Macros for Qt Projects**:
 
     - Enable **High DPI Support for Qt5** programs (enable since Qt5.6.0, and fractional scaling since Qt5.14.0). Qt6 supports it by default.
 
@@ -280,6 +299,37 @@ Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 **ANSI 转义序列 参考**：https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97
 
 
+
+----------------
+
+### How To Include in CMake:
+
+1. Configure `CMakeLists.txt` and then `install`. Make sure that there's `ConsoleUtilConfig.cmake` and folder `include` in the install destination folder.
+
+![](./assets/image-20240308192457314.png)
+
+2. use `find_package` in `CMakeLists.txt` in your project to find `ConsoleUtil` CMake package.
+
+   ```cmake
+   set(ConsoleUtil_DIR "D:/3rdlibs/ConsoleUtil/INSTALL/ConsoleUtil")
+   find_package(ConsoleUtil REQUIRED)
+   ```
+
+3. link `ConsoleUtil` to your target.
+
+   ```cmake
+   project(myProject LANGUAGES CXX)
+   add_executable( ${PROJECT_NAME} "main.cpp") # create a app target
+   
+   target_link_libraries( ${PROJECT_NAME}
+   	ConsoleUtil # this Library
+       # fmt::fmt-header-only # other 3rd libraries
+   )
+   ```
+
+4. include "`ConsoleUtil.h`" in your source file, and check if there's macro `CONSOLE_UTIL_VERSION` equals to version number.
+
+   
 
 ---
 
