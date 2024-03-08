@@ -7,7 +7,7 @@ if(CMAKE_VERSION VERSION_LESS "2.8.3")
    message(FATAL_ERROR "CMake >= 2.8.3 required")
 endif()
 cmake_policy(PUSH)
-cmake_policy(VERSION 2.8.3...3.26)
+cmake_policy(VERSION 2.8.3...3.25)
 #----------------------------------------------------------------
 # Generated CMake target import file.
 #----------------------------------------------------------------
@@ -58,7 +58,7 @@ add_library(ConsoleUtil INTERFACE IMPORTED)
 
 set_target_properties(ConsoleUtil PROPERTIES
   INTERFACE_COMPILE_DEFINITIONS "CONSOLE_UTIL_VERSION=4"
-  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/ConsoleUtil/include;${_IMPORT_PREFIX}/ConsoleUtil/include"
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
 )
 
 if(CMAKE_VERSION VERSION_LESS 3.0.0)
