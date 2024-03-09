@@ -1,7 +1,7 @@
 /*    UTF-8 encoding
 	* Project URL: https://github.com/BH2WFR/ConsoleUtil
 	* Author:		BH2WFR
-	* Updated:		Feb 28, 2024
+	* Updated:		Mar 09, 2024
 	* If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
 	* 引用说明: 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 最后再 #include 此头文件.
 */
@@ -286,6 +286,22 @@
 
 //==================== C Utils ============================
 
+//* get count of arguments
+#define CUTIL_VA_63TH_ARG(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9, \
+			a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z, \
+			A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,_63TH_ARG,...)  _63TH_ARG
+#define CUTIL_VA_CNT(...)	CUTIL_VA_63TH_ARG("ignored", ##__VA_ARGS__, \
+			Z,Y,X,W,V,U,T,S,R,Q,P,O,N,M,L,K,J,I,H,G,F,E,D,C,B,A,35,34,33,32,31,30,29,28,27, \
+			26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
+/*
+ Examples:
+	int a = CUTIL_VA_CNT(); 			// -> 0
+	int b = CUTIL_VA_CNT(b1); 			// -> 1
+	int c = CUTIL_VA_CNT(c1, c2); 		// -> 2
+	int c = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
+	...
+*/
+
 //* bit calculating macros
 #define CUTIL_BIT_GET(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
 #define CUTIL_BIT_SET(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in separate lines
@@ -347,15 +363,11 @@
 //* get C++ language standard version, do not add "L" suffix after number
  // in MSVC compiler, __cplusplus always equals to 199711L, but _MSVC_LANG(Prior to VS2015) equals to cpp standard version
 #ifdef _MSVC_LANG // example: #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)
-	#define CUTIL_CPP_VER_HIGHER_EQUAL_THAN(_VER) \
-		( (defined __cplusplus) && (_MSVC_LANG >= _VER##L) )
-	#define CUTIL_CPP_VER_LOWER_THAN(_VER) \
-		( (defined __cplusplus) && (_MSVC_LANG <  _VER##L) )
+	#define CUTIL_CPP_VER_HIGHER_EQUAL_THAN(_VER)	(_MSVC_LANG >= _VER##L)
+	#define CUTIL_CPP_VER_LOWER_THAN(_VER) 			(_MSVC_LANG < _VER##L)
 #else //. !defined _MSVC_LANG
-	#define CUTIL_CPP_VER_HIGHER_EQUAL_THAN(_VER) \
-		(__cplusplus >= _VER##L)
-	#define CUTIL_CPP_VER_LOWER_THAN(_VER) \
-		(__cplusplus <  _VER##L)
+	#define CUTIL_CPP_VER_HIGHER_EQUAL_THAN(_VER)	(__cplusplus >= _VER##L)
+	#define CUTIL_CPP_VER_LOWER_THAN(_VER) 			(__cplusplus < _VER##L)
 #endif // _MSVC_LANG
 /*
 * example:
@@ -477,6 +489,7 @@
 	#if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
 		#define CUTIL_DEBUG_PRINT(_STR, ...)	   fmt::print(_STR, ##__VA_ARGS__);
 		#define CUTIL_DEBUG_PRINTLN(_STR, ...)	   fmt::println(_STR, ##__VA_ARGS__);
+		// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
 	#elif CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302) // C++23 std::print(), std::println()
 		#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 			#define CUTIL_DEBUG_PRINT(_STR, ...)   std::print(_STR, ##__VA_ARGS__);

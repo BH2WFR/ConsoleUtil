@@ -188,6 +188,15 @@ WARNING:
         // these macro funcs would DO NOTHING IN RELEASE BUILD.
         ```
     
+    -  count amount of arguments (up to 35)
+    
+        ```c
+        int a = CUTIL_VA_CNT(); 			// -> 0
+        int b = CUTIL_VA_CNT(b1); 			// -> 1
+        int c = CUTIL_VA_CNT(c1, c2); 		// -> 2
+        int c = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
+        ```
+        
     -  match C++ language version, especially if you want to let the project build both by MSVC and G++.
     
         equals to "`_MSVC_LANG`" in MSVC, and "`__cplusplus`" in other compilers.
@@ -304,18 +313,14 @@ Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 
 ### How To Include in CMake:
 
-1. Configure `CMakeLists.txt` and then `install`. Make sure that there's `ConsoleUtilConfig.cmake` and folder `include` in the install destination folder.
+1. use `find_package()` in `CMakeLists.txt` in your project to find `ConsoleUtil` CMake package.
 
-![](./assets/image-20240308192457314.png)
-
-2. use `find_package` in `CMakeLists.txt` in your project to find `ConsoleUtil` CMake package.
-
-   ```cmake
-   set(ConsoleUtil_DIR "D:/3rdlibs/ConsoleUtil/INSTALL/ConsoleUtil")
-   find_package(ConsoleUtil REQUIRED)
-   ```
-
-3. link `ConsoleUtil` to your target.
+    ```cmake
+    set(ConsoleUtil_DIR "D:/3rdlibs/ConsoleUtil/cmake") # there's file `ConsoleUtilConfig.cmake`
+    find_package(ConsoleUtil REQUIRED)
+    ```
+    make sure that there's file `ConsoleUtilConfig.cmake` in the folder `cmake`.
+2. link `ConsoleUtil` to your target.
 
    ```cmake
    project(myProject LANGUAGES CXX)
@@ -327,9 +332,9 @@ Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
    )
    ```
 
-4. include "`ConsoleUtil.h`" in your source file, and check if there's macro `CONSOLE_UTIL_VERSION` equals to version number.
+3. include "`ConsoleUtil.h`" in your source file, and check if there's macro `CONSOLE_UTIL_VERSION` equals to version number. Pls make sure that this header is included after the std/Qt and win32/Linux headers.
 
-   
+    
 
 ---
 
