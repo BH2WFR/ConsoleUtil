@@ -19,7 +19,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_cmake_targets_defined "")
 set(_cmake_targets_not_defined "")
 set(_cmake_expected_targets "")
-foreach(_cmake_expected_target IN ITEMS ConsoleUtil)
+foreach(_cmake_expected_target IN ITEMS ConsoleUtil::ConsoleUtil)
   list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
   if(TARGET "${_cmake_expected_target}")
     list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
@@ -53,11 +53,11 @@ if(_IMPORT_PREFIX STREQUAL "/")
   set(_IMPORT_PREFIX "")
 endif()
 
-# Create imported target ConsoleUtil
-add_library(ConsoleUtil INTERFACE IMPORTED)
+# Create imported target ConsoleUtil::ConsoleUtil
+add_library(ConsoleUtil::ConsoleUtil INTERFACE IMPORTED)
 
-set_target_properties(ConsoleUtil PROPERTIES
-  INTERFACE_COMPILE_DEFINITIONS "CONSOLE_UTIL_VERSION=4"
+set_target_properties(ConsoleUtil::ConsoleUtil PROPERTIES
+  INTERFACE_COMPILE_DEFINITIONS "CONSOLEUTIL_VERSION=4"
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
 )
 

@@ -1,69 +1,89 @@
 # ConsoleUtil
 
-A **HEADER FILE** project with macros that can change text color/style and move cursor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt
-
-WARNING: for Windows system, **Only Windows 10/11 is supported**. These macros cannot work properly in Windows 8/7/vista/xp or prior versions.
-
-一个可以对 C\C++ 命令行 更改颜色/移动光标 的**头文件**项目, 利用 ANSI Escape 控制字符, 且含一些常见懒人包
+A **HEADER FILE** project with macros that can change text color/style and move cursor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt.
 
 
 
-WARNING:
+<img src="./assets/Example Effects.png" alt="image-20231205152753735" style="zoom: 50%;" />
 
-- features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10**.
-    - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED  1` before `#include <ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
+**Homepage**:  https://github.com/BH2WFR/ConsoleUtil
 
-- Pls **#include other headers previously**, especially headers of Qt/fmtlib.
+**author**: 	BH2WFR
 
-警告：
+**LICENSE**: 	**MIT** License
 
-- 一些利用 Ansi 控制字符的功能（如颜色自定义、光标移动等）无法在 Windows 10 以下版本的 Windows 中使用。
-    - 如果正在使用这些操作系统，请加入宏定义  `#define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED  1` before `#include <ConsoleUtil.h>` 以禁用这些通过打印 Ansi 控制字符来实现的功能。
+Reference of Ansi Escape Codes: 
 
-- 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件，最后 #include 此头文件。
+- https://en.wikipedia.org/wiki/ANSI_escape_code
+
+- https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97
+
+
+
+----------
+
+### WARNING:
+
+- features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
+    - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
+
+- Pls #include the header file <`ConsoleUtil/ConsoleUtil.h`> after other header files, especially those from libraries such as Qt/fmtlib. DO NOT #include <`ConsoleUtil/ConsoleUtil.h`> in header files.
+
+- You can include <`ConsoleUtil/CppUtil.h`> in header files.  No need to include <`ConsoleUtil/CppUtil.h`> in source files if you already included <`ConsoleUtil/ConsoleUtil.h`>, because it has been included in <`ConsoleUtil/ConsoleUtil.h`>.
+
+
 
 
 
 ---
 
-### Major Features 主要功能:
+### Major Features:
+```c++
+#include <ConsoleUtil/ConsoleUtil.h> // already wrapped in <ConsoleUtil/ConsoleUtil.h>
+```
 
 1. **Set Front Color, Back Color, and font style** for messages to print by printf/cout.
 
-   向命令行 printf/cout 时 **设置输出文本的 颜色、背景颜色、特殊效果** （借助 ANSI 转义序列 命令行控制字符 `\033[**m`）
+   Forecolors: `FBlack`, `FRed`, `FGreen`, `FYellow`, `FBlue`, `FMagenta`, `FCyan`, `FWhite`, `FDefault`, `FRgb(66, 66, 66)`
 
-   Example:
+   Bright Forecolors: `FGray(=FGrey,FLBlack)`, `FLRed`, `FLGreen`, `FLYellow`, `FLBlue`, `FLMagenta`, `FLCyan`, `FLWhite`;
+
+   Backcolors: `BBlack`, `BRed`, `BGreen`, `BYellow`, `BBlue`, `BMagenta`, `BCyan`, `BWhite`, `BDefault`, `BRgb(66, 66, 66)`;
+
+   Bright Backcolors: `BGray(=BGrey,BLBlack)`, `BLRed`, `BLGreen`, `BLYellow`, `BLBlue`, `BLMagenta`, `BLCyan`, `BLWhite`;
+
+   Font Styles: `CBold`, `CWeak`, `CItalic`, `CUnderLine`, `CFlash`, `CQFlash`, `CInvert`(swap fg and bg colors), `CHide`;
+
+   Reset to Default: `CRst` or `CReset`, you must append this to the end of the string literal to revert console style back to default.
 
    ```c++
-   printf(BRed FLGreen CQFlash, "test" CReset "\n"); // Red Background, Light Green Text Forecolor, and flashing quickly
+   printf(BRed FLGreen CQFlash "test" CReset "\n");
+   	// Red Background, Light Green Text Forecolor, and flashing quickly
    std::cout << CCyan "test" CReset << "\n"; // Text forecolor: cyan
    fmt::println(CYellow "test" CReset);      // Text forecolor: yellow
    ```
+
+   <img src="./assets/Color Effect.png" alt="image-20240218101655956" style="zoom: 60%;" />
 
    
 
 2. **Control text cursor location** in console, or erase text.
 
-    控制命令行光标，部分擦除命令行内容（借助 ANSI 转义序列 命令行控制字符 `\033[**m`）
+    Move cursor: `CUp(2)`, `CDown(3)`, `CFwd(4)`, `CBack(5)`, `CNextLn(1)`, `CPrevLn(1)`, 
 
-    Example:
+    ​	`CHorzPos(12)`(column X, absolute), `CPos(44, 55)`(move the cursor to row 44, column 55)
+
+    Just print them, use individual or append to string literals.
 
     ```c++
     printf(CForward(2)); // move thr cursor 2 characters right
     printf(CCursorPos(15, 20)); // move the text cursor to (15, 20) position
     CUTIL_CONSOLE_CURSOR_POS(15, 20); // equivalent, calls SetConsoleCursorPosition() in win32.
-    
     ```
 
     
 
 3. **set console encoding**, console **window size** (in windows), or **console title**, also with pause program and force abort the program.
-
-    设置命令行编码、清空命令行、设置命令行窗口大小、标题、暂停程序、强行退出程序（借助 stdlib.h 中的 system() 函数, 部分功能需要 windows 操作系统下才能完成）
-
-    
-
-    Example:
 
     ```c++
     CUTIL_CHCP_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
@@ -77,55 +97,61 @@ WARNING:
 
     ```c++
     // available encodings:
-    CUTIL_CHCP_ENCODING_UTF8();
-    CUTIL_CHCP_ENCODING_GB2312();
-    CUTIL_CHCP_ENCODING_BIG5();
-    CUTIL_CHCP_ENCODING_KOR();
-    CUTIL_CHCP_ENCODING_JIS();
-    CUTIL_CHCP_ENCODING_LATIN1();
-    CUTIL_CHCP_ENCODING_LATIN2();
-    CUTIL_CHCP_ENCODING_CYR();
-    CUTIL_CHCP_ENCODING_WIN1250();
-    CUTIL_CHCP_ENCODING_WIN1251();
-    CUTIL_CHCP_ENCODING_WIN1252();
+        CUTIL_CHCP_ENCODING_UTF8();
+        CUTIL_CHCP_ENCODING_GB2312();
+        CUTIL_CHCP_ENCODING_BIG5();
+        CUTIL_CHCP_ENCODING_KOR();
+        CUTIL_CHCP_ENCODING_JIS();
+        CUTIL_CHCP_ENCODING_LATIN1();
+        CUTIL_CHCP_ENCODING_LATIN2();
+        CUTIL_CHCP_ENCODING_CYR();
+        CUTIL_CHCP_ENCODING_WIN1250();
+        CUTIL_CHCP_ENCODING_WIN1251();
+        CUTIL_CHCP_ENCODING_WIN1252();
     ```
 
-    
+4. **Print Text only in Debug Build**, and do Not Print in Release Build.
 
-    
+    pls make sure that macro "`_DEBUG`" is defined in Debug Build, or macro "`NDEBUG`" is defined in Release Build.
 
-4. Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
+    ```c++
+    int a{1};
+    CUTIL_DEBUG_PRINTLN("debug text {}", a); 		// calls fmt::println()(fmtlib) or std::println()(C++23)
+    CUTIL_DEBUG_COUT("debug text " << a << '\n'); 	// calls std::cout <<
+    CUTIL_DEBUG_PRINTF("debug text %d", a); 		// calls printf()
+    // these function-like macros will DO NOTHING IN RELEASE BUILD.
+    ```
 
-    吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容
+
+
+5. Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
+
+    (吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容)
 
     ```c++
     // #define CUTIL_FLUSH_INPUT_BUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
     int num1, num2;
-    scanf("%d", &num1);
-    CUTIL_CONSOLE_FLUSH_INPUTBUFFER(); // flush input buffer
-    scanf("%d", &num2);
+    scanf("%d", &num1); // you inputed "123ss", then still remains characters "ss" in the input buffer
+    CUTIL_CONSOLE_FLUSH_INPUTBUFFER(); // flush input buffer (clear)
+    scanf("%d", &num2); // you can normally input other contents.
     ```
 
-    
 
-5. 按顺序打印 main 函数的 argc 和 argv 参数
 
-    **print argc and argv arguments** of main(int argc, char* argv[]) function in sequence.
-
-    Example:
+6. **print argc and argv arguments** of main(int argc, char* argv[]) function in sequence.
 
     ```c++
     int main(int argc, char* argv[]){
-    	CUTIL_PRINT_ARGV(argc, argv);// print all argc and argv[n] of main() function
-    	return 0;
+    CUTIL_PRINT_ARGV(argc, argv);// print all argc and argv[n] of main() function
+		return 0;
     }
     ```
-
-    <img src="./assets/image-20240224195512767.png" alt="image-20240224195512767" style="zoom:67%;" />
-
     
-
-6. **Print custom Error Message** with filename, line number and function name
+    <img src="./assets/image-20240224195512767.png" alt="image-20240224195512767" style="zoom:67%;" />
+    
+    
+    
+7. **Print custom Error Message** with filename, line number and function name
 
     打印错误信息，并输出当前文件名、行号、函数名
 
@@ -133,31 +159,32 @@ WARNING:
 
     
 
-7. Other useful C/C++ Macros
-
-    -  decide if the project is in debug build mode (you should use MSVC, otherwise predefine `IS_DEBUG` macro in project in debug mode.
-
+8. **Other useful C/C++ Macros**
+    
+    ```c++
+    #include <ConsoleUtil/CppUtil.h>
+    // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead in source files.
+    // <ConsoleUtil/CppUtil.h> can be included in header files.
+    ```
+    - decide if the project is under debug build or Release build mode.
+      
+        in MSVC, macro `_DEBUG` is defined under debug build; in GCC, macro `NDEBUG` is defined under release build.
+        
+        you can add `add_compile_definitions("$<IF:$<CONFIG:Debug>,_DEBUG,NDEBUG>")` in CMake.
+        
         ```c++
-        #if (defined(_DEBUG) || defined(IS_DEBUG) || defined(DEBUG)) && !(defined(NDEBUG) || defined(_NDEBUG))
-        	#define CUTIL_GET_IS_DEBUG_BUILD 	 1
-        #else // defined(NDEBUG)
-        	#define CUTIL_GET_IS_DEBUG_BUILD 	 0
+        #include <ConsoleUtil/CppUtil.h>
+        #if CUTIL_DEBUG_BUILD // Debug
+            //...
+        #else // Release RelWithDebInfo MinSizeRel
+            //...
         #endif
-        
-        
         ```
-
-        ```c++
-        #if CUTIL_GET_IS_DEBUG_BUILD // debug build
-        #else // release build
-        #endif
-        ```
-
         
-
-    -  set bit to a unsigned integer variable in some hardware projects
-
+    - set bit to a unsigned integer variable in some hardware projects
+    
         ```c++
+        #include <ConsoleUtil/CppUtil.h>
         uint16_t num {0b00000000'00000001}; // C++14
         // the 2nd parameter is the index of bit, starts at 0
         CUTIL_BIT_SET(num, 0);		// equals to (num |=  (1u << 0));
@@ -169,49 +196,43 @@ WARNING:
         }
         ```
     
-    -  swap variables in C (do not use in C++, pls replace with std::swap())
+    - swap variables in C (do not use in C++, pls replace with std::swap())
     
         ```c
+        #include <ConsoleUtil/CppUtil.h>
         int a = 1, b = 2;
         CUTIL_SWAP_VARS(a, b, int); // declare type in 3rd arg.
         CUTIL_SWAP_VARS(a, b, typeof(int)); // GNU C only
         CUTIL_SWAP_VARS_GNU(a, b); 			// GNU C only
         ```
     
-    -  print text only in debug build
-    
-        ```c++
-        int a{1};
-        CUTIL_DEBUG_PRINTLN("debug text {}", a); // calls fmt::println or std::println
-        CUTIL_DEBUG_COUT("debug text " << a << '\n'); // calls std::cout
-        CUTIL_DEBUG_PRINTF("debug text %d", a); // calls printf
-        // these macro funcs would DO NOTHING IN RELEASE BUILD.
-        ```
-    
-    -  count amount of arguments (up to 35)
+    - count amount of arguments (up to 35)
     
         ```c
+        #include <ConsoleUtil/CppUtil.h>
         int a = CUTIL_VA_CNT(); 			// -> 0
         int b = CUTIL_VA_CNT(b1); 			// -> 1
         int c = CUTIL_VA_CNT(c1, c2); 		// -> 2
         int c = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
         ```
-        
-    -  match C++ language version, especially if you want to let the project build both by MSVC and G++.
     
-        equals to "`_MSVC_LANG`" in MSVC, and "`__cplusplus`" in other compilers.
+    - match C++ language version, especially if you want to let the project build both by MSVC and G++.
+    
+        equals to "`_MSVC_LANG`" for MSVC, and "`__cplusplus`" for other compilers.
     
         ```c++
-        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(199711) 	// do not add "L" after number
-        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)	// C++11
-        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201402)	// C++14
-        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201703)	// C++17
-        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202002)	// C++20
-        #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302)	// C++23 (temporary not supported)
+        #include <ConsoleUtil/CppUtil.h>
+        #if CUTIL_CPP_VER >= 199711L	// C++98
+        #if CUTIL_CPP_VER >= 201103L	// C++11
+        #if CUTIL_CPP_VER >= 201402L	// C++14
+        #if CUTIL_CPP_VER >= 201703L	// C++17
+        #if CUTIL_CPP_VER >= 202002L	// C++20
+        #if CUTIL_CPP_VER >= 202302L	// C++23 (temporary unsupported)
         ```
-    
+        
     -  set C++11 class constructor/moving/copying to disabled/default
         ```c++
+        #include <ConsoleUtil/CppUtil.h>
         class MyClass{
         public:
             CUTIL_CLASS_DEFAULT_CONSTRUCTOR(MyClass) // generates MyClass(), ~MyClass() = default;
@@ -237,30 +258,41 @@ WARNING:
         #define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
         */
         ```
-    
+        
     -  memory allocation and operations for C (wrapped `malloc()` `free()` `memset()` `memcpy()` with typename to macros)
     
         ```c
+        #include <ConsoleUtil/CppUtil.h>
+        
         const size_t length = 20; // length of numbers
-        uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, length); // std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
+        uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, length);
+        	// std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
         uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, length); // std::vector<uint32_t> v1(20, 0x00000000);
         uint32_t aD3[length]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
         
-        uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, length, 0x66, aD1); // set all elements of aD1 to 0x66666666, returns aD3 == aD1
-        uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, length, aD2, aD1); // copy aD1 elements to aD2, returns aD4==aD2
+        uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, length, 0x66, aD1);
+        	// set all elements of aD1 to 0x66666666, returns aD3 == aD1
+        uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, length, aD2, aD1);
+        	// copy aD1 elements to aD2, returns aD4==aD2
         uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, length, aD2, aD1);  // equivalents to above.
         
-        int compResult = CUTIL_TYPE_MEMCMP(uint32_t, length, aD1, aD2); // returns 0, contents of mem blocks equal.
+        int compResult = CUTIL_TYPE_MEMCMP(uint32_t, length, aD1, aD2);
+        	// returns 0, contents of mem blocks equal.
         
         CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap)
         CUTIL_TYPE_FREE(aD2);
         
         ```
-    
+        
         
 
 
-8. **Some Macros for Qt Projects**:
+9. **Some Macros for Qt Projects**:
+
+    ```c++
+    #include <ConsoleUtil/QtUtil.h>
+    // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead.
+    ```
 
     - Enable **High DPI Support for Qt5** programs (enable since Qt5.6.0, and fractional scaling since Qt5.14.0). Qt6 supports it by default.
 
@@ -272,19 +304,19 @@ WARNING:
         #include <QDebug>
         #include <QTextCodec> // include Qt headers first
         
-        #include <ConsoleUtil.h> // include this header at last
+        #include <ConsoleUtil/ConsoleUtil.h> // <ConsoleUtil/QtUtil.h> has been wrapped in this header.
         
-        int main(int argc, char* argv[]){
-        	CUTIL_CHCP_ENCODING_UTF8();
-        	CUTIL_QT5_TEXTCODEC_UTF8(); // this code saves in UTF-8 encoding
-        	
-        	CUTIL_QT5_HIGH_DPI(); // enable Qt5 high DPI support
-        	
-        	QApplication app(argc, argv); // declare QCoreApplication after these macros.
-            
-        	return app.exec();
+        int main(int argc, char* argv[])
+        {
+            CUTIL_QT5_HIGH_DPI(); 	  	//* enable Qt5 high DPI support
+        
+            CUTIL_CHCP_ENCODING_UTF8();
+            CUTIL_QT5_TEXTCODEC_UTF8(); //* set Qt default text encoding to UTF-8
+        
+            QApplication app(argc, argv); // you must create QCoreApplication after these macros.
+        
+            return app.exec();
         }
-        
         /* available encodings:
             CUTIL_QT5_TEXTCODEC_UTF8()
             CUTIL_QT5_TEXTCODEC_GBK()
@@ -294,47 +326,58 @@ WARNING:
             CUTIL_QT5_TEXTCODEC_JIS()
         */
         ```
-
         
 
+    
+
+9. **Some Macros for CUDA Programs**:
+
+    ```c++
+    #include <ConsoleUtil/CudaUtil.h>
+    // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead.
+    ```
+
+    ...
+
      
-
-9. CUDA 中，检测部分函数的返回状态，如 != cudaSuccess 则输出错误信息，或强行退出程序
-
-   
-
-Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
-
-**ANSI 转义序列 参考**：https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97
 
 
 
 ----------------
 
-### How To Include in CMake:
+### How To Use for CMake Projects:
 
-1. use `find_package()` in `CMakeLists.txt` in your project to find `ConsoleUtil` CMake package.
+1. use `find_package()` in `CMakeLists.txt` of your project to find "`ConsoleUtil`" CMake package.
+
+    Set variable "`ConsoleUtil_DIR`" previously to the folder `ConsoleUtil/cmake`, with file `ConsoleUtilConfig.cmake` inside.
 
     ```cmake
     set(ConsoleUtil_DIR "D:/3rdlibs/ConsoleUtil/cmake") # there's file `ConsoleUtilConfig.cmake`
-    find_package(ConsoleUtil REQUIRED)
+    find_package(ConsoleUtil REQUIRED) # find ConsoleUtil package
     ```
-    make sure that there's file `ConsoleUtilConfig.cmake` in the folder `cmake`.
-2. link `ConsoleUtil` to your target.
+
+2. link "`ConsoleUtil::ConsoleUtil`" to your target.
 
    ```cmake
    project(myProject LANGUAGES CXX)
    add_executable( ${PROJECT_NAME} "main.cpp") # create a app target
    
    target_link_libraries( ${PROJECT_NAME}
-   	ConsoleUtil # this Library
-       # fmt::fmt-header-only # other 3rd libraries
+   	ConsoleUtil::ConsoleUtil 	# this header-only Library
+       # fmt::fmt-header-only 		# other 3rd libraries
    )
    ```
 
-3. include "`ConsoleUtil.h`" in your source file, and check if there's macro `CONSOLE_UTIL_VERSION` equals to version number. Pls make sure that this header is included after the std/Qt and win32/Linux headers.
+3. include "`ConsoleUtil/ConsoleUtil.h`" in your source file, and check if there's macro `CONSOLE_UTIL_VERSION` equals to version number.
 
-    
+     ```c++
+     #include <ConsoleUtil/ConsoleUtil.h> // wrapped all 3 below inside
+     // #include <ConsoleUtil/CppUtil.h> // you can include this alone within header files
+     // #include <ConsoleUtil/QtUtil.h>
+     // #include <ConsoleUtil/CudaUtil.h>
+     ```
+
+
 
 ---
 
@@ -345,7 +388,7 @@ Reference of Ansi Escape Codes: https://en.wikipedia.org/wiki/ANSI_escape_code
 #include <windows.h>		// include other headers first
 #include <fmt/core.h>		// include other headers first
 	
-#include <ConsoleUtil.h> 	// include this header at last
+#include <ConsoleUtil/ConsoleUtil.h> 	// include this header at last
 	
 int main(int argc, char* argv[]){
 	CUTIL_CHCP_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
@@ -381,6 +424,6 @@ int main(int argc, char* argv[]){
 
 **Console Effects 控制台效果** :
 
-![image-20231205152753735](./assets/image-20231205152753735.png)
+![image-20231205152753735](./assets/Example Effects.png)
 
-<img src="./assets/image-20240218101655956.png" alt="image-20240218101655956" style="zoom:67%;" />
+<img src="./assets/Color Effect.png" alt="image-20240218101655956" style="zoom:67%;" />

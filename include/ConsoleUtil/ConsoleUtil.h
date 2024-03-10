@@ -1,12 +1,14 @@
-/*    UTF-8 encoding
-	* Project URL: https://github.com/BH2WFR/ConsoleUtil
-	* Author:		BH2WFR
-	* Updated:		Mar 09, 2024
-	* If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
-	* 引用说明: 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 最后再 #include 此头文件.
+/* UTF-8 encoding
+* Project URL: https://github.com/BH2WFR/ConsoleUtil
+  Author:		BH2WFR
+  Updated:		Mar 11, 2024
+  License:		MIT License
+* Do not include this header in header files.
+* If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
+	引用说明: 若源文件使用了 fmtlib 或 Qt 等库, 请先 #include 这些头文件, 最后再 #include 此头文件.
 */
-#ifndef CONSOLE_UTIL_H__
-#define CONSOLE_UTIL_H__
+#ifndef CONSOLEUTIL_CONSOLE_UTIL_H__
+#define CONSOLEUTIL_CONSOLE_UTIL_H__
 
 
 //* ==== customize parameters:
@@ -16,21 +18,13 @@
 	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
 #endif
 
-// include vital C headers
-#ifdef __cplusplus
-	#include <cstdio>
-	#include <cstdlib>
-	#include <cstdint>
-#else //. !__cplusplus
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <stdint.h>
-	#include <stdbool.h>
-#endif // __cplusplus
+
+//* include dependent headers:
+#include <ConsoleUtil/CppUtil.h>
 
 
 
-//====================== CONSOLE CUSTOMIZING MACROS =========================
+//====================== CONSOLE FORMAT/CUSTOMIZING MACROS =========================
 //* reference:    https://en.wikipedia.org/wiki/ANSI_escape_code
 			   // https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97
 			   
@@ -40,11 +34,9 @@
 #if (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // || (WINVER >= 0x0A00)
 	#define CAnsiEsc(_STR)		"\033[" _STR //* C++ Ansi Escape Codes with prefix
 	#define CAnsiEscStr(_STR)	_STR 		 //  raw C++ Ansi EScape Code Strings
-	
 #else
-	#define CAnsiEsc(_STR)	// d"\033[" ANSI Escape code is UNSUPPORTED in Windows 7 or older versions
+	#define CAnsiEsc(_STR)	  //* "\033[" ANSI Escape code is UNSUPPORTED before Windows 10 1511 in cmd
 	#define CAnsiEscStr(_STR)
-	
 #endif
 
 //* RESET color formatting and font styles to DEFAULT, you must add this after customizing font color
@@ -179,19 +171,19 @@
 	#if defined(_WINDOWS_) || defined(WINAPI)
 		#define CUTIL_CHCP_ENCODING(_NUM)	{SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM);}
 	#else // in windows system, but without <windows.h> winapi
-		#define CUTIL_CHCP_ENCODING(_NUM)	system("chcp "#_NUM);	//  custom chcp encoding (number) in Windows
+		#define CUTIL_CHCP_ENCODING(_NUM)	system("chcp "#_NUM);	// custom chcp encoding (number) in Windows
 	#endif
 	
-	#define CUTIL_CONSOLE_CLEAR()		system("cls");			//  clear the screen (console)
-	#define CUTIL_CONSOLE_SIZE(X, Y) 	system("mode con cols=" #X "lines=" #Y); // set console window size
-	#define CUTIL_CONSOLE_PAUSE()		system("pause");		// pause the console application
+	#define CUTIL_CONSOLE_CLEAR()			system("cls");			// clear the screen (console)
+	#define CUTIL_CONSOLE_SIZE(X, Y) 		system("mode con cols=" #X "lines=" #Y); // set console window size
+	#define CUTIL_CONSOLE_PAUSE()			system("pause");		// pause the console application
 	
 #else 	// in Linux/MacOS
 	#define CUTIL_CHCP_ENCODING(_NUM)
 	
-	#define CUTIL_CONSOLE_CLEAR()		system("clear"); 		//  clear the screen (console)
+	#define CUTIL_CONSOLE_CLEAR()			system("clear"); 		// clear the screen (console)
 	#define CUTIL_CONSOLE_SIZE(X, Y)
-	#define CUTIL_CONSOLE_PAUSE()		getchar();				// pause the console application
+	#define CUTIL_CONSOLE_PAUSE()			getchar();				// pause the console application
 	
 #endif
 
@@ -203,7 +195,7 @@
 	//#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR);
 	#define CUTIL_CONSOLE_CURSOR_POS(x, y)	\
 		{COORD pos; pos.X=x; pos.Y=y;   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
-	#define CUTIL_CONSOLE_ATTR(_ATTR)	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
+	#define CUTIL_CONSOLE_ATTR(_ATTR)			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
 	#define CUTIL_CONSOLE_RESET_STYLE()			CUTIL_SET_CONSOLE_ATTR(0)
 	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()	\
 		{HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);DWORD mode;GetConsoleMode(handle, &mode); \
@@ -251,7 +243,7 @@
 	#include <windows.h>		// include other headers first
 	#include <fmt/core.h>		// include other headers first
 	
-	#include <ConsoleUtil.h> 	// include this header at last
+	#include <ConsoleUtil/ConsoleUtil.h> 	// include this header at last
 	
 	int main(int argc, char* argv[]){
 		CUTIL_CHCP_ENCODING_UTF8(); 		// switch console encoding to UTF-8 (windows)
@@ -284,179 +276,9 @@
 
 */
 
-//==================== C Utils ============================
-
-//* get count of arguments
-#define CUTIL_VA_63TH_ARG(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9, \
-			a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z, \
-			A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,_63TH_ARG,...)  _63TH_ARG
-#define CUTIL_VA_CNT(...)	CUTIL_VA_63TH_ARG("ignored", ##__VA_ARGS__, \
-			Z,Y,X,W,V,U,T,S,R,Q,P,O,N,M,L,K,J,I,H,G,F,E,D,C,B,A,35,34,33,32,31,30,29,28,27, \
-			26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
-/*
- Examples:
-	int a = CUTIL_VA_CNT(); 			// -> 0
-	int b = CUTIL_VA_CNT(b1); 			// -> 1
-	int c = CUTIL_VA_CNT(c1, c2); 		// -> 2
-	int c = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
-	...
-*/
-
-//* bit calculating macros
-#define CUTIL_BIT_GET(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
-#define CUTIL_BIT_SET(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in separate lines
-#define CUTIL_BIT_CLEAR(_NUM, BIT_IDX)	((_NUM) &= ~(1u << (BIT_IDX)));
-#define CUTIL_BIT_TOGGLE(_NUM, BIT_IDX)	((_NUM) ^=  (1u << (BIT_IDX)));
-
-
-//* swap items, only for C, do not use in C++ (use std::swap())
-#define CUTIL_SWAP_VARS(_VAR1, _VAR2, _TYPE) {_TYPE sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;}
-#define CUTIL_SWAP_VARS_GNU(_VAR1, _VAR2)	 {typeof(_VAR1) sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;} // GNU C only
-	// CUTIL_SWAP_VARS(int, a, b);
-
-
-//* C memory allocations
-// malloc by type and amount, only alloc heap memory without initialization. returns nullptr if failed.
-#define CUTIL_TYPE_MALLOC(_TYPE, _AMOUNT) 	(_TYPE*)malloc((_AMOUNT)*sizeof(_TYPE)) // only alloc.
-// calloc by type and amount, alloc heap memory then initialize with 0x00. returns nullptr if failed.
-#define CUTIL_TYPE_CALLOC(_TYPE, _AMOUNT) 	(_TYPE*)calloc((_AMOUNT), sizeof(_TYPE))  // init to 0
-// realloc memory by type and amount. returns nullptr if failed.
-#define CUTIL_TYPE_REALLOC(_TYPE, _AMOUNT, _PTR)  (_TYPE*)realloc((_PTR), (_AMOUNT)*sizeof(_TYPE))
-// free heap memory allocated with malloc/calloc, then set to nullptr.
-#define CUTIL_TYPE_FREE(_PTR) 		{if((_PTR) != NULL) {free(_PTR); _PTR = NULL;}}
-
-//* C memory operations
-// memcpy by type and amount. returns dest pointer.
-#define CUTIL_TYPE_MEMCPY(_TYPE, _AMOUNT, _DESTPTR, _SRCPTR)	\
-	(_TYPE*)memcpy((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
-// memmove by type and amount. supports overlapped memory blocks.
-#define CUTIL_TYPE_MEMMOVE(_TYPE, _AMOUNT, _DESTPTR, _SRCPTR)	\
-	(_TYPE*)memmove((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
-// set a range of memory by type and amount with BYTE data.
-#define CUTIL_TYPE_MEMSET(_TYPE, _AMOUNT, _BYTE, _DESTPTR) 		\
-	(_TYPE*)memset((_DESTPTR), (_BYTE), (_AMOUNT)*sizeof(_TYPE))
-// compare a range of memory blocks data, returns integer values <0, >0 or =0(equal).
-#define CUTIL_TYPE_MEMCMP(_TYPE, _AMOUNT, _PTR1, _PTR2)			\
-	memcmp((_PTR1), (_PTR2), (_AMOUNT)*sizeof(_TYPE))
-
-/*
-* Examples:
-	const size_t length = 20; // length of numbers
-    uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, length); // std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
-    uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, length); // std::vector<uint32_t> v1(20, 0x00000000);
-	uint32_t aD3[length]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
-    
-    uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, length, 0x66, aD1); // set all elements of aD1 to 0x66666666, returns aD3 == aD1
-    uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, length, aD2, aD1); // copy aD1 elements to aD2, returns aD4==aD2
-    uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, length, aD2, aD1);  // equivalents to above.
-    
-    int compResult = CUTIL_TYPE_MEMCMP(uint32_t, length, aD1, aD2); // returns 0, contents of mem blocks equal.
-	
-	CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap)
-    CUTIL_TYPE_FREE(aD2);
-*/
-
-
-//===================== C++ Utils ==========================
-#ifdef __cplusplus
-
-//* get C++ language standard version, do not add "L" suffix after number
- // in MSVC compiler, __cplusplus always equals to 199711L, but _MSVC_LANG(Prior to VS2015) equals to cpp standard version
-#ifdef _MSVC_LANG // example: #if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)
-	#define CUTIL_CPP_VER_HIGHER_EQUAL_THAN(_VER)	(_MSVC_LANG >= _VER##L)
-	#define CUTIL_CPP_VER_LOWER_THAN(_VER) 			(_MSVC_LANG < _VER##L)
-#else //. !defined _MSVC_LANG
-	#define CUTIL_CPP_VER_HIGHER_EQUAL_THAN(_VER)	(__cplusplus >= _VER##L)
-	#define CUTIL_CPP_VER_LOWER_THAN(_VER) 			(__cplusplus < _VER##L)
-#endif // _MSVC_LANG
-/*
-* example:
-	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(199711) 	// do not add "L" as suffix after number
-	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103)	// C++11
-	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201402)	// C++14
-	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201703)	// C++17
-	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202002)	// C++20
-	#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302)	// C++23 (temporary not supported)
-*/
-
-
-//* delete a heap pointer, and set it nullptr. arg "p" must be a pointer inited by "new" or "new[]".
-#define CUTIL_DELETE_AND_NULL(p)		{delete   p; p = NULL;}
-#define CUTIL_DELETE_AND_NULL_ARR(p)	{delete[] p; p = NULL;}
-	// keyword "nullptr" is unsupported in C++98
-
-
-//* set C++11 class constructor/moving/copying to disabled/default
-#if CUTIL_CPP_VER_HIGHER_EQUAL_THAN(201103) //* >= C++11
-	// Default Constructor(no params) and Destructor
-	#define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME) \
-		_CLASS_NAME() = default; \
-		~_CLASS_NAME() = default;
-	
-	// Disable copy constructor and copy operator=
-	#define CUTIL_CLASS_DISABLE_COPY(_CLASS_NAME) \
-		_CLASS_NAME(const _CLASS_NAME & ) = delete;\
-		_CLASS_NAME& operator=(const _CLASS_NAME & ) = delete;
-	
-	// Default copy constructor and copy operator=
-	#define CUTIL_CLASS_DEFAULT_COPY(_CLASS_NAME) \
-		_CLASS_NAME(const _CLASS_NAME & ) = default;\
-		_CLASS_NAME& operator=(const _CLASS_NAME & ) = default;
-	
-	// Disable move constructor and move operator=
-	#define CUTIL_CLASS_DISABLE_MOVE(_CLASS_NAME) \
-		_CLASS_NAME(_CLASS_NAME && ) noexcept = delete; \
-		_CLASS_NAME& operator=(_CLASS_NAME && ) noexcept = delete;
-	
-	// Default move constructor and move operator=
-	#define CUTIL_CLASS_DEFAULT_MOVE(_CLASS_NAME) \
-		_CLASS_NAME(_CLASS_NAME && ) noexcept = default; \
-		_CLASS_NAME& operator=(_CLASS_NAME && ) noexcept = default;
-	
-	// Disable moving and copying
-	#define CUTIL_CLASS_DISABLE_COPY_MOVE(_CLASS_NAME) \
-		CUTIL_CLASS_DISABLE_COPY(_CLASS_NAME) \
-		CUTIL_CLASS_DISABLE_MOVE(_CLASS_NAME)
-	
-	// Default moving and copying
-	#define CUTIL_CLASS_DEFAULT_COPY_MOVE(_CLASS_NAME) \
-		CUTIL_CLASS_DEFAULT_COPY(_CLASS_NAME) \
-		CUTIL_CLASS_DEFAULT_MOVE(_CLASS_NAME)
-	
-	// Default Constructor, Destructor, Copying, Moving
-	#define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME) \
-		CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME) \
-		CUTIL_CLASS_DEFAULT_COPY_MOVE(_CLASS_NAME)
-	
-#else // C++98/03
-	#define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME)
-	#define CUTIL_CLASS_DISABLE_COPY(_CLASS_NAME)
-	#define CUTIL_CLASS_DEFAULT_COPY(_CLASS_NAME)
-	#define CUTIL_CLASS_DISABLE_MOVE(_CLASS_NAME)
-	#define CUTIL_CLASS_DEFAULT_MOVE(_CLASS_NAME)
-	#define CUTIL_CLASS_DISABLE_COPY_MOVE(_CLASS_NAME)
-	#define CUTIL_CLASS_DEFAULT_COPY_MOVE(_CLASS_NAME)
-	#define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
-	
-#endif // >= C++11
-
-
-
-		
-		
-		
-#endif // __cplusplus
 
 
 //============= PROGRAM DEBUGGING: Print Args/Error Messages ===============
-
-//* detect Debug Build or Release Build
-#if (defined(_DEBUG) || defined(IS_DEBUG) || defined(DEBUG)) && !(defined(NDEBUG) || defined(_NDEBUG))
-	#define CUTIL_GET_IS_DEBUG_BUILD 	 1
-#else // defined(NDEBUG)
-	#define CUTIL_GET_IS_DEBUG_BUILD 	 0
-#endif
-// example: #if CUTIL_GET_IS_DEBUG_BUILD
 
 //* print all argc and argv[n] arguments for main(int argc, char* argv[]) function
 #define CUTIL_PRINT_ARGV(_argc, _argv) { \
@@ -485,12 +307,12 @@
 
 
 //* macros for print something ONLY IN DEBUG BUILD
-#if CUTIL_GET_IS_DEBUG_BUILD // print in Debug Build
+#if CUTIL_DEBUG_BUILD // Only Print in Debug Build
 	#if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
 		#define CUTIL_DEBUG_PRINT(_STR, ...)	   fmt::print(_STR, ##__VA_ARGS__);
 		#define CUTIL_DEBUG_PRINTLN(_STR, ...)	   fmt::println(_STR, ##__VA_ARGS__);
 		// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
-	#elif CUTIL_CPP_VER_HIGHER_EQUAL_THAN(202302) // C++23 std::print(), std::println()
+	#elif CUTIL_CPP_VER >= 202302L // C++23 std::print(), std::println()
 		#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 			#define CUTIL_DEBUG_PRINT(_STR, ...)   std::print(_STR, ##__VA_ARGS__);
 			#define CUTIL_DEBUG_PRINTLN(_STR, ...) std::println(_STR, ##__VA_ARGS__);
@@ -512,7 +334,7 @@
 	
 	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv) 	CUTIL_PRINT_ARGV(_argc, _argv)
 	
-#else // Do nothing in Release Build
+#else // Do Nothing in Release Build
 	#define CUTIL_DEBUG_PRINT(_STR, ...)
 	#define CUTIL_DEBUG_PRINTLN(_STR, ...)
 	
@@ -524,7 +346,7 @@
 	
 	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv)
 	
-#endif // CUTIL_GET_IS_DEBUG_BUILD
+#endif // CUTIL_DEBUG_BUILD
 /* instruction:
 	if you want to print some debug message to console, and only do this in DEBUG BUILD,
 	use these macros above, they will do nothing in release build.
@@ -538,117 +360,11 @@
 
 
 
-//===================== Qt Utils ==========================
-#if defined(QT_VERSION) && defined(__cplusplus)
-//* you need to #include Qt Headers first before #include of this header.
+//==================== CUDA/Qt Utils ==========================
 
-//* Qt5 high DPI support since Qt5.6, and fractional scaling support since Qt5.14
-//  in Qt6, high DPI and fractional scaling support is enabled by default and no need for this macro.
-//  pls #include<QApplication> first before #include of this header.
-#if ((QT_VERSION >= QT_VERSION_CHECK(5,6,0)) && (QT_VERSION < QT_VERSION_CHECK(5,14,0)))
-	#define CUTIL_QT5_HIGH_DPI() \
-		QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling); \
-		QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-		
-#elif ((QT_VERSION >= QT_VERSION_CHECK(5,14,0)) && (QT_VERSION < QT_VERSION_CHECK(6,0,0)))
-	#define CUTIL_QT5_HIGH_DPI() \
-		QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling); \
-		QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); \
-		QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-		
-#else // QT_VERSION ( >= 6.0.0 || <= 5.5.0 )
-	#define CUTIL_QT5_HIGH_DPI()
-	
-#endif // QT_VERSION
-
-//* Set QTextCodec default encoding to UTF-8,
-//  or cannot correctly print chinese characters via qDebug() if code is saved in UTF-8 encoding;
-//  pls #include<QTextCodec> first before #include of this header.
-//  in MSVC Compiler, compiler argument "/utf-8" is required if code is saved in UTF-8 encoding;
-//  	in CMake, you should add "set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")"
-//  In Qt6, QTextCodec module is deleted and contained in Qt5 Compatibility Module.
-#if defined(QTEXTCODEC_H)
-	#define CUTIL_QT5_TEXTCODEC_SET(_STR)	QTextCodec::setCodecForLocale(QTextCodec::codecForName(_STR));
-#else //. !QTEXTCODEC_H
-	#define CUTIL_QT5_TEXTCODEC_SET(_STR)
-#endif // QTEXTCODEC_H
-
-#define CUTIL_QT5_TEXTCODEC_UTF8()		CUTIL_QT5_TEXTCODEC_SET("UTF-8");
-#define CUTIL_QT5_TEXTCODEC_GBK()		CUTIL_QT5_TEXTCODEC_SET("GB18030");
-#define CUTIL_QT5_TEXTCODEC_BIG5()		CUTIL_QT5_TEXTCODEC_SET("Big5");
-#define CUTIL_QT5_TEXTCODEC_EUCKR()		CUTIL_QT5_TEXTCODEC_SET("EUC-KR");
-#define CUTIL_QT5_TEXTCODEC_EUCJP()		CUTIL_QT5_TEXTCODEC_SET("EUC-JP");
-#define CUTIL_QT5_TEXTCODEC_JIS()		CUTIL_QT5_TEXTCODEC_SET("Shift-JIS");
-
-
-//* qDebug() without spaces or quotes
-//  pls #include<QDebug> first before this header #include
-#ifdef QDEBUG_H
-	#define CUTIL_QDEBUG_N  qDebug().noquote() 		  	 // qDebug() without quotes
-	#define CUTIL_QDEBUG_NN qDebug().nospace().noquote() // qDebug() without spaces and quotes
-		// example: CUTIL_QDEBUG_N << "test" << 1;
-	
-#endif
-
-/*
-* example:
-	#include <qglobal.h>
-	#include <QApplication>
-	#include <QDebug>
-	#include <QTextCodec> // include Qt headers first
-	
-	#include <ConsoleUtil.h> // include this header at last
-	
-	int main(int argc, char* argv[])
-	{
-		CUTIL_QT5_HIGH_DPI(); 	  	//* use Qt5 high DPI support
-		
-		CUTIL_ENCODING_UTF8();
-		CUTIL_QT5_TEXTCODEC_UTF8(); //* set Qt default text encoding to UTF-8
-		
-		QApplication app(argc, argv);
-		
-		return app.exec();
-	}
-*/
+#include <ConsoleUtil/QtUtil.h>
+#include <ConsoleUtil/CudaUtil.h>
 
 
 
-
-
-#endif // QT_VERSION
-
-
-//==================== CUDA Utils ==========================
-#ifdef __CUDACC__ //* CUDA 错误检查与退出机制
-
-#define CUTIL_CUDA_PRINT_ERR(_STR) \
-		printf(FLRed "\n=============== CUDA ERROR = %d: " _STR "\n" \
-					"    file: " __FILE__ "\n" \
-					"    func: %s\n" \
-					"    line: %d\n" CReset \
-				, err, __func__, __LINE__);
-	
-// 进行 cuda 部分操作后, 将返回值传入此宏定义中, 如果执行失败, 则输出信息, 并退出当前函数, 第三个参数为 return 值, void 则不填写
-#define CUTIL_CUDA_RETURN_IF_ERR(_ERR, _STR, ...) \
-	if (_ERR != cudaSuccess) { \
-		CUTIL_CUDA_PRINT_ERR(_STR); \
-		return __VA_ARGS__; \
-	}
-
-// 进行 cuda 部分操作后, 将返回值传入此宏定义中, 如果执行失败, 则输出信息并强行停止程序
-#define CUTIL_CUDA_ABORT_IF_ERR(_ERR, _STR, _RET) \
-	if (_ERR != cudaSuccess) { \
-		CUTIL_CUDA_PRINT_ERR(_STR) \
-		exit(_RET); \
-	}
-
-#endif //__CUDA_RUNTIME_H__
-
-
-
-
-
-
-
-#endif // CONSOLE_UTIL_H__
+#endif // CONSOLEUTIL_CONSOLE_UTIL_H__
