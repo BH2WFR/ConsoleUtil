@@ -10,7 +10,9 @@
 
 
 //===================== Qt Utils ==========================
-#if defined(QT_CORE_LIB) || defined(QT_VERSION)
+//* ATTENTION: Include Qt Headers previously!
+#if defined(QT_VERSION) // defined(QT_CORE_LIB) ||
+	// 宏 QT_CORE_LIB, 只要链接了 Qt 库, 都会定义, 不在这里使用, 因为会导致未包含 Qt 头文件时报错
 
 
 //* Qt5 high DPI support since Qt5.6, and fractional scaling support since Qt5.14
