@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project( ConsoleUtil
     LANGUAGES C CXX CUDA
     VERSION 5               # 版本号只设一段 MAJOR
+    HOMEPAGE_URL "https://github.com/BH2WFR/ConsoleUtil"
 )
 
 #* 查找头文件

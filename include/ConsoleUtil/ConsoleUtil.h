@@ -167,7 +167,7 @@
 
 
 //* macros for console window/application and streams
-#if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in Windows
+#if defined(CUTIL_OS_WINDOWS) // in Windows
 	#if defined(_WINDOWS_) || defined(WINAPI)
 		#define CUTIL_CHCP_ENCODING(_NUM)	{SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM);}
 	#else // in windows system, but without <windows.h> winapi

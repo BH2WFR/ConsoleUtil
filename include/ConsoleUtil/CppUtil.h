@@ -21,9 +21,10 @@
 
 
 //==================== C Utils ============================
-
+#define _DEBUG
+#define NDEBUG
 //* detect Debug Build or Release Build
-#if defined(_DEBUG) && !defined(NDEBUG)
+#if (!defined(NDEBUG)) || defined(_DEBUG)
 	#define CUTIL_DEBUG_BUILD 	 1 	// Debug
 #else
 	#define CUTIL_DEBUG_BUILD 	 0 	// Release RelWithDebInfo MinSizeRel
@@ -194,16 +195,33 @@ Usage Example:
 	#define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
 	
 #endif // >= C++11
-
-
-
-		
-		
-		
 #endif // __cplusplus
 
 
+//=================== OS Related ========================
 
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in Windows
+	#define CUTIL_OS_WIN32		//* Win32 || Win64
+	#define CUTIL_OS_WINDOWS
+	#if defined(WIN64) || defined(_WIN64) || defined(__WIN64)
+		#define CUTIL_OS_WIN64	//* Win64
+	#endif // WIN64
+#endif // WIN32
+#if defined (__CYGWIN__)
+	#define CUTIL_OS_CYGWIN		//* Cygwin
+#endif // __CYGWIN__
+#if defined(__linux__) || defined(__linux)
+	#define CUTIL_OS_LINUX		//* Linux
+#endif // linux
+#if defined(__ANDROID__) || defined(ANDROID)
+	#define CUTIL_OS_ANDROID	//* Android
+	#define CUTIL_OS_LINUX
+#endif // android
+#if defined(__APPLE__)
+	#define CUTIL_OS_APPLE		//* Apple (IOS / MacOS / TVOS / WatchOS)
+	#include <TargetConditionals.h>
+	//TODO: 进一步的判断
+#endif // apple
 
 
 #endif // CONSOLEUTIL_CPP_UTIL_H__
