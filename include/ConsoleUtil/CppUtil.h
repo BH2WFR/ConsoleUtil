@@ -68,9 +68,13 @@ Usage Example:
 
 
 //* swap items, only for C, do not use in C++ (use std::swap())
-#define CUTIL_SWAP_VARS(_VAR1, _VAR2, _TYPE) {_TYPE sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;}
+#define CUTIL_SWAP_VARS(_TYPE, _VAR1, _VAR2) {_TYPE sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;}
 #define CUTIL_SWAP_VARS_GNU(_VAR1, _VAR2)	 {typeof(_VAR1) sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;} // GNU C only
 	// CUTIL_SWAP_VARS(int, a, b);
+
+//* get min or max value
+#define CUTIL_GET_MAX(_VAR1, _VAR2) 	(((_VAR1) > (_VAR2)) ? (_VAR1) : (_VAR2))
+#define CUTIL_GET_MIN(_VAR1, _VAR2)		(((_VAR1) < (_VAR2)) ? (_VAR1) : (_VAR2))
 
 
 //* C memory allocations

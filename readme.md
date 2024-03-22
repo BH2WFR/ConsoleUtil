@@ -160,7 +160,7 @@ Reference of Ansi Escape Codes:
     
 
 8. **Other useful C/C++ Macros**
-    
+   
     ```c++
     #include <ConsoleUtil/CppUtil.h>
     // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead in source files.
@@ -196,14 +196,17 @@ Reference of Ansi Escape Codes:
         }
         ```
     
-    - swap variables in C (do not use in C++, pls replace with std::swap())
+    - swap variables in C (do not use in C++, pls replace with std::swap()), or get the maximum or minimum item between two numbers;
     
         ```c
         #include <ConsoleUtil/CppUtil.h>
         int a = 1, b = 2;
-        CUTIL_SWAP_VARS(a, b, int); // declare type in 3rd arg.
-        CUTIL_SWAP_VARS(a, b, typeof(int)); // GNU C only
+        CUTIL_SWAP_VARS(int, a, b); // declare type in 3rd arg.
+        CUTIL_SWAP_VARS(typeof(a), a, b); // GNU C only
         CUTIL_SWAP_VARS_GNU(a, b); 			// GNU C only
+        
+        int max_ab = CUTIL_GET_MAX(a, b); // maximum number between a and b
+        int min_ab = CUTIL_GET_MIN(a, b); // minimum number between a and b
         ```
     
     - count amount of arguments (up to 35)
