@@ -262,25 +262,23 @@ Reference of Ansi Escape Codes:
         */
         ```
         
-    -  memory allocation and operations for C (wrapped `malloc()` `free()` `memset()` `memcpy()` with typename to macros)
+    -  memory allocation and operations for C (wrapped `malloc()` `free()` `memset()` `memcpy()` with typename to macros. use AMOUNT of variables to substitute length in bytes.)
     
         ```c
         #include <ConsoleUtil/CppUtil.h>
         
-        const size_t length = 20; // length of numbers
-        uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, length);
+        const size_t amount = 20; // amount of variables ( length in bytes! )
+        uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, amount); 
         	// std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
-        uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, length); // std::vector<uint32_t> v1(20, 0x00000000);
-        uint32_t aD3[length]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
+        uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, amount); // std::vector<uint32_t> v1(20, 0x00000000);
+        uint32_t aD3[amount]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
         
-        uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, length, 0x66, aD1);
+        uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, aD1, 0x66, amount); 
         	// set all elements of aD1 to 0x66666666, returns aD3 == aD1
-        uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, length, aD2, aD1);
-        	// copy aD1 elements to aD2, returns aD4==aD2
-        uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, length, aD2, aD1);  // equivalents to above.
+        uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, aD2, aD1, amount); // copy aD1 elements to aD2, returns aD4==aD2
+        uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, aD2, aD1, amount);  // equivalents to above.
         
-        int compResult = CUTIL_TYPE_MEMCMP(uint32_t, length, aD1, aD2);
-        	// returns 0, contents of mem blocks equal.
+        int compResult = CUTIL_TYPE_MEMCMP(uint32_t, aD1, aD2, amount); // returns 0, contents of mem blocks equal.
         
         CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap)
         CUTIL_TYPE_FREE(aD2);

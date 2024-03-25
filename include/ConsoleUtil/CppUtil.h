@@ -83,36 +83,38 @@ Usage Example:
 // calloc by type and amount, alloc heap memory then initialize with 0x00. returns nullptr if failed.
 #define CUTIL_TYPE_CALLOC(_TYPE, _AMOUNT) 	(_TYPE*)calloc((_AMOUNT), sizeof(_TYPE))  // init to 0
 // realloc memory by type and amount. returns nullptr if failed.
-#define CUTIL_TYPE_REALLOC(_TYPE, _AMOUNT, _PTR)  (_TYPE*)realloc((_PTR), (_AMOUNT)*sizeof(_TYPE))
+#define CUTIL_TYPE_REALLOC(_TYPE, _PTR, _AMOUNT)  (_TYPE*)realloc((_PTR), (_AMOUNT)*sizeof(_TYPE))
 // free heap memory allocated with malloc/calloc, then set to nullptr.
 #define CUTIL_TYPE_FREE(_PTR) 		{if((_PTR) != NULL) {free(_PTR); _PTR = NULL;}}
+#define CUTIL_FREE(_PTR)			CUTIL_TYPE_FREE(_PTR) // alias
+
 
 //* C memory operations
 // memcpy by type and amount. returns dest pointer.
-#define CUTIL_TYPE_MEMCPY(_TYPE, _AMOUNT, _DESTPTR, _SRCPTR)	\
+#define CUTIL_TYPE_MEMCPY(_TYPE, _DESTPTR, _SRCPTR, _AMOUNT)	\
 	(_TYPE*)memcpy((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
 // memmove by type and amount. supports overlapped memory blocks.
-#define CUTIL_TYPE_MEMMOVE(_TYPE, _AMOUNT, _DESTPTR, _SRCPTR)	\
+#define CUTIL_TYPE_MEMMOVE(_TYPE, _DESTPTR, _SRCPTR, _AMOUNT)	\
 	(_TYPE*)memmove((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
 // set a range of memory by type and amount with BYTE data.
-#define CUTIL_TYPE_MEMSET(_TYPE, _AMOUNT, _BYTE, _DESTPTR) 		\
+#define CUTIL_TYPE_MEMSET(_TYPE, _DESTPTR, _BYTE, _AMOUNT) 		\
 	(_TYPE*)memset((_DESTPTR), (_BYTE), (_AMOUNT)*sizeof(_TYPE))
 // compare a range of memory blocks data, returns integer values <0, >0 or =0(equal).
-#define CUTIL_TYPE_MEMCMP(_TYPE, _AMOUNT, _PTR1, _PTR2)			\
+#define CUTIL_TYPE_MEMCMP(_TYPE, _PTR1, _PTR2, _AMOUNT)			\
 	memcmp((_PTR1), (_PTR2), (_AMOUNT)*sizeof(_TYPE))
 
 /*
 * Examples:
-	const size_t length = 20; // length of numbers
-    uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, length); // std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
-    uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, length); // std::vector<uint32_t> v1(20, 0x00000000);
-	uint32_t aD3[length]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
+	const size_t amount = 20; // amount of variables (!= length in bytes! )
+    uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, amount); // std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
+    uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, amount); // std::vector<uint32_t> v1(20, 0x00000000);
+	uint32_t aD3[amount]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
     
-    uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, length, 0x66, aD1); // set all elements of aD1 to 0x66666666, returns aD3 == aD1
-    uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, length, aD2, aD1); // copy aD1 elements to aD2, returns aD4==aD2
-    uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, length, aD2, aD1);  // equivalents to above.
+    uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, aD1, 0x66, amount); // set all elements of aD1 to 0x66666666, returns aD3 == aD1
+    uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, aD2, aD1, amount); // copy aD1 elements to aD2, returns aD4==aD2
+    uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, aD2, aD1, amount);  // equivalents to above.
     
-    int compResult = CUTIL_TYPE_MEMCMP(uint32_t, length, aD1, aD2); // returns 0, contents of mem blocks equal.
+    int compResult = CUTIL_TYPE_MEMCMP(uint32_t, aD1, aD2, amount); // returns 0, contents of mem blocks equal.
 	
 	CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap)
     CUTIL_TYPE_FREE(aD2);
