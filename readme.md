@@ -12,7 +12,7 @@ A **HEADER FILE** project with macros that can change text color/style and move 
 
 **LICENSE**: 	**MIT** License
 
-Reference of Ansi Escape Codes: 
+Reference of Ansi Escape Codes:
 
 - https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -69,7 +69,7 @@ Reference of Ansi Escape Codes:
 
 2. **Control text cursor location** in console, or erase text.
 
-    Move cursor: `CUp(2)`, `CDown(3)`, `CFwd(4)`, `CBack(5)`, `CNextLn(1)`, `CPrevLn(1)`, 
+    Move cursor: `CUp(2)`, `CDown(3)`, `CFwd(4)`, `CBack(5)`, `CNextLn(1)`, `CPrevLn(1)`,
 
     ​	`CHorzPos(12)`(column X, absolute), `CPos(44, 55)`(move the cursor to row 44, column 55)
 
@@ -120,6 +120,11 @@ Reference of Ansi Escape Codes:
     CUTIL_DEBUG_COUT("debug text " << a << '\n'); 	// calls std::cout <<
     CUTIL_DEBUG_PRINTF("debug text %d", a); 		// calls printf()
     // these function-like macros will DO NOTHING IN RELEASE BUILD.
+    
+    CUTIL_DEBUG_PRINTLN_ERR("debug stderr text {}", a); // print to stderr
+    CUTIL_DEBUG_CERR("debug stderr text " << a << '\n');
+    CUTIL_DEBUG_PRINTF_ERR("debug stderr text %d", a);
+    
     ```
 
 
@@ -268,12 +273,12 @@ Reference of Ansi Escape Codes:
         #include <ConsoleUtil/CppUtil.h>
         
         const size_t amount = 20; // amount of variables ( length in bytes! )
-        uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, amount); 
+        uint32_t* aD1 = CUTIL_TYPE_MALLOC(uint32_t, amount);
         	// std::vector<uint32_t> v1(20); -> elements == 0xCDCDCDCD in heap
         uint32_t* aD2 = CUTIL_TYPE_CALLOC(uint32_t, amount); // std::vector<uint32_t> v1(20, 0x00000000);
         uint32_t aD3[amount]; // C99 VLA, unsupported in C++, -> elements == 0xCCCCCCCC in stack
         
-        uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, aD1, 0x66, amount); 
+        uint32_t* aD3 = CUTIL_TYPE_MEMSET(uint32_t, aD1, 0x66, amount);
         	// set all elements of aD1 to 0x66666666, returns aD3 == aD1
         uint32_t* aD4 = CUTIL_TYPE_MEMMOVE(uint32_t, aD2, aD1, amount); // copy aD1 elements to aD2, returns aD4==aD2
         uint32_t* aD5 = CUTIL_TYPE_MEMCPY(uint32_t, aD2, aD1, amount);  // equivalents to above.
@@ -413,7 +418,7 @@ int main(int argc, char* argv[]){
 	printf(CForward(2)); // move thr cursor 2 characters right
 	
 	
-	CUTIL_PRINT_ERR("error occurred!"); // print an error message with filename, function name and line number ATTACHED.
+	CUTIL_ERROR_MESSAGE("error occurred!"); // print an error message with filename, function name and line number ATTACHED.
 	
 	CUTIL_CONSOLE_PAUSE(); 			 // system("pause");
 	

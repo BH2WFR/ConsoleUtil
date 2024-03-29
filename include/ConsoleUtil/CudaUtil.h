@@ -12,26 +12,45 @@
 //==================== CUDA Utils ==========================
 #ifdef __CUDACC__ //* CUDA 错误检查与退出机制
 
-#define CUTIL_CUDA_PRINT_ERR(_STR) \
-		printf(FLRed "\n=============== CUDA ERROR = %d: " _STR "\n" \
-					"    file: " __FILE__ "\n" \
-					"    func: %s\n" \
-					"    line: %d\n" CReset \
-				, err, __func__, __LINE__);
-	
+#define CUTIL_CUDA_ERROR_MESSAGE(_CUDA_ERROR, _REASON) \
+	fprintf(stderr, FLRed CBold	"\n==== ERROR MESSAGE for CUDA, cudaError: " FLWhite "%d" FLRed ", reason: " FLWhite _REASON CRst "\n" \
+			FRed "    file: " FCyan  __FILE__ "\n" \
+			FRed "    func: " FCyan "%s\n" \
+			FRed "    line: " FCyan "%d\n" \
+			CRst "\n" , (_CUDA_ERROR), __func__, __LINE__ \
+	);
+
+#define CUTIL_CUDA_WARNING_MESSAGE(_CUDA_ERROR, _REASON) \
+	fprintf(stderr, FLYellow "\n==== WARNING MESSAGE for CUDA, cudaError: " FLWhite "%d" FLYellow ", reason: " FLWhite _REASON CRst "\n" \
+			FYellow "    file: " FCyan  __FILE__ "\n" \
+			FYellow "    func: " FCyan "%s\n" \
+			FYellow "    line: " FCyan "%d\n" \
+			CRst "\n" , (_CUDA_ERROR), __func__, __LINE__ \
+	);
+
+
+#define CUTIL_CUDA_ERROR_MESSAGE_IF_NOT_SUCCESS(_CUDA_ERROR, _REASON) \
+	if (_CUDA_ERROR != 0) {CUTIL_CUDA_ERROR_MESSAGE(_REASON);} //* cudaSuccess == 0
+
+#define CUTIL_CUDA_WARNING_MESSAGE_IF_NOT_SUCCESS(_CUDA_ERROR, _REASON) \
+	if (_CUDA_ERROR != 0) {CUTIL_CUDA_WARNING_MESSAGE(_REASON);}
+
+
 // 进行 cuda 部分操作后, 将返回值传入此宏定义中, 如果执行失败, 则输出信息, 并退出当前函数, 第三个参数为 return 值, void 则不填写
-#define CUTIL_CUDA_RETURN_IF_ERR(_ERR, _STR, ...) \
-	if (_ERR != cudaSuccess) { \
-		CUTIL_CUDA_PRINT_ERR(_STR); \
+#define CUTIL_CUDA_RETURN_IF_NOT_SUCCESS(_CUDA_ERROR, _REASON, ...) \
+	if (_CUDA_ERROR != 0) { \
+		CUTIL_CUDA_ERROR_MESSAGE(_CUDA_ERROR, _REASON); \
 		return __VA_ARGS__; \
 	}
 
 // 进行 cuda 部分操作后, 将返回值传入此宏定义中, 如果执行失败, 则输出信息并强行停止程序
-#define CUTIL_CUDA_ABORT_IF_ERR(_ERR, _STR, _RET) \
-	if (_ERR != cudaSuccess) { \
-		CUTIL_CUDA_PRINT_ERR(_STR) \
+#define CUTIL_CUDA_ABORT_IF_NOT_SUCCESS(_CUDA_ERROR, _REASON, _RET) \
+	if (_CUDA_ERROR != 0) { \
+		CUTIL_CUDA_ERROR_MESSAGE(_CUDA_ERROR, _REASON) \
 		exit(_RET); \
 	}
+
+
 
 #endif // __CUDACC__
 

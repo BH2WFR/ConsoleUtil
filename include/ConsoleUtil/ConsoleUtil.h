@@ -12,8 +12,11 @@
 
 
 //* ==== customize parameters:
-	// #define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED	1  // set 0 to disable style changing
+// #define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED	1	// set 0 to disable style changing, espeacially before Windows 10 1511
+// #define CONSOLE_UTIL_DO_NOT_USE_COLOR		1	// do not use color to stderr text
 
+
+//. ==== Environment Check
 #if (!defined(__cplusplus)) && (__STDC_VERSION__ < 199901L || (!defined(__STDC_VERSION__)))
 	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
 #endif
@@ -35,8 +38,8 @@
 	#define CAnsiEsc(_STR)		"\033[" _STR //* C++ Ansi Escape Codes with prefix
 	#define CAnsiEscStr(_STR)	_STR 		 //  raw C++ Ansi EScape Code Strings
 #else
-	#define CAnsiEsc(_STR)	  //* "\033[" ANSI Escape code is UNSUPPORTED before Windows 10 1511 in cmd
-	#define CAnsiEscStr(_STR)
+	#define CAnsiEsc(_STR)	  	"" //* "\033[" ANSI Escape code is UNSUPPORTED before Windows 10 1511 in cmd
+	#define CAnsiEscStr(_STR)	""
 #endif
 
 //* RESET color formatting and font styles to DEFAULT, you must add this after customizing font color
@@ -162,6 +165,17 @@
 	#define CShowCursor		CAnsiEscStr("\033?25h")
 	#define CHideCursor		CAnsiEscStr("\033?25l")
 
+//* macros for text color formatting
+#if (CONSOLE_UTIL_DO_NOT_USE_COLOR == 1) || (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 1)
+	#define CUTIL_COLOR_OPT(_COLOR)		""
+	// #define CUTIL_COLOR_ERR(_STR)		_STR
+	
+#else // CONSOLE_UTIL_DO_NOT_USE_COLOR
+	#define CUTIL_COLOR_OPT(_COLOR)		_COLOR
+	// #define CUTIL_COLOR_ERR(_STR)		CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst)
+	
+#endif // CONSOLE_UTIL_DO_NOT_USE_COLOR
+
 
 //* ==============================================================
 
@@ -169,7 +183,7 @@
 //* macros for console window/application and streams
 #if defined(CUTIL_OS_WINDOWS) // in Windows
 	#if defined(_WINDOWS_) || defined(WINAPI)
-		#define CUTIL_CHCP_ENCODING(_NUM)	{SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM);}
+		#define CUTIL_CHCP_ENCODING(_NUM)	{SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM); system("chcp "#_NUM);}
 	#else // in windows system, but without <windows.h> winapi
 		#define CUTIL_CHCP_ENCODING(_NUM)	system("chcp "#_NUM);	// custom chcp encoding (number) in Windows
 	#endif
@@ -200,6 +214,7 @@
 	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()	\
 		{HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);DWORD mode;GetConsoleMode(handle, &mode); \
 		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;SetConsoleMode(handle, mode);}
+	//? 据说上面的函数在设置时只需要设置一次就可以自动适配到 STD_OUTPUT_HANDLE(stdout) 和 STD_ERROR_HANDLE(stderr) ?
 	
 //#else // without win32api, or in Linux
 #elif (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // without win32api, or in Linux
@@ -267,7 +282,7 @@
 		printf(CForward(2)); // move thr cursor 2 characters right
 		
 		
-		CUTIL_PRINT_ERR("error occured!"); // print an error message with filename, function name and line number ATTACHED.
+		CUTIL_ERROR_MESSAGE("error occured!"); // print an error message with filename, function name and line number ATTACHED.
 		
 		CUTIL_CONSOLE_PAUSE(); 			 // system("pause");
 		
@@ -282,71 +297,114 @@
 
 //* print all argc and argv[n] arguments for main(int argc, char* argv[]) function
 #define CUTIL_PRINT_ARGV(_argc, _argv) { \
-		printf(CReset "\n"); \
-		printf(FBlack BLYellow FLYellow CBold "====== Print Program params, all " FLRed "argc" FBlack " and " FLRed "argv[i]" FBlack " =====" CReset "\n");\
-		printf(FLMagenta "    argc:   " FLWhite "%d\n", (_argc)); \
-		printf(FLGreen   "    argv[  0]: " FLBlue "%.256s\n", (_argv)[0]); \
+		printf(CRst "\n"); \
+		printf(FLCyan CBold "====== Print Program params for `int main(int " FLWhite "argc" FLCyan ", char* " FLYellow "argv[]" FLCyan ")` =====" CRst "\n");\
+		printf(FLWhite CBold 	"  argc: " FLWhite "%d" CRst "\n", (_argc)); \
+		printf(FLGreen   		"    argv[  0]: " FLBlue "%.256s\n", (_argv)[0]); \
 		for(int i = 1; i < (_argc); i++) { \
-			printf(FLYellow "    argv[%3d]: " FLCyan "%.256s\n", i, (_argv)[i]); \
+			printf(FLYellow 	"    argv[%3d]: " FLGreen "%.256s\n", i, (_argv)[i]); \
 		} \
-		printf(CReset "\n"); \
+		printf(CRst "\n"); \
 	}
 		
 //* print an error message with filename, function name and line number ATTACHED.
-#define CUTIL_PRINT_ERR(_STR) \
-	printf(FLRed "\n=============== ERROR: " FLYellow _STR FLRed "\n" \
-				"    file: " __FILE__ "\n" \
-				"    func: %s\n" \
-				"    line: %d\n\n" CReset \
-			, __func__, __LINE__);
+#define CUTIL_ERROR_MESSAGE(_REASON) \
+	fprintf(stderr, FLRed CBold	"\n=============== ERROR MESSAGE: " FLWhite _REASON CRst "\n" \
+			FRed "    file: " FCyan  __FILE__ "\n" \
+			FRed "    func: " FCyan "%s\n" \
+			FRed "    line: " FCyan "%d\n" \
+			CRst "\n" , __func__, __LINE__ \
+	);
 
+//* print an warning message with filename, function name and line number ATTACHED.
+#define CUTIL_WARNING_MESSAGE(_REASON) \
+	fprintf(stderr, FLYellow "\n=============== WARNING MESSAGE: " FLWhite _REASON CRst "\n" \
+			FYellow "    file: " FCyan  __FILE__ "\n" \
+			FYellow "    func: " FCyan "%s\n" \
+			FYellow "    line: " FCyan "%d\n" \
+			CRst "\n" , __func__, __LINE__ \
+	);
 
 // print an error message, and force abort application.
-#define CUTIL_ABORT_ERR(_STR) 	 	{CUTIL_PRINT_ERR(_STR); exit(-1);}
-#define CUTIL_ABORT_ERR_ASM(_STR) 	{CUTIL_PRINT_ERR(_STR); asm("exit");}
+#define CUTIL_ABORT_ERR(_REASON) 	 	{CUTIL_ERROR_MESSAGE(_REASON); exit(-1);}
+#define CUTIL_ABORT_ERR_ASM(_REASON) 	{CUTIL_ERROR_MESSAGE(_REASON); asm("exit");}
 
 
 //* macros for print something ONLY IN DEBUG BUILD
+
 #if CUTIL_DEBUG_BUILD // Only Print in Debug Build
 	#if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
-		#define CUTIL_DEBUG_PRINT(_STR, ...)	   fmt::print(_STR, ##__VA_ARGS__);
-		#define CUTIL_DEBUG_PRINTLN(_STR, ...)	   fmt::println(_STR, ##__VA_ARGS__);
+		#define CUTIL_DEBUG_PRINT(_STR, ...)			fmt::print(_STR, ##__VA_ARGS__);
+		#define CUTIL_DEBUG_PRINTLN(_STR, ...)			fmt::println(_STR, ##__VA_ARGS__);
+		#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)		fmt::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+		#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
 		// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
 	#elif CUTIL_CPP_VER >= 202302L // C++23 std::print(), std::println()
 		#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
-			#define CUTIL_DEBUG_PRINT(_STR, ...)   std::print(_STR, ##__VA_ARGS__);
-			#define CUTIL_DEBUG_PRINTLN(_STR, ...) std::println(_STR, ##__VA_ARGS__);
+			#define CUTIL_DEBUG_PRINT(_STR, ...)		std::print(_STR, ##__VA_ARGS__);
+			#define CUTIL_DEBUG_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__);
+			#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)	std::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+			#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)	std::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
 		#else // no fmtlib, and after C++23
 			#define CUTIL_DEBUG_PRINT(_STR, ...)
 			#define CUTIL_DEBUG_PRINTLN(_STR, ...)
+			#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)
+			#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)
 		#endif
 	#else // no fmtlib, and before C++23
 		#define CUTIL_DEBUG_PRINT(_STR, ...)
 		#define CUTIL_DEBUG_PRINTLN(_STR, ...)
+		#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)
+		#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)
 	#endif // _PRINT_
 	
 	// for std::cout, and printf()
-	#define CUTIL_DEBUG_COUT(...)			 std::cout << __VA_ARGS__;
-	#define CUTIL_DEBUG_COUTLN(...)			 std::cout << __VA_ARGS__ << '\n';
+	#define CUTIL_DEBUG_COUT(...)			std::cout << __VA_ARGS__;
+	#define CUTIL_DEBUG_COUTLN(...)			std::cout << __VA_ARGS__ << '\n';
+	#define CUTIL_DEBUG_CERR(...)			std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "";
+	#define CUTIL_DEBUG_CERRLN(...)			std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "" << '\n';
 	
-	#define CUTIL_DEBUG_PRINTF(_STR, ...)    printf(_STR, ##__VA_ARGS__);
-	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)  printf(_STR "\n", ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTF(_STR, ...)		printf(_STR, ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)		printf(_STR "\n", ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTF_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTFLN_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) "\n", ##__VA_ARGS__);
 	
 	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv) 	CUTIL_PRINT_ARGV(_argc, _argv)
 	
 #else // Do Nothing in Release Build
 	#define CUTIL_DEBUG_PRINT(_STR, ...)
 	#define CUTIL_DEBUG_PRINTLN(_STR, ...)
+	#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)
+	#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)
 	
 	#define CUTIL_DEBUG_COUT(...)
 	#define CUTIL_DEBUG_COUTLN(...)
+	#define CUTIL_DEBUG_CERR(...)
+	#define CUTIL_DEBUG_CERRLN(...)
 	
 	#define CUTIL_DEBUG_PRINTF(_STR, ...)
 	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)
+	#define CUTIL_DEBUG_PRINTF_ERR(_STR, ...)
+	#define CUTIL_DEBUG_PRINTFLN_ERR(_STR, ...)
 	
 	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv)
 	
 #endif // CUTIL_DEBUG_BUILD
+// aliases
+#define CU_DBG_PRINT(_STR, ...)			CUTIL_DEBUG_PRINT(_STR, ##__VA_ARGS__)
+#define CU_DBG_PRINTLN(_STR, ...)		CUTIL_DEBUG_PRINTLN(_STR, ##__VA_ARGS__)
+#define CU_DBG_PRINT_ERR(_STR, ...)		CUTIL_DEBUG_PRINT_ERR(_STR, ##__VA_ARGS__)
+#define CU_DBG_PRINTLN_ERR(_STR, ...)	CUTIL_DEBUG_PRINTLN_ERR(_STR, ##__VA_ARGS__)
+
+#define CU_DBG_COUT(...)				CUTIL_DEBUG_COUT(__VA_ARGS__)
+#define CU_DBG_COUTLN(...)				CUTIL_DEBUG_COUTLN(__VA_ARGS__)
+#define CU_DBG_CERR(...)				CUTIL_DEBUG_CERR(__VA_ARGS__)
+#define CU_DBG_CERRLN(...)				CUTIL_DEBUG_CERRLN(__VA_ARGS__)
+
+#define CU_DBG_PRINTF(_STR, ...)		CUTIL_DEBUG_PRINTF(_STR, ##__VA_ARGS__)
+#define CU_DBG_PRINTFLN(_STR, ...)		CUTIL_DEBUG_PRINTFLN(_STR, ##__VA_ARGS__)
+#define CU_DBG_PRINTF_ERR(_STR, ...)	CUTIL_DEBUG_PRINTF_ERR(_STR, ##__VA_ARGS__)
+#define CU_DBG_PRINTFLN_ERR(_STR, ...)	CUTIL_DEBUG_PRINTFLN_ERR(_STR, ##__VA_ARGS__)
 /* instruction:
 	if you want to print some debug message to console, and only do this in DEBUG BUILD,
 	use these macros above, they will do nothing in release build.
@@ -356,7 +414,47 @@
 	CUTIL_DEBUG_PRINTLN("this is {}", 5); // expand to fmt::println(if you include fmtlib headers above
 										this header include), or std::println(C++23)
 	CUTIL_DEBUG_PRINTF("this is %d", 5); // expand to printf in debug build
+	
+	CUTIL_DEBUG_PRINTLN_ERR("err: cannot ...!"); // print to stderr
+	CUTIL_DEBUG_PRINTLN(stderr, "err: cannot ...!"); // equivelent
+	CUTIL_DEBUG_CERR("err: cannot ... !" << 2 << std::endl);
 */
+
+#if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
+	#define CUTIL_PRINT(_STR, ...)				fmt::print(_STR,   ##__VA_ARGS__);
+	#define CUTIL_PRINTLN(_STR, ...)			fmt::println(_STR, ##__VA_ARGS__);
+	#define CUTIL_PRINT_ERR(_STR, ...)			fmt::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__);
+	#define CUTIL_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__);
+	// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
+#elif CUTIL_CPP_VER >= 202302L // C++23 std::print(), std::println()
+	#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
+		#define CUTIL_PRINT(_STR, ...)			std::print(_STR,   ##__VA_ARGS__);
+		#define CUTIL_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__);
+		#define CUTIL_PRINT_ERR(_STR, ...)		std::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+		#define CUTIL_PRINTLN_ERR(_STR, ...)	std::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+	#else // no fmtlib, and after C++23
+		#define CUTIL_PRINT(_STR, ...)
+		#define CUTIL_PRINTLN(_STR, ...)
+		#define CUTIL_PRINT_ERR(_STR, ...)
+		#define CUTIL_PRINTLN_ERR(_STR, ...)
+	#endif
+#else // no fmtlib, and before C++23
+	#define CUTIL_PRINT(_STR, ...)
+	#define CUTIL_PRINTLN(_STR, ...)
+	#define CUTIL_PRINT_ERR(_STR, ...)
+	#define CUTIL_PRINTLN_ERR(_STR, ...)
+#endif // _PRINT_
+
+// for std::cout, and printf()
+// #define CUTIL_COUT(...)			std::cout << __VA_ARGS__;
+// #define CUTIL_COUTLN(...)		std::cout << __VA_ARGS__ << '\n';
+// #define CUTIL_CERR(...)			std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "";
+// #define CUTIL_CERRLN(...)		std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "" << '\n';
+
+// #define CUTIL_PRINTF(_STR, ...)		printf(_STR, ##__VA_ARGS__);
+// #define CUTIL_PRINTFLN(_STR, ...)		printf(_STR "\n", ##__VA_ARGS__);
+#define CUTIL_PRINTF_ERR(_STR, ...)		fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+#define CUTIL_PRINTFLN_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) "\n", ##__VA_ARGS__);
 
 
 

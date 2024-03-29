@@ -79,29 +79,29 @@ Usage Example:
 
 //* C memory allocations
 // malloc by type and amount, only alloc heap memory without initialization. returns nullptr if failed.
-#define CUTIL_TYPE_MALLOC(_TYPE, _AMOUNT) 	(_TYPE*)malloc((_AMOUNT)*sizeof(_TYPE)) // only alloc.
+#define CUTIL_TYPE_MALLOC(_TYPE, _AMOUNT) 			(_TYPE*)malloc((_AMOUNT)*sizeof(_TYPE)) // only alloc.
 // calloc by type and amount, alloc heap memory then initialize with 0x00. returns nullptr if failed.
-#define CUTIL_TYPE_CALLOC(_TYPE, _AMOUNT) 	(_TYPE*)calloc((_AMOUNT), sizeof(_TYPE))  // init to 0
+#define CUTIL_TYPE_CALLOC(_TYPE, _AMOUNT) 			(_TYPE*)calloc((_AMOUNT), sizeof(_TYPE))  // init to 0
 // realloc memory by type and amount. returns nullptr if failed.
-#define CUTIL_TYPE_REALLOC(_TYPE, _PTR, _AMOUNT)  (_TYPE*)realloc((_PTR), (_AMOUNT)*sizeof(_TYPE))
+#define CUTIL_TYPE_REALLOC(_TYPE, _PTR, _AMOUNT)	(_TYPE*)realloc((_PTR), (_AMOUNT)*sizeof(_TYPE))
 // free heap memory allocated with malloc/calloc, then set to nullptr.
-#define CUTIL_TYPE_FREE(_PTR) 		{if((_PTR) != NULL) {free(_PTR); _PTR = NULL;}}
-#define CUTIL_FREE(_PTR)			CUTIL_TYPE_FREE(_PTR) // alias
+#define CUTIL_TYPE_FREE(_PTR) 						{if((_PTR) != NULL) {free(_PTR); _PTR = NULL;}}
+#define CUTIL_FREE(_PTR)							CUTIL_TYPE_FREE(_PTR) // alias
 
 
 //* C memory operations
 // memcpy by type and amount. returns dest pointer.
 #define CUTIL_TYPE_MEMCPY(_TYPE, _DESTPTR, _SRCPTR, _AMOUNT)	\
-	(_TYPE*)memcpy((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
+		(_TYPE*)memcpy((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
 // memmove by type and amount. supports overlapped memory blocks.
 #define CUTIL_TYPE_MEMMOVE(_TYPE, _DESTPTR, _SRCPTR, _AMOUNT)	\
-	(_TYPE*)memmove((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
+		(_TYPE*)memmove((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
 // set a range of memory by type and amount with BYTE data.
 #define CUTIL_TYPE_MEMSET(_TYPE, _DESTPTR, _BYTE, _AMOUNT) 		\
-	(_TYPE*)memset((_DESTPTR), (_BYTE), (_AMOUNT)*sizeof(_TYPE))
+		(_TYPE*)memset((_DESTPTR), (_BYTE), (_AMOUNT)*sizeof(_TYPE))
 // compare a range of memory blocks data, returns integer values <0, >0 or =0(equal).
 #define CUTIL_TYPE_MEMCMP(_TYPE, _PTR1, _PTR2, _AMOUNT)			\
-	memcmp((_PTR1), (_PTR2), (_AMOUNT)*sizeof(_TYPE))
+		memcmp((_PTR1), (_PTR2), (_AMOUNT)*sizeof(_TYPE))
 
 /*
 * Examples:
