@@ -27,6 +27,10 @@ Reference of Ansi Escape Codes:
 - features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
     - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
+- C language version `≥ C99`, C++ language `≥ C++98`, with `##__VA_ARGS__` extension support. 
+
+    (**MSVC supports `##__VA_ARGS__` since VS2015 Update 3**. if your MSVC or VS version is older, pls delete "`##`", MSVC eats trailing comma before `__VA_ARGS__` by default without `/Zc::preprocessor` command)
+
 - Pls #include the header file <`ConsoleUtil/ConsoleUtil.h`> after other header files, especially those from libraries such as Qt/fmtlib. DO NOT #include <`ConsoleUtil/ConsoleUtil.h`> in header files.
 
 - You can include <`ConsoleUtil/CppUtil.h`> in header files.  No need to include <`ConsoleUtil/CppUtil.h`> in source files if you already included <`ConsoleUtil/ConsoleUtil.h`>, because it has been included in <`ConsoleUtil/ConsoleUtil.h`>.
@@ -172,11 +176,11 @@ Reference of Ansi Escape Codes:
     // <ConsoleUtil/CppUtil.h> can be included in header files.
     ```
     - decide if the project is under debug build or Release build mode.
-      
+    
         in MSVC, macro `_DEBUG` is defined under debug build; in GCC, macro `NDEBUG` is defined under release build.
-        
+    
         you can add `add_compile_definitions("$<IF:$<CONFIG:Debug>,_DEBUG,NDEBUG>")` in CMake.
-        
+    
         ```c++
         #include <ConsoleUtil/CppUtil.h>
         #if CUTIL_DEBUG_BUILD // Debug
@@ -185,34 +189,80 @@ Reference of Ansi Escape Codes:
             //...
         #endif
         ```
-        
-    - set bit to a unsigned integer variable in some hardware projects
+    
+    - set bit to a unsigned integer variable in some hardware projects; rotate bits
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
         uint16_t num {0b00000000'00000001}; // C++14
-        // the 2nd parameter is the index of bit, starts at 0
-        CUTIL_BIT_SET(num, 0);		// equals to (num |=  (1u << 0));
-        CUTIL_BIT_CLEAR(num, 2);	// equals to (num &= ~(1u << 2));
-        CUTIL_BIT_TOGGLE(num, 3);	// equals to (num ^=  (1u << 3));
+        // operate bit by index, starts at 0. use them in a seperate line, and returns nothing
+        CUTIL_BIT_SET_IDX(num, 0);		// equals to {num |=  (1u << 0));}
+        CUTIL_BIT_CLEAR_IDX(num, 2);	// equals to {num &= ~(1u << 2));}
+        CUTIL_BIT_TOGGLE_IDX(num, 3);	// equals to {num ^=  (1u << 3));}
         
-        if(CUTIL_BIT_GET(num, 0) != 0){ // reading bit, if bit is 1, returns (1<<BIT_IDX), NOT 1
+        
+        if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns (1<<BIT_IDX), NOT 1
         	printf("%x\n", num);
         }
+        if(CUTIL_BIT_CHK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns 1, != CUTIL_BIT_GET_IDX()
+        	printf("%x\n", num);
+        }
+        
+        // operate bit by mask
+        CUTIL_BIT_SET_MASK(num, 0x2B00); 	// equals to {num |=  0x2B00;}
+        CUTIL_BIT_CLEAR_MASK(num, 0x2B00); 	// equals to {num &= ~0x2B00;}
+        CUTIL_BIT_TOGGLE_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
+        
+        if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0){ // returns (num & 0x0022)
+        	printf("%x\n", num);
+        }
+        
+        // rotate bits. use them in a seperate line, and returns nothing
+        uint16_t var{0x1234};
+        
+        CUTIL_BIT_ROTATE_LEFT_SIZE(8*sizeof(uint16_t), var, 1); // rotate bits of `var` by 1 bit step
+        CUTIL_BIT_ROTATE_RIGHT_SIZE(8*sizeof(uint16_t), var, 1);
+        
+        CUTIL_BIT_ROTATE_LEFT_TYPE(decltype(var), var, 1); // equivelent, also `typeof` for GNU C or C23
+        CUTIL_BIT_ROTATE_RIGHT_TYPE(decltype(var), var, 1);
+        
+        CUTIL_BIT_ROTATE_LEFT(var, 1); // equivelent, C++, GNU C, C23 only
+        CUTIL_BIT_ROTATE_RIGHT(var, 1);
+        
         ```
     
-    - swap variables in C (do not use in C++, pls replace with std::swap()), or get the maximum or minimum item between two numbers;
+    - swap variables in C (types of `_VAR1` and `_VAR2` should be strictly equal; do not use in C++, pls replace with std::swap()), 
+    
+        or get the maximum or minimum item between two numbers;
     
         ```c
         #include <ConsoleUtil/CppUtil.h>
-        int a = 1, b = 2;
-        CUTIL_SWAP_VARS(int, a, b); // declare type in 3rd arg.
-        CUTIL_SWAP_VARS(typeof(a), a, b); // GNU C only
-        CUTIL_SWAP_VARS_GNU(a, b); 			// GNU C only
+        uint32_t a = 1, b = 2; // type of `a` and `b` must be strictly equal.
         
-        int max_ab = CUTIL_GET_MAX(a, b); // maximum number between a and b
-        int min_ab = CUTIL_GET_MIN(a, b); // minimum number between a and b
+        CUTIL_SWAP(a, b); // use in C++(decltype), GNU C(typeof), or C23(typeof)
+        
+        CUTIL_SWAP_TYPE(uint32_t, a, b); 	// equivelent, specify the type.
+        CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivelent, in GNU C or C23
+        CUTIL_SWAP_TYPE(decltype(a), a, b); // equivelent in C++, but prefer to use `std::swap()`
+        
+        int max_ab = CUTIL_MAX(a, b); // maximum number between a and b
+        int min_ab = CUTIL_MIN(a, b); // minimum number between a and b
         ```
+    
+    - check if two floating-point numbers are equal (float, double, long double) by checking diff of two numbers is within epsilon limit.
+    
+        ```c++
+        #include <ConsoleUtil/CppUtil.h>
+        float a = -1.00000f, b = -0.99999f; // they can regarded as equal
+        double c = 1.000000000, d = 1.0000000001;
+        
+        bool isEqual1 = CUTIL_EQUAL_F(a, b); // fabs(a-b) within (-epsilon, +epsilon), epsilon == FLT_EPSILON in <float.h>
+        bool isEqual2 = CUTIL_EQUAL_D(c, d); // epsilon == DBL_EPSILON in <float.h>
+        bool isEqual3 = CUTIL_EQUAL(c, d, 0.0001); // custom epsilon value
+        
+        ```
+    
+        
     
     - count amount of arguments (up to 35)
     
@@ -226,19 +276,19 @@ Reference of Ansi Escape Codes:
     
     - match C++ language version, especially if you want to let the project build both by MSVC and G++.
     
-        equals to "`_MSVC_LANG`" for MSVC, and "`__cplusplus`" for other compilers.
+        `CUITIL_CPP_LANG` equals to "`_MSVC_LANG`" for MSVC, and "`__cplusplus`" for other compilers.
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
-        #if CUTIL_CPP_VER >= 199711L	// C++98
-        #if CUTIL_CPP_VER >= 201103L	// C++11
-        #if CUTIL_CPP_VER >= 201402L	// C++14
-        #if CUTIL_CPP_VER >= 201703L	// C++17
-        #if CUTIL_CPP_VER >= 202002L	// C++20
-        #if CUTIL_CPP_VER >= 202302L	// C++23 (temporary unsupported)
+        #if CUTIL_CPP_LANG >= 199711L	// C++98
+        #if CUTIL_CPP_LANG >= 201103L	// C++11
+        #if CUTIL_CPP_LANG >= 201402L	// C++14
+        #if CUTIL_CPP_LANG >= 201703L	// C++17
+        #if CUTIL_CPP_LANG >= 202002L	// C++20
+        #if CUTIL_CPP_LANG >= 202302L	// C++23 (temporary unsupported)
         ```
-        
-    -  set C++11 class constructor/moving/copying to disabled/default
+    
+    - set C++11 class constructor/moving/copying to disabled/default
         ```c++
         #include <ConsoleUtil/CppUtil.h>
         class MyClass{
@@ -266,10 +316,10 @@ Reference of Ansi Escape Codes:
         #define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
         */
         ```
-        
-    -  memory allocation and operations for C (wrapped `malloc()` `free()` `memset()` `memcpy()` with typename to macros. use AMOUNT of variables to substitute length in bytes.)
     
-        ```c
+    - memory allocation and operations for C (wrapped `malloc()` `free()` `memset()` `memcpy()` with typename to macros. use AMOUNT of variables to substitute length in bytes.) `CUTIL_TYPE_FREE()` macro also sets pointer to `nullptr`.
+    
+        ```c++
         #include <ConsoleUtil/CppUtil.h>
         
         const size_t amount = 20; // amount of variables ( length in bytes! )
@@ -285,12 +335,30 @@ Reference of Ansi Escape Codes:
         
         int compResult = CUTIL_TYPE_MEMCMP(uint32_t, aD1, aD2, amount); // returns 0, contents of mem blocks equal.
         
-        CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap)
-        CUTIL_TYPE_FREE(aD2);
-        
+        CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap); then set `aD1` to `nullptr`
+        CUTIL_TYPE_FREE(aD2); // set `aD2` to `nullptr`
+        // you need't add `aD1 = NULL`.
         ```
+    
+    - `delete` or `delete[]` pointer to heap created by `new` or `new[]`, then set to `nullptr`.
+    
+        ```c++
+        #include <ConsoleUtil/CppUtil.h>
         
+        uint32_t* p1 = new uint32_t(123);
+        uint32_t* p2 = new uint32_t[50];
+        CUTIL_DELETE(p1);		// delete p1; p1 = nullptr;
+        CUTIL_DELETE_ARR(p2); 	// delete[] p2; p2 = nullptr;
+        // you need't add `p1 = nullptr`.
+        ```
+    
         
+
+
+
+
+
+
 
 
 9. **Some Macros for Qt Projects**:

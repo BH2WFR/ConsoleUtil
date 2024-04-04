@@ -7,22 +7,32 @@
 #define CONSOLEUTIL_CPP_UTIL_H__
 
 
+//* ==== Environment Check, `> C99/C++98` with `##__VA_ARGS__` extension (available in MSVC(>VS2015 U3)/GCC/Clang)
+#if (!defined(__cplusplus)) && (__STDC_VERSION__ < 199901L || (!defined(__STDC_VERSION__)))
+	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
+#endif
+
+
+
 // include vital C headers
 #ifdef __cplusplus
 	#include <cstdio>
 	#include <cstdlib>
 	#include <cstdint>
+	#include <cfloat>
 #else //. !__cplusplus
 	#include <stdio.h>
 	#include <stdlib.h>
-	#include <stdint.h>
-	#include <stdbool.h>
+	#include <stdint.h>	// uint32_t
+	#include <float.h>	// floating-point limits
+	#if (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
+		#include <stdbool.h> // bool support since C99, before C23 (became keyword)
+	#endif
 #endif // __cplusplus
 
 
 //==================== C Utils ============================
-#define _DEBUG
-#define NDEBUG
+
 //* detect Debug Build or Release Build
 #if (!defined(NDEBUG)) || defined(_DEBUG)
 	#define CUTIL_DEBUG_BUILD 	 1 	// Debug
@@ -31,7 +41,7 @@
 #endif
 /*
 	in MSVC, macro `_DEBUG` is defined under debug build;
-	in GCC, macro `NDEBUG` is defined under release build;
+	in GCC, macro `NDEBUG` is defined under release build, also for projects configured by CMake.
 	you can add `add_compile_definitions("$<IF:$<CONFIG:Debug>,_DEBUG,NDEBUG>")` in CMake.
 	
 Usage Example:
@@ -42,9 +52,15 @@ Usage Example:
 	#endif
 */
 
+//* get type of variable, only for GNU C, C23, C++
+#ifndef __cplusplus
+	#define CUTIL_TYPE(_VAR)	typeof(_VAR)	// only for GNU C, and C23.
+#else //. ! __cplusplus
+	#define CUTIL_TYPE(_VAR)	decltype(_VAR) 	// do not quote `_VAR`
+#endif //. ! __cplusplus
 
 
-//* get count of arguments
+//* get count of arguments, up to 35
 #define CUTIL_VA_63TH_ARG(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9, \
 			a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z, \
 			A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,_63TH_ARG,...)  _63TH_ARG
@@ -61,20 +77,58 @@ Usage Example:
 */
 
 //* bit calculating macros
-#define CUTIL_BIT_GET(_NUM, BIT_IDX)	((_NUM) & (1u << (BIT_IDX)))	// if bit is 1, returns (1<<BIT_IDX), NOT 1
-#define CUTIL_BIT_SET(_NUM, BIT_IDX)	((_NUM) |=  (1u << (BIT_IDX)));	// must use them in separate lines
-#define CUTIL_BIT_CLEAR(_NUM, BIT_IDX)	((_NUM) &= ~(1u << (BIT_IDX)));
-#define CUTIL_BIT_TOGGLE(_NUM, BIT_IDX)	((_NUM) ^=  (1u << (BIT_IDX)));
+#define CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK)		((_NUM) & (_BIT_MASK))
+#define CUTIL_BIT_SET_MASK(_NUM, _BIT_MASK)		{(_NUM) |=  (_BIT_MASK);}	// must use them in a separate line, returns nothing
+#define CUTIL_BIT_CLEAR_MASK(_NUM, _BIT_MASK)	{(_NUM) &= ~(_BIT_MASK);}
+#define CUTIL_BIT_TOGGLE_MASK(_NUM, _BIT_MASK)	{(_NUM) ^=  (_BIT_MASK);}
+
+#define CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_GET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// if bit of index _BIT_IDX is 1, returns (1<<_BIT_IDX), NOT 1
+#define CUTIL_BIT_SET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_SET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// must use them in separate lines, returns nothing
+#define CUTIL_BIT_CLEAR_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_CLEAR_MASK(_NUM, 	(1u << (_BIT_IDX)))
+#define CUTIL_BIT_TOGGLE_IDX(_NUM, _BIT_IDX) 	CUTIL_BIT_TOGGLE_MASK(_NUM, (1u << (_BIT_IDX)))
+#define CUTIL_BIT_CHK_IDX(_NUM, _BIT_IDX)		(CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX) ? 1 : 0) 	// returns 1 if bit of _BIT_IDX is 1, != CUTIL_BIT_GET_IDX()
+
+#define CU_BIT_IDX(_NUM, _BIT_IDX)			CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX) // shorter alias of CUTIL_BIT_GET_IDX()
+#define CU_BIT_1(_NUM, _BIT_IDX)			CUTIL_BIT_CHK_IDX(_NUM, _BIT_IDX)
+
+// rolate bits, use them in a seperate line
+#define CUTIL_BIT_ROTATE_LEFT_SIZE(_BIT_SIZE, _BIT, _STEP)		{(_BIT) = ((_BIT) << (_STEP)) | ((_BIT) >> ((_BIT_SIZE) - (_STEP)));}
+#define CUTIL_BIT_ROTATE_RIGHT_SIZE(_BIT_SIZE, _BIT, _STEP)		{(_BIT) = ((_BIT) >> (_STEP)) | ((_BIT) << ((_BIT_SIZE) - (_STEP)));}
+
+#define CUTIL_BIT_ROTATE_LEFT_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_SIZE(8u * sizeof(_TYPE), _BIT, _STEP)
+#define CUTIL_BIT_ROTATE_RIGHT_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_SIZE(8u * sizeof(_TYPE), _BIT, _STEP)
+
+#define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_TYPE(CUTIL_TYPE(_BIT), _BIT, _STEP) // uses `typeof`, GNU C, C23, C++ only
+#define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_TYPE(CUTIL_TYPE(_BIT), _BIT, _STEP)
 
 
-//* swap items, only for C, do not use in C++ (use std::swap())
-#define CUTIL_SWAP_VARS(_TYPE, _VAR1, _VAR2) {_TYPE sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;}
-#define CUTIL_SWAP_VARS_GNU(_VAR1, _VAR2)	 {typeof(_VAR1) sw = _VAR2; _VAR2 = _VAR1; _VAR1 = sw;} // GNU C only
-	// CUTIL_SWAP_VARS(int, a, b);
+//* swap items, only for C, types of `_VAR1` and `_VAR2` should be strictly equal, do not use in
+#define CUTIL_SWAP_TYPE(_TYPE, _VAR1, _VAR2) 	{_TYPE _sw = (_VAR2); (_VAR2) = (_VAR1); (_VAR1) = _sw;} // CUTIL_SWAP_VARS(uint32_t, a, b);
+#define CUTIL_SWAP(_VAR1, _VAR2)			 	CUTIL_SWAP_TYPE(CUTIL_TYPE(_VAR1), _VAR1, _VAR2) // only for GNU C and C23 because it uses `typeof`
+
 
 //* get min or max value
-#define CUTIL_GET_MAX(_VAR1, _VAR2) 	(((_VAR1) > (_VAR2)) ? (_VAR1) : (_VAR2))
-#define CUTIL_GET_MIN(_VAR1, _VAR2)		(((_VAR1) < (_VAR2)) ? (_VAR1) : (_VAR2))
+#define CUTIL_MAX(_VAR1, _VAR2) 	(((_VAR1) > (_VAR2)) ? (_VAR1) : (_VAR2))
+#define CUTIL_MIN(_VAR1, _VAR2)		(((_VAR1) < (_VAR2)) ? (_VAR1) : (_VAR2))
+
+#define CU_MAX(_VAR1, _VAR2) 			CUTIL_MAX(_VAR1, _VAR2) // shorter alias
+#define CU_MIN(_VAR1, _VAR2) 			CUTIL_MIN(_VAR1, _VAR2)
+
+
+//* get abs of int/float/double (not recommanded in C++, pls use abs() function)
+#define CUTIL_ABS(_VAR)		(((_VAR) >= 0) ? (_VAR) : (-1)*(_VAR) ) // equals to abs(), fabs(), fabsf() function in C
+#define CU_ABS(_VAR)		CUTIL_ABS(_VAR) // shorter alias
+
+//* determine if two float/double numbers are regarded as equal (within epsilon)
+#define CUTIL_EQUAL(_F1, _F2, _EPSILON)		(( CUTIL_ABS((_F1) - (_F2)) < CUTIL_ABS((_EPSILON)) ) ? 1 : 0) // diff within (-epsilon, +epsilon)
+#define CUTIL_EQUAL_F(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, FLT_EPSILON)	// float, using epsilon values defined in <float.h>
+#define CUTIL_EQUAL_D(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, DBL_EPSILON)	// double
+#define CUTIL_EQUAL_LD(_F1, _F2)			CUTIL_EQUAL(_F1, _F2, LDBL_EPSILON) // long double
+
+#define CU_EQU(_F1, _F2, _EPSILON)		CUTIL_EQUAL(_F1, _F2, _EPSILON) // shorter alias
+#define CU_EQU_F(_F1, _F2)				CUTIL_EQUAL_F(_F1, _F2)
+#define CU_EQU_D(_F1, _F2)				CUTIL_EQUAL_D(_F1, _F2)
+#define CU_EQU_LD(_F1, _F2)				CUTIL_EQUAL_LD(_F1, _F2)
 
 
 //* C memory allocations
@@ -116,8 +170,9 @@ Usage Example:
     
     int compResult = CUTIL_TYPE_MEMCMP(uint32_t, aD1, aD2, amount); // returns 0, contents of mem blocks equal.
 	
-	CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap)
+	CUTIL_TYPE_FREE(aD1); // element values -> 0xDDDDDDDD (deleted heap); then set `aD1` to `nullptr`
     CUTIL_TYPE_FREE(aD2);
+	// you need't add `aD1 = NULL`.
 */
 
 
@@ -126,30 +181,30 @@ Usage Example:
 
 //* get C++ language standard version, do not add "L" suffix after number
  // in MSVC compiler, __cplusplus always equals to 199711L, but _MSVC_LANG(Prior to VS2015) equals to cpp standard version
-#ifdef _MSVC_LANG // example: #if CUTIL_CPP_VER >= 201103L
-	#define CUTIL_CPP_VER			_MSVC_LANG	// for MSVC
+#ifdef _MSVC_LANG // example: #if CUTIL_CPP_LANG >= 201103L
+	#define CUTIL_CPP_LANG			_MSVC_LANG	// for MSVC
 #else //. !defined _MSVC_LANG
-	#define CUTIL_CPP_VER			__cplusplus // for GCC, Clang (also MSVC with the copiler argument "/Zc:__cplusplus")
+	#define CUTIL_CPP_LANG			__cplusplus // for GCC, Clang (also MSVC with the copiler argument "/Zc:__cplusplus")
 #endif // _MSVC_LANG
 /*
 * example:
-	#if CUTIL_CPP_VER >= 199711L	// C++98
-	#if CUTIL_CPP_VER >= 201103L	// C++11
-	#if CUTIL_CPP_VER >= 201402L	// C++14
-	#if CUTIL_CPP_VER >= 201703L	// C++17
-	#if CUTIL_CPP_VER >= 202002L	// C++20
-	#if CUTIL_CPP_VER >= 202302L	// C++23 (temporary not supported)
+	#if CUTIL_CPP_LANG >= 199711L	// C++98
+	#if CUTIL_CPP_LANG >= 201103L	// C++11
+	#if CUTIL_CPP_LANG >= 201402L	// C++14
+	#if CUTIL_CPP_LANG >= 201703L	// C++17
+	#if CUTIL_CPP_LANG >= 202002L	// C++20
+	#if CUTIL_CPP_LANG >= 202302L	// C++23 (temporary not supported)
 */
 
 
 //* delete a heap pointer, and set it nullptr. arg "p" must be a pointer inited by "new" or "new[]".
-#define CUTIL_DELETE_AND_NULL(p)		{delete   p; p = NULL;}
-#define CUTIL_DELETE_AND_NULL_ARR(p)	{delete[] p; p = NULL;}
+#define CUTIL_DELETE(p)		{delete   p; p = NULL;}
+#define CUTIL_DELETE_ARR(p)	{delete[] p; p = NULL;}
 	// keyword "nullptr" is unsupported in C++98
 
 
 //* set C++11 class constructor/moving/copying to disabled/default
-#if CUTIL_CPP_VER >= 201103L 	//* >= C++11
+#if CUTIL_CPP_LANG >= 201103L 	//* >= C++11
 	// Default Constructor(no params) and Destructor
 	#define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME) \
 		_CLASS_NAME() = default; \

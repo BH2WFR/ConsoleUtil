@@ -16,12 +16,6 @@
 // #define CONSOLE_UTIL_DO_NOT_USE_COLOR		1	// do not use color to stderr text
 
 
-//. ==== Environment Check
-#if (!defined(__cplusplus)) && (__STDC_VERSION__ < 199901L || (!defined(__STDC_VERSION__)))
-	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
-#endif
-
-
 //* include dependent headers:
 #include <ConsoleUtil/CppUtil.h>
 
@@ -44,7 +38,7 @@
 
 //* RESET color formatting and font styles to DEFAULT, you must add this after customizing font color
 	#define CReset 			CAnsiEsc("0m")
-	#define CRst			CReset 		// alias
+	#define CRst			CReset 		// shorter alias
 	#define CStyle(_STYLE, _STR)	_STYLE _STR CReset
 	// example: printf(FYellow BBlue "yellow text" CRst);
 
@@ -133,14 +127,14 @@
 	#define CDown(n)		CAnsiEsc(#n"B") // cursor Down: e.g. std::cout << CDown("2") // moves cursor 2 cells down
 	#define CForward(n)		CAnsiEsc(#n"C") // cursor Forward:
 	#define CBack(n)		CAnsiEsc(#n"D") // cursor Back
-	#define CFwd(n)			CForward(n)  // alias
+	#define CFwd(n)			CForward(n)  // shorter alias
 
 	#define CNextLn(n)		CAnsiEsc(#n"E") // Moves cursor to beginning of the line n (default 1) lines down
 	#define CPrevLn(n)		CAnsiEsc(#n"F") // Moves cursor to beginning of the line n (default 1) lines up.
 	#define CHorzPos(n)		CAnsiEsc(#n"G") // Moves the cursor to column n (default 1, absolute).
 
 	#define CCursorPos(x, y) CAnsiEsc(#x";"#y"H") // Moves the cursor to row n, column m
-	#define CPos(x, y) 		 CCursorPos(x, y) // alias
+	#define CPos(x, y) 		 CCursorPos(x, y) // shorter alias
 
 //* clear the screen or line
 	#define CClear(n)		CAnsiEsc(#n"J") //  If the cursor is already at the edge of the screen, this has no effect.
@@ -339,7 +333,7 @@
 		#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)		fmt::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
 		#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
 		// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
-	#elif CUTIL_CPP_VER >= 202302L // C++23 std::print(), std::println()
+	#elif CUTIL_CPP_LANG >= 202302L // C++23 std::print(), std::println()
 		#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 			#define CUTIL_DEBUG_PRINT(_STR, ...)		std::print(_STR, ##__VA_ARGS__);
 			#define CUTIL_DEBUG_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__);
@@ -390,8 +384,8 @@
 	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv)
 	
 #endif // CUTIL_DEBUG_BUILD
-// aliases
-#define CU_DBG_PRINT(_STR, ...)			CUTIL_DEBUG_PRINT(_STR, ##__VA_ARGS__)
+
+#define CU_DBG_PRINT(_STR, ...)			CUTIL_DEBUG_PRINT(_STR, ##__VA_ARGS__) //* shorter aliases
 #define CU_DBG_PRINTLN(_STR, ...)		CUTIL_DEBUG_PRINTLN(_STR, ##__VA_ARGS__)
 #define CU_DBG_PRINT_ERR(_STR, ...)		CUTIL_DEBUG_PRINT_ERR(_STR, ##__VA_ARGS__)
 #define CU_DBG_PRINTLN_ERR(_STR, ...)	CUTIL_DEBUG_PRINTLN_ERR(_STR, ##__VA_ARGS__)
@@ -426,7 +420,7 @@
 	#define CUTIL_PRINT_ERR(_STR, ...)			fmt::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__);
 	#define CUTIL_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__);
 	// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
-#elif CUTIL_CPP_VER >= 202302L // C++23 std::print(), std::println()
+#elif CUTIL_CPP_LANG >= 202302L // C++23 std::print(), std::println()
 	#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 		#define CUTIL_PRINT(_STR, ...)			std::print(_STR,   ##__VA_ARGS__);
 		#define CUTIL_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__);
