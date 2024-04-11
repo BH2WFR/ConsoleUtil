@@ -12,7 +12,7 @@
 
 
 //* ==== customize parameters:
-// #define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED	1	// set 0 to disable style changing, espeacially before Windows 10 1511
+// #define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED	1	// set 0 to disable style changing, espeacially before Windows 10 1511
 // #define CONSOLE_UTIL_DO_NOT_USE_COLOR		1	// do not use color to stderr text
 
 
@@ -27,8 +27,7 @@
 			   
 //* WARNING:  Windows built-in command-line tools in versions prior to Windows 10 1511 do not support this feature.
 //		If font or color customizing features is needed in Windows 7 or prior system, pls use SetConsoleTextAttribute() function.
-
-#if (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // || (WINVER >= 0x0A00)
+#if (CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED == 0) // || (WINVER >= 0x0A00)
 	#define CAnsiEsc(_STR)		"\033[" _STR //* C++ Ansi Escape Codes with prefix
 	#define CAnsiEscStr(_STR)	_STR 		 //  raw C++ Ansi EScape Code Strings
 #else
@@ -160,7 +159,7 @@
 	#define CHideCursor		CAnsiEscStr("\033?25l")
 
 //* macros for text color formatting
-#if (CONSOLE_UTIL_DO_NOT_USE_COLOR == 1) || (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 1)
+#if (CONSOLE_UTIL_DO_NOT_USE_COLOR == 1) || (CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED == 1)
 	#define CUTIL_COLOR_OPT(_COLOR)		""
 	// #define CUTIL_COLOR_ERR(_STR)		_STR
 	
@@ -199,8 +198,10 @@
 
 //* features with win32api
 #if defined(_WINDOWS_) || defined(WINAPI)
-	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitleA(_STR);        // set console title in windows
-	//#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR);
+	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitle(_STR);  // set console title in windows by winapi, (_A/_W?)
+	#define CUTIL_CONSOLE_TITLE_A(_STR)			SetConsoleTitleA(_STR);
+	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR);
+	
 	#define CUTIL_CONSOLE_CURSOR_POS(x, y)	\
 		{COORD pos; pos.X=x; pos.Y=y;   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
 	#define CUTIL_CONSOLE_ATTR(_ATTR)			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
@@ -211,8 +212,11 @@
 	//? 据说上面的函数在设置时只需要设置一次就可以自动适配到 STD_OUTPUT_HANDLE(stdout) 和 STD_ERROR_HANDLE(stderr) ?
 	
 //#else // without win32api, or in Linux
-#elif (CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED == 0) // without win32api, or in Linux
+#elif (CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED == 0) // without win32api, or in Linux
 	#define CUTIL_CONSOLE_TITLE(_STR)			printf("\033]0;%s\007", _STR); // set console title in linux
+	#define CUTIL_CONSOLE_TITLE_A(_STR)			CUTIL_CONSOLE_TITLE(_STR)
+	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		wprintf("\033]0;%s\007", _WSTR);
+	
 	#define CUTIL_CONSOLE_CURSOR_POS(x, y)		printf(CCursorPos(x, y));
 	#define CUTIL_CONSOLE_ATTR(_ATTR)
 	#define CUTIL_CONSOLE_RESET_STYLE()			printf(CReset);
@@ -256,7 +260,7 @@
 	
 	int main(int argc, char* argv[]){
 		CUTIL_CHCP_ENCODING_UTF8(); 		// switch console encoding to UTF-8 (windows)
-		CUTIL_CONSOLE_TITLE("MyProject"); 	// set console window title
+		CUTIL_CONSOLE_TITLE(_TEXT("MyProject")); 	// set console window title
 		CUTIL_CONSOLE_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
 		CUTIL_CONSOLE_CLEAR();				// clear console (system("cls"))
 		

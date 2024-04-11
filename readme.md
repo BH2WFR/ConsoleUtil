@@ -25,7 +25,7 @@ Reference of Ansi Escape Codes:
 ### WARNING:
 
 - features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
-    - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_UTIL_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
+    - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
 - C language version `≥ C99`, C++ language `≥ C++98`, with `##__VA_ARGS__` extension support. 
 
@@ -91,7 +91,11 @@ Reference of Ansi Escape Codes:
 
     ```c++
     CUTIL_CHCP_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
-    CUTIL_CONSOLE_TITLE("MyProject"); // set console window title
+    CUTIL_CONSOLE_TITLE("MyProject"); // set console window title (calls SetConsoleTitleA() or SetConsoleTitleW() for windows, and print ansi escape code "\033]0;%s\007" for linux)
+    // CUTIL_CONSOLE_TITLE(_TEXT("MyProgram"));
+    // CUTIL_CONSOLE_TITLE_A("MyProgram");
+    // CUTIL_CONSOLE_TITLE_W(L"MyProgram");
+    
     CUTIL_CONSOLE_SIZE(100, 30);	// set console window size to with of 30 chars and height of 30 lines (only available in windows)
     CUTIL_CONSOLE_CLEAR();			// clear console (calls system("cls") )
     
