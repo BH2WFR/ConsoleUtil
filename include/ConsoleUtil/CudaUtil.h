@@ -1,5 +1,5 @@
 /* UTF-8 encoding
-* Project URL: https://github.com/BH2WFR/ConsoleUtil
+* Project URL: 	https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
 */
 #ifndef CONSOLEUTIL_CUDA_UTIL_H__

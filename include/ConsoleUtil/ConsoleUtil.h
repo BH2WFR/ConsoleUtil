@@ -1,7 +1,7 @@
 /* UTF-8 encoding
-* Project URL: https://github.com/BH2WFR/ConsoleUtil
+* Project URL: 	https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		Mar 11, 2024
+  Updated:		May 28, 2024
   License:		MIT License
 * Do not include this header in header files.
 * If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
@@ -12,11 +12,13 @@
 
 
 //* ==== customize parameters:
-// #define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED	1	// set 0 to disable style changing, espeacially before Windows 10 1511
-// #define CONSOLE_UTIL_DO_NOT_USE_COLOR		1	// do not use color to stderr text
+// #define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED		1	// set 0 to disable style changing, espeacially before Windows 10 1511
+// #define CONSOLE_UTIL_DO_NOT_USE_COLOR			1	// do not use color to stderr text
+// #define CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS	1	// do not use shorter aliases, like `CU_DBG_PRINT` or `CU_EQU_F`
+	// p.s. if these macros are not defined, `#if (MACRO == 0)` will evaluate to `true`.
 
 
-//* include dependent headers:
+//* include dependency headers:
 #include <ConsoleUtil/CppUtil.h>
 
 
@@ -389,20 +391,22 @@
 	
 #endif // CUTIL_DEBUG_BUILD
 
-#define CU_DBG_PRINT(_STR, ...)			CUTIL_DEBUG_PRINT(_STR, ##__VA_ARGS__) //* shorter aliases
-#define CU_DBG_PRINTLN(_STR, ...)		CUTIL_DEBUG_PRINTLN(_STR, ##__VA_ARGS__)
-#define CU_DBG_PRINT_ERR(_STR, ...)		CUTIL_DEBUG_PRINT_ERR(_STR, ##__VA_ARGS__)
-#define CU_DBG_PRINTLN_ERR(_STR, ...)	CUTIL_DEBUG_PRINTLN_ERR(_STR, ##__VA_ARGS__)
+#if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
+	#define CU_DBG_PRINT(_STR, ...)			CUTIL_DEBUG_PRINT(_STR, ##__VA_ARGS__)
+	#define CU_DBG_PRINTLN(_STR, ...)		CUTIL_DEBUG_PRINTLN(_STR, ##__VA_ARGS__)
+	#define CU_DBG_PRINT_ERR(_STR, ...)		CUTIL_DEBUG_PRINT_ERR(_STR, ##__VA_ARGS__)
+	#define CU_DBG_PRINTLN_ERR(_STR, ...)	CUTIL_DEBUG_PRINTLN_ERR(_STR, ##__VA_ARGS__)
 
-#define CU_DBG_COUT(...)				CUTIL_DEBUG_COUT(__VA_ARGS__)
-#define CU_DBG_COUTLN(...)				CUTIL_DEBUG_COUTLN(__VA_ARGS__)
-#define CU_DBG_CERR(...)				CUTIL_DEBUG_CERR(__VA_ARGS__)
-#define CU_DBG_CERRLN(...)				CUTIL_DEBUG_CERRLN(__VA_ARGS__)
+	#define CU_DBG_COUT(...)				CUTIL_DEBUG_COUT(__VA_ARGS__)
+	#define CU_DBG_COUTLN(...)				CUTIL_DEBUG_COUTLN(__VA_ARGS__)
+	#define CU_DBG_CERR(...)				CUTIL_DEBUG_CERR(__VA_ARGS__)
+	#define CU_DBG_CERRLN(...)				CUTIL_DEBUG_CERRLN(__VA_ARGS__)
 
-#define CU_DBG_PRINTF(_STR, ...)		CUTIL_DEBUG_PRINTF(_STR, ##__VA_ARGS__)
-#define CU_DBG_PRINTFLN(_STR, ...)		CUTIL_DEBUG_PRINTFLN(_STR, ##__VA_ARGS__)
-#define CU_DBG_PRINTF_ERR(_STR, ...)	CUTIL_DEBUG_PRINTF_ERR(_STR, ##__VA_ARGS__)
-#define CU_DBG_PRINTFLN_ERR(_STR, ...)	CUTIL_DEBUG_PRINTFLN_ERR(_STR, ##__VA_ARGS__)
+	#define CU_DBG_PRINTF(_STR, ...)		CUTIL_DEBUG_PRINTF(_STR, ##__VA_ARGS__)
+	#define CU_DBG_PRINTFLN(_STR, ...)		CUTIL_DEBUG_PRINTFLN(_STR, ##__VA_ARGS__)
+	#define CU_DBG_PRINTF_ERR(_STR, ...)	CUTIL_DEBUG_PRINTF_ERR(_STR, ##__VA_ARGS__)
+	#define CU_DBG_PRINTFLN_ERR(_STR, ...)	CUTIL_DEBUG_PRINTFLN_ERR(_STR, ##__VA_ARGS__)
+#endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
 /* instruction:
 	if you want to print some debug message to console, and only do this in DEBUG BUILD,
 	use these macros above, they will do nothing in release build.

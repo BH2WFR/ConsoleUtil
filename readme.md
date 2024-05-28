@@ -356,7 +356,50 @@ Reference of Ansi Escape Codes:
         // you need't add `p1 = nullptr`.
         ```
     
+    
+    - convert to string
+    
+        ```
+        #define CUTIL_STR(_1)           #_1
+        #define CUTIL_LSTR(_1)          CUTIL_CAT_TOKENS(L, #_1)    // wchar_t
+        #define CUTIL_U8STR(_1)         CUTIL_CAT_TOKENS(u8, #_1)   // C++17, char8_t
+        #define CUTIL_U16STR(_1)        CUTIL_CAT_TOKENS(u, #_1)    // C++11, char16_t
+        #define CUTIL_U32STR(_1)        CUTIL_CAT_TOKENS(U, #_1)    // C++11, char32_t
+        ```
+    
+    - concatenate tokens without spaces or commas
+    
+        ```c++
+        int a1 = CUTIL_CAT(11, 22); 			// a1 = 1122
+        int a2 = CUTIL_CAT(10, 11, 12, 13); 	// a2 = 10111213
+        std::cout << CUTIL_CAT(a, 1) << "\n"; 	// print variable `a1`
+        ```
+    
+    - simplify the code like `(var == 1 || var == 2 || var == 3 || ...)` or `(var != 1 && var != 2 && var != 3 && ...)`
+    
+        ```c++
+        int var = 10;
+        if(CUTIL_EQUAL_OR(var, 5, 10)){
+            // equivalent to `if(var == 5 || var == 10)`
+            // equivalent to `if(! CUTIL_UNEQUAL_AND(var, 5, 10))`
+        }
+        if(CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10)){
+            // equivalent to `if(var == 2 || var == 4 || var == 6 || var == 8 || var == 10)`
+            // equivalent to `if(! CUTIL_UNEQUAL_AND(var, 2, 4, 6, 8, 10))`
+        }
+        if(CUTIL_UNEQUAL_AND(var, 5, 10)){
+            // equivalent to `if(var != 5 && var != 10)`
+            // equivalent to `if(! CUTIL_EQUAL_OR(var, 5, 10))`
+        }
+        if(CUTIL_UNEQUAL_AND(var, 2, 4, 6, 8, 10)){
+            // equivalent to `if(var != 2 && var != 4 && var != 6 && var != 8 && var != 10)`
+            // equivalent to `if(! CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10))`
+        }
+        ```
+    
         
+
+
 
 
 
