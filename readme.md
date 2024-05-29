@@ -35,6 +35,9 @@ Reference of Ansi Escape Codes:
 
 - You can include <`ConsoleUtil/CppUtil.h`> in header files.  No need to include <`ConsoleUtil/CppUtil.h`> in source files if you already included <`ConsoleUtil/ConsoleUtil.h`>, because it has been included in <`ConsoleUtil/ConsoleUtil.h`>.
 
+- DO NOT use macros with name starting with underscore `_` externally, such as `_CUTIL_EXPAND_MSVC()`.
+
+
 
 
 
@@ -268,14 +271,19 @@ Reference of Ansi Escape Codes:
     
         
     
-    - count amount of arguments (up to 35)
+    - count amount of arguments (up to 35 params)
     
         ```c
         #include <ConsoleUtil/CppUtil.h>
         int a = CUTIL_VA_CNT(); 			// -> 0
         int b = CUTIL_VA_CNT(b1); 			// -> 1
         int c = CUTIL_VA_CNT(c1, c2); 		// -> 2
-        int c = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
+        int d = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
+        ...
+        int a = CUTIL_VA_EXISTS(); 			// -> 0
+        int b = CUTIL_VA_EXISTS(b1); 		// -> 1
+        int c = CUTIL_VA_EXISTS(c1, c2); 	// -> 1
+        int d = CUTIL_VA_EXISTS(c1, c2, c3);// -> 1
         ```
     
     - match C++ language version, especially if you want to let the project build both by MSVC and G++.
@@ -367,7 +375,7 @@ Reference of Ansi Escape Codes:
         #define CUTIL_U32STR(_1)        CUTIL_CAT_TOKENS(U, #_1)    // C++11, char32_t
         ```
     
-    - concatenate tokens without spaces or commas
+    - concatenate tokens without spaces or commas, up to 25 tokens
     
         ```c++
         int a1 = CUTIL_CAT(11, 22); 			// a1 = 1122
@@ -375,7 +383,11 @@ Reference of Ansi Escape Codes:
         std::cout << CUTIL_CAT(a, 1) << "\n"; 	// print variable `a1`
         ```
     
-    - simplify the code like `(var == 1 || var == 2 || var == 3 || ...)` or `(var != 1 && var != 2 && var != 3 && ...)`
+    - generate the code like `(var == 1 || var == 2 || var == 3 || ...)` or `(var != 1 && var != 2 && var != 3 && ...)`, up to 25 compared params
+    
+        > **WARNING**: you can't compare some return value of functions like `getchar()`
+        > 	if you use `if(CUTIL_EQUAL_OR(getchar(), 'a', 'b'))`
+        > 	it will expand as `if(getchar() == 'a' || getchar() == 'b')`
     
         ```c++
         int var = 10;
@@ -394,6 +406,49 @@ Reference of Ansi Escape Codes:
         if(CUTIL_UNEQUAL_AND(var, 2, 4, 6, 8, 10)){
             // equivalent to `if(var != 2 && var != 4 && var != 6 && var != 8 && var != 10)`
             // equivalent to `if(! CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10))`
+        }
+        
+        ```
+    
+    - Implement function overloading based on the number of parameters and the trailing digit by token concatenation.
+    
+        ```c++
+        CUTIL_OVERLOAD_IDX(MyFunc, 2)(); 	// MyFunc2();
+        CUTIL_OVERLOAD_IDX(var_, 3) = 10; 	// var_3 = 10;
+        
+        // Deduce suffix by amount of arguments within the macro
+        CUTIL_OVERLOAD_AMOUNT(MyFunc, 2, 4, 6)(2, 4, 6); // MyFunc3(2, 4, 6); 
+        
+        
+        ```
+    
+    - call a single-argument function/macro for each parameter, simillar to `BOOST_PP_SEQ_FOR_EACH`, up to 25 iterations
+    
+        ```c++
+        #define TEST_PRINT(x)   fmt::println("{}", x) //* Must take exactly 1 argument
+        
+        CUTIL_SEQ_FOREACH(TEST_PRINT, 1, 2, 3, 4, 5, 6, 7);
+        // -> {fmt::println("{}", 1); fmt::println("{}", 2); ...}
+        
+        ```
+    
+    - repeat function or macro calling, similar to `BOOST_PP_REPEAT`, up to 25 loops
+    
+        ```c++
+        #define TEST_PRINT(x)   	fmt::println("{}", x)
+        #define TEST_1(x, y)   		fmt::println("{} {}", x, y)
+        #define TEST_2(x, ...) 		printf("%d", x); CUTIL_SEQ_FOREACH(TEST_PRINT, __VA_ARGS__)
+        
+        CUTIL_REPEAT(3, TEST_1, 22, 44);			// repeat `fmt::println("{} {}", 22, 44)` for 3 times
+        CUTIL_REPEAT(4, TEST_2, 2, 4, 6, 8, 10);	// repeat `printf("%d", 2);printf("%d", 4); ... printf("%d, 10")` for 4 times
+        
+        ```
+    
+    - generate code like `int arg0, int arg1, int arg2`, similar to `BOOST_PP_ENUM`, up to 25 params
+    
+        ```c++
+        void func(CUTIL_ENUM(3, var_, int)){
+            // equivalent to `void func(int var_0, int var_1, int var_2)`
         }
         ```
     
