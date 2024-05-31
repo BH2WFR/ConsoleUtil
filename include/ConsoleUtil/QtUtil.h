@@ -1,5 +1,5 @@
 /* UTF-8 encoding
-* Project URL: 	https://github.com/BH2WFR/ConsoleUtil
+* Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
 */
 #ifndef CONSOLEUTIL_QT_UTIL_H__
@@ -19,15 +19,17 @@
 //  in Qt6, high DPI and fractional scaling support is enabled by default and no need for this macro.
 //  pls #include<QApplication> first before #include of this header.
 #if ((QT_VERSION >= QT_VERSION_CHECK(5,6,0)) && (QT_VERSION < QT_VERSION_CHECK(5,14,0)))
-	#define CUTIL_QT5_HIGH_DPI() \
-		QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling); \
-		QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+	#define CUTIL_QT5_HIGH_DPI() 	do { \
+			QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling); \
+			QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);	 \
+		} while(0)
 		
 #elif ((QT_VERSION >= QT_VERSION_CHECK(5,14,0)) && (QT_VERSION < QT_VERSION_CHECK(6,0,0)))
-	#define CUTIL_QT5_HIGH_DPI() \
-		QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling); \
-		QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); \
-		QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
+	#define CUTIL_QT5_HIGH_DPI()	do { \
+			QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling); \
+			QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps); 	 \
+			QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough); \
+		} while(0)
 		
 #else // QT_VERSION ( >= 6.0.0 || <= 5.5.0 )
 	#define CUTIL_QT5_HIGH_DPI()
@@ -41,17 +43,17 @@
 //  	in CMake, you should add "set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /utf-8")"
 //  In Qt6, QTextCodec module is deleted and contained in Qt5 Compatibility Module.
 #if defined(QTEXTCODEC_H)
-	#define CUTIL_QT5_TEXTCODEC_SET(_STR)	QTextCodec::setCodecForLocale(QTextCodec::codecForName(_STR));
+	#define CUTIL_QT5_TEXTCODEC_SET(_STR)	QTextCodec::setCodecForLocale(QTextCodec::codecForName(_STR))
 #else //. !QTEXTCODEC_H
 	#define CUTIL_QT5_TEXTCODEC_SET(_STR)
 #endif // QTEXTCODEC_H
 
-#define CUTIL_QT5_TEXTCODEC_UTF8()		CUTIL_QT5_TEXTCODEC_SET("UTF-8");
-#define CUTIL_QT5_TEXTCODEC_GBK()		CUTIL_QT5_TEXTCODEC_SET("GB18030");
-#define CUTIL_QT5_TEXTCODEC_BIG5()		CUTIL_QT5_TEXTCODEC_SET("Big5");
-#define CUTIL_QT5_TEXTCODEC_EUCKR()		CUTIL_QT5_TEXTCODEC_SET("EUC-KR");
-#define CUTIL_QT5_TEXTCODEC_EUCJP()		CUTIL_QT5_TEXTCODEC_SET("EUC-JP");
-#define CUTIL_QT5_TEXTCODEC_JIS()		CUTIL_QT5_TEXTCODEC_SET("Shift-JIS");
+#define CUTIL_QT5_TEXTCODEC_UTF8()		CUTIL_QT5_TEXTCODEC_SET("UTF-8")
+#define CUTIL_QT5_TEXTCODEC_GBK()		CUTIL_QT5_TEXTCODEC_SET("GB18030")
+#define CUTIL_QT5_TEXTCODEC_BIG5()		CUTIL_QT5_TEXTCODEC_SET("Big5")
+#define CUTIL_QT5_TEXTCODEC_EUCKR()		CUTIL_QT5_TEXTCODEC_SET("EUC-KR")
+#define CUTIL_QT5_TEXTCODEC_EUCJP()		CUTIL_QT5_TEXTCODEC_SET("EUC-JP")
+#define CUTIL_QT5_TEXTCODEC_JIS()		CUTIL_QT5_TEXTCODEC_SET("Shift-JIS")
 
 
 //* qDebug() without spaces or quotes

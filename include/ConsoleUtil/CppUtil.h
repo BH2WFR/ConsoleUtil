@@ -7,14 +7,54 @@
 #define CONSOLEUTIL_CPP_UTIL_H__
 
 
+//* warning: do not use macros with name starting with underscore `_` externally.
+
+
+
 //* ==== Environment Check, `> C99/C++98` with `##__VA_ARGS__` extension (available in MSVC(>VS2015 U3)/GCC/Clang)
 #if (!defined(__cplusplus)) && (__STDC_VERSION__ < 199901L || (!defined(__STDC_VERSION__)))
 	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
 #endif
 
 
+//* get C++ language standard version
+// in MSVC compiler, `__cplusplus` always equals to `199711L` without compiler argument `/Zc:__cplusplus`,
+//    but `_MSVC_LANG`(Prior to VS2015) equals to cpp standard version
+#ifdef __cplusplus
+	#ifdef _MSVC_LANG // example: #if CUTIL_CPP_LANG >= 201103L
+		#define CUTIL_CPP_LANG			_MSVC_LANG	// for MSVC
+	#else //. !defined _MSVC_LANG
+		#define CUTIL_CPP_LANG			__cplusplus // for GCC, Clang (also MSVC with the copiler argument `/Zc:__cplusplus`)
+	#endif // _MSVC_LANG
+#endif // __cplusplus
+/* example:
+	#if CUTIL_CPP_LANG >= 199711L	// C++98
+	#if CUTIL_CPP_LANG >= 201103L	// C++11
+	#if CUTIL_CPP_LANG >= 201402L	// C++14
+	#if CUTIL_CPP_LANG >= 201703L	// C++17
+	#if CUTIL_CPP_LANG >= 202002L	// C++20
+	#if CUTIL_CPP_LANG >= 202302L	// C++23 (temporary not supported)
+*/
 
-// include vital C headers
+
+//* get C language standard version
+#ifndef __cplusplus
+	#ifdef __STDC_VERSION__
+		#define CUTIL_C_LANG	__STDC_VERSION__
+	#else // C89 didn't define this macro
+		#define CUTIL_C_LANG	198912L
+	#endif
+#endif //. ! __cplusplus
+/* example:
+	#if CUTIL_C_LANG >= 198912L	// C89
+	#if CUTIL_C_LANG >= 199901L	// C99
+	#if CUTIL_C_LANG >= 201112L	// C11
+	#if CUTIL_C_LANG >= 201710L	// C17
+	#if CUTIL_C_LANG >= 202311L	// C23
+*/
+
+
+//* include vital C headers
 #ifdef __cplusplus
 	#include <cstdio>
 	#include <cstdlib>
@@ -25,7 +65,7 @@
 	#include <stdlib.h>
 	#include <stdint.h>	// uint32_t
 	#include <float.h>	// floating-point limits
-	#if (__STDC_VERSION__ >= 199901L) && (__STDC_VERSION__ < 202311L)
+	#if (CUTIL_C_LANG >= 199901L) && (CUTIL_C_LANG < 202311L)
 		#include <stdbool.h> // bool support since C99, before C23 (became keyword)
 	#endif
 #endif // __cplusplus
@@ -34,16 +74,14 @@
 
 
 
-//* warning: do not use macros with name starting with underscore `_` externally.
-
-
 
 //===================== Basic Macros =========================
-#define CUTIL_EMPTY()
+#define CUTIL_EMPTY()										// empty macro function
+#define CUTIL_DEFAULT										// empty macro
 // #define CUTIL_DEFER(_x)			_x CUTIL_EMPTY
 #define CUTIL_EXPAND(...)			__VA_ARGS__ 			// expand `__VA_ARGS__` in MSVC without `/Zc:preprocessor`
-#define CUTIL_ZERO()				0
-#define CUTIL_COMMA()				,
+#define CUTIL_ZERO()				0						// do not delete `()`
+#define CUTIL_COMMA					,						// a comma that can avoid recognizing as seperator of arguments
 #define CUTIL_CAT_RAW(_1, _2)		_1 ## _2 				// do not merge with `_CUTIL_CAT_2()`
 #define CUTIL_CAT_TOKENS(_1, _2)	CUTIL_CAT_RAW(_1, _2) 	// for enable unwrapping after `##` concatenation
 
@@ -57,11 +95,18 @@
 
 
 
-//* get type of variable, only for GNU C, C23, C++
-#ifndef __cplusplus
-	#define CUTIL_TYPE(_VAR)	typeof(_VAR)	// only for GNU C, and C23.
-#else //. ! __cplusplus
-	#define CUTIL_TYPE(_VAR)	decltype(_VAR) 	// do not quote `_VAR`
+
+
+//* get decayed type of variable, only for GNU C, C23, C++11
+#ifndef __cplusplus // C
+	#if defined(__GNUC__) || (CUTIL_C_LANG >= 202311L)
+		#define CUTIL_TYPEOF(_VAR)	typeof(_VAR)	// only for GNU C, and C23.
+	#endif
+#else //. ! __cplusplus		// C++11
+	#if CUTIL_CPP_LANG >= 201103L 	//* >= C++11
+		#define CUTIL_TYPEOF(_VAR)	std::decay<decltype(_VAR)>::type
+		// int& -> int; const int -> int; const int* const -> const int*; int[] -> int*;
+	#endif
 #endif //. ! __cplusplus
 
 
@@ -98,6 +143,22 @@ Usage Example:
 //* BOOL statement
 #define CUTIL_NOT(_x)				_CUTIL_CHK_2ND_ARG(CUTIL_CAT_TOKENS(_CUTIL_NOT_, _x))
 #define _CUTIL_NOT_0				~, 1
+#define _CUTIL_NOT_false			~, 1
+#define _CUTIL_NOT_nullptr			~, 1
+#define _CUTIL_NOT_NULL				~, 1
+#define _CUTIL_NOT_00				~, 1
+#define _CUTIL_NOT_000				~, 1
+#define _CUTIL_NOT_0000				~, 1
+#define _CUTIL_NOT_0b0				~, 1
+#define _CUTIL_NOT_0x0				~, 1
+#define _CUTIL_NOT_0x00				~, 1
+#define _CUTIL_NOT_0x000			~, 1
+#define _CUTIL_NOT_0x0000			~, 1
+#define _CUTIL_NOT_0x00000			~, 1
+#define _CUTIL_NOT_0x000000			~, 1
+#define _CUTIL_NOT_0x0000000		~, 1
+#define _CUTIL_NOT_0x00000000		~, 1
+
 
 #define CUTIL_BOOL(_x)				CUTIL_NOT(CUTIL_NOT(_x))
 
@@ -117,9 +178,9 @@ Usage Example:
 /*
 	CUTIL_BOOL(abcd);	// -> 1
 	CUTIL_BOOL(345);	// -> 1
-    CUTIL_BOOL(1);		// -> 1
-    CUTIL_BOOL(0);		// -> 0
-    CUTIL_BOOL();		// ERROR: you must provide an argument, or it will be evaluated to 1.
+	CUTIL_BOOL(1);		// -> 1
+	CUTIL_BOOL(0);		// -> 0
+	CUTIL_BOOL();		// ERROR: you must provide an argument, or it will be evaluated to 1.
 */
 
 
@@ -138,9 +199,9 @@ Usage Example:
 
 //* get count of arguments, up to 35 params
 #define CUTIL_VA_EXISTS(...) 	CUTIL_EXPAND(CUTIL_BOOL(_CUTIL_GET_1ST_ARG(CUTIL_ZERO __VA_ARGS__)()))
-// #define CUTIL_COMMA_OPT(...)	CUTIL_EXPAND(CUTIL_CAT_TOKENS(_CUTIL_IF_, CUTIL_VA_EXISTS(__VA_ARGS__))(CUTIL_COMMA(), CUTIL_EMPTY()))
+// #define CUTIL_COMMA_OPT(...)	CUTIL_EXPAND(CUTIL_CAT_TOKENS(_CUTIL_IF_, CUTIL_VA_EXISTS(__VA_ARGS__))(CUTIL_COMMA, CUTIL_EMPTY()))
 
-#define _CUTIL_VA_CNT_0(...)	0	// for compilers which do not support `##__VA_ARGS__`
+#define _CUTIL_VA_CNT_0(...)	0	// for compilers that do not support `##__VA_ARGS__` to eliminate leading comma if empty
 #define _CUTIL_VA_CNT_1(...)	CUTIL_EXPAND(_CUTIL_GET_63TH_ARG("ignored", __VA_ARGS__, \
 			Z,Y,X,W,V,U,T,S,R,Q,P,O,N,M,L,K,J,I,H,G,F,E,D,C,B,A,35,34,33,32,31,30,29,28,27, \
 			26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0))
@@ -297,7 +358,7 @@ Usage Example:
 
 
 //* call a single-argument function/macro for each parameter, simillar to `BOOST_PP_SEQ_FOR_EACH`, up to 25 iterations
-#define CUTIL_SEQ_FOREACH(_action, ...)				{CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_SEQ_FOREACH_, __VA_ARGS__)(_action, __VA_ARGS__))}
+#define CUTIL_SEQ_FOREACH(_action, ...)				do {CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_SEQ_FOREACH_, __VA_ARGS__)(_action, __VA_ARGS__))} while(0)
 	// The following macro definitions are private, DO NOT call them EXTERNALLY.
 #define _CUTIL_SEQ_FOREACH_1(_action, _1)			_action(_1);
 #define _CUTIL_SEQ_FOREACH_2(_action, _1, _2)		_action(_1); _CUTIL_SEQ_FOREACH_1(_action, _2)
@@ -326,13 +387,14 @@ Usage Example:
 #define _CUTIL_SEQ_FOREACH_25(_action, _1, ...)		_action(_1); CUTIL_EXPAND(_CUTIL_SEQ_FOREACH_24(_action, __VA_ARGS__))
 /* Instruction:
 	#define TEST_PRINT(x)   fmt::println("{}", x) //* Must take exactly 1 argument
+	
 	CUTIL_SEQ_FOREACH(TEST_PRINT, 1, 2, 3, 4, 5, 6, 7);
 	// -> {fmt::println("{}", 1); fmt::println("{}", 2); ...}
 */
 
 
 //* repeat function or macro calling, similar to `BOOST_PP_REPEAT`, up to 25 loops
-#define CUTIL_REPEAT(_count, _action, ...)		{CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_REPEAT_, _count)(_action, __VA_ARGS__))}
+#define CUTIL_REPEAT(_count, _action, ...)		do {CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_REPEAT_, _count)(_action, __VA_ARGS__))} while(0)
 	// The following macro definitions are private, DO NOT call them EXTERNALLY.
 #define _CUTIL_REPEAT_1(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__));
 #define _CUTIL_REPEAT_2(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_1(_action, __VA_ARGS__))
@@ -403,16 +465,54 @@ Usage Example:
 	}
 */
 
+//* similar to `CUTIL_ENUM`, but you can customize the suffix, up to 25 loops
+#define CUTIL_SEQ_ENUM(_action, ...)			CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_SEQ_ENUM_, __VA_ARGS__)(_action, __VA_ARGS__))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_SEQ_ENUM_1(_action, _1)			_action(_1)
+#define _CUTIL_SEQ_ENUM_2(_action, _1, _2)		_action(_1), _CUTIL_SEQ_ENUM_1(_action, _2)
+#define _CUTIL_SEQ_ENUM_3(_action, _1, ...)		_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_2(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_4(_action, _1, ...)		_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_3(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_5(_action, _1, ...)		_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_4(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_6(_action, _1, ...)		_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_5(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_7(_action, _1, ...)		_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_6(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_8(_action, _1, ...)		_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_7(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_9(_action, _1, ...)		_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_8(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_10(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_9(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_11(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_10(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_12(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_11(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_13(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_12(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_14(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_13(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_15(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_14(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_16(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_15(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_17(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_16(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_18(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_17(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_19(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_18(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_20(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_19(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_21(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_20(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_22(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_21(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_23(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_22(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_24(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_23(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_25(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_24(_action, __VA_ARGS__))
+/* Instruction:
+	#define TEST(_x)    test_##_x 		//* Must take exactly 1 argument
+	#define TEST2(_x)   test_##_x = 1
+	
+	int CUTIL_SEQ_ENUM(TEST2, a, b, c, d);
+	// -> int test_a = 1, test_b = 1, test_c = 1, test_d = 1;
+	
+	printf("%d %d %d %d", CUTIL_SEQ_ENUM(TEST, a, b, c, d));
+	printf("%d %d %d %d", test_a, test_b, test_c, test_d);	// equivalent to above
+*/
 
 
 
 //======================= C Utils ============================
 
 //* bit calculating macros
-#define CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK)		((_NUM) & (_BIT_MASK))
-#define CUTIL_BIT_SET_MASK(_NUM, _BIT_MASK)		{(_NUM) |=  (_BIT_MASK);}	// must use them in a separate line, returns nothing
-#define CUTIL_BIT_CLEAR_MASK(_NUM, _BIT_MASK)	{(_NUM) &= ~(_BIT_MASK);}
-#define CUTIL_BIT_TOGGLE_MASK(_NUM, _BIT_MASK)	{(_NUM) ^=  (_BIT_MASK);}
+#define CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK)		((_NUM) &   (_BIT_MASK)        )
+#define CUTIL_BIT_SET_MASK(_NUM, _BIT_MASK)		((_NUM) |=  (_BIT_MASK), (_NUM))
+#define CUTIL_BIT_CLEAR_MASK(_NUM, _BIT_MASK)	((_NUM) &= ~(_BIT_MASK), (_NUM))
+#define CUTIL_BIT_TOGGLE_MASK(_NUM, _BIT_MASK)	((_NUM) ^=  (_BIT_MASK), (_NUM))
 
 #define CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_GET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// if bit of index _BIT_IDX is 1, returns (1<<_BIT_IDX), NOT 1
 #define CUTIL_BIT_SET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_SET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// must use them in separate lines, returns nothing
@@ -427,33 +527,189 @@ Usage Example:
 
 
 // rotate bits, use them in a separate line
-#define CUTIL_BIT_ROTATE_LEFT_SIZE(_BIT_SIZE, _BIT, _STEP)		{(_BIT) = ((_BIT) << (_STEP)) | ((_BIT) >> ((_BIT_SIZE) - (_STEP)));}
-#define CUTIL_BIT_ROTATE_RIGHT_SIZE(_BIT_SIZE, _BIT, _STEP)		{(_BIT) = ((_BIT) >> (_STEP)) | ((_BIT) << ((_BIT_SIZE) - (_STEP)));}
+#define CUTIL_BIT_ROTATE_LEFT_SIZE(_BIT_SIZE, _BIT, _STEP)	((_BIT) = (((_BIT) << (_STEP)) | ((_BIT) >> ((_BIT_SIZE) - (_STEP)))), (_BIT))
+#define CUTIL_BIT_ROTATE_RIGHT_SIZE(_BIT_SIZE, _BIT, _STEP)	((_BIT) = (((_BIT) >> (_STEP)) | ((_BIT) << ((_BIT_SIZE) - (_STEP)))), (_BIT))
 
 #define CUTIL_BIT_ROTATE_LEFT_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_SIZE(8u * sizeof(_TYPE), _BIT, _STEP)
 #define CUTIL_BIT_ROTATE_RIGHT_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_SIZE(8u * sizeof(_TYPE), _BIT, _STEP)
+	// uses `typeof`, GNU C, C23, C++11 only
+#define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)					CUTIL_BIT_ROTATE_LEFT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
+#define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)					CUTIL_BIT_ROTATE_RIGHT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
+/*
+	uint16_t num {0};
+	
+	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
+	CUTIL_BIT_SET_IDX(num, 0);      // equals to {num |=  (1u << 0));}
+	CUTIL_BIT_CLEAR_IDX(num, 2);    // equals to {num &= ~(1u << 2));}
+	CUTIL_BIT_TOGGLE_IDX(num, 3);   // equals to {num ^=  (1u << 3));}
 
-#define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_TYPE(CUTIL_TYPE(_BIT), _BIT, _STEP) // uses `typeof`, GNU C, C23, C++ only
-#define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_TYPE(CUTIL_TYPE(_BIT), _BIT, _STEP)
+
+	if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns (1<<BIT_IDX), NOT 1
+		printf("%x\n", num);
+	}
+	if(CUTIL_BIT_CHK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns 1, != CUTIL_BIT_GET_IDX()
+		printf("%x\n", num);
+	}
+
+	// operate bit by mask
+	CUTIL_BIT_SET_MASK(num, 0x2B00);    // equals to {num |=  0x2B00;}
+	CUTIL_BIT_CLEAR_MASK(num, 0x2B00);  // equals to {num &= ~0x2B00;}
+	CUTIL_BIT_TOGGLE_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
+
+	if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0){ // returns (num & 0x0022)
+		printf("%x\n", num);
+	}
+
+	// rotate bits. use them in a seperate line, and returns nothing
+	uint16_t var{0x1234};
+
+	CUTIL_BIT_ROTATE_LEFT_SIZE(8*sizeof(uint16_t), var, 1); // rotate bits of `var` by 1 bit step
+	CUTIL_BIT_ROTATE_RIGHT_SIZE(8*sizeof(uint16_t), var, 1);
+
+	CUTIL_BIT_ROTATE_LEFT_TYPE(std::decay<decltype(var)>::type, var, 1); // equivelent, also `typeof` for GNU C or C23
+	CUTIL_BIT_ROTATE_RIGHT_TYPE(std::decay<decltype(var)>::type, var, 1);
+
+	CUTIL_BIT_ROTATE_LEFT(var, 1); // equivelent, C++, GNU C, C23 only
+	CUTIL_BIT_ROTATE_RIGHT(var, 1);
+*/
 
 
 //* swap items, only for C, types of `_VAR1` and `_VAR2` should be strictly equal, do not use in
-#define CUTIL_SWAP_TYPE(_TYPE, _VAR1, _VAR2) 	{_TYPE _sw = (_VAR2); (_VAR2) = (_VAR1); (_VAR1) = _sw;} // CUTIL_SWAP_VARS(uint32_t, a, b);
-#define CUTIL_SWAP(_VAR1, _VAR2)			 	CUTIL_SWAP_TYPE(CUTIL_TYPE(_VAR1), _VAR1, _VAR2) // only for GNU C and C23 because it uses `typeof`
+//	WARNING: cannot use for C arrays
+#define CUTIL_SWAP_TYPE(_TYPE, _VAR1, _VAR2) 	do {_TYPE _sw = (_VAR2); (_VAR2) = (_VAR1); (_VAR1) = _sw;} while(0) // CUTIL_SWAP_VARS(uint32_t, a, b);
+#define CUTIL_SWAP(_VAR1, _VAR2)			 	CUTIL_SWAP_TYPE(CUTIL_TYPEOF(_VAR1), _VAR1, _VAR2) // only for GNU C and C23 because it uses `typeof`
+/*
+	uint32_t a = 1, b = 2; // type of `a` and `b` must be strictly equal.
+
+	CUTIL_SWAP(a, b); // in C++(std::decay<decltype(var)>::type), GNU C(typeof), or C23(typeof)
+
+	CUTIL_SWAP_TYPE(uint32_t, a, b); 	// equivelent, specify the type.
+	CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivelent, in GNU C or C23
+	CUTIL_SWAP_TYPE(std::decay<decltype(var)>::type, a, b); // equivelent in C++, but prefer to use `std::swap()`
+*/
 
 
-//* get min or max value
+//* get the bigger or smaller item between two numeric variables
 #define CUTIL_MAX(_VAR1, _VAR2) 			(((_VAR1) > (_VAR2)) ? (_VAR1) : (_VAR2))
 #define CUTIL_MIN(_VAR1, _VAR2)				(((_VAR1) < (_VAR2)) ? (_VAR1) : (_VAR2))
+/*
+	uint32_t a = 1, b = 2; // type of `a` and `b` must be strictly equal.
+	
+	int max_ab = CUTIL_MAX(a, b); // bigger number between a and b
+	int min_ab = CUTIL_MIN(a, b); // smaller number between a and b
+*/
+
 
 //* get abs of int/float/double (not recommended in C++, pls use abs() function)
-#define CUTIL_ABS(_VAR)		(((_VAR) >= 0) ? (_VAR) : (-1)*(_VAR) ) // equals to abs(), fabs(), fabsf() function in C
+// equivalent to abs(), fabs(), fabsf() function in C
+#define CUTIL_ABS(_VAR)						(((_VAR) >= 0) ? (_VAR) : (-1)*(_VAR) )
+
 
 #if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
 	#define CU_MAX(_VAR1, _VAR2) 			CUTIL_MAX(_VAR1, _VAR2)
 	#define CU_MIN(_VAR1, _VAR2) 			CUTIL_MIN(_VAR1, _VAR2)
 	#define CU_ABS(_VAR)					CUTIL_ABS(_VAR)
 #endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
+
+//*	高效地计算一个值 val 除以一个以 2 为幂的数 mod_by 的余数
+#define CUTIL_MOD_BY_POWER_OF_2(_var, _mod_2)	 ((size_t)(_var) & (dword)((_mod_2)-1))
+
+
+//* limit the numeric variable to the range [_MIN, _MAX]
+#define CUTIL_LIMIT(_VAR, _MIN, _MAX)		(((_VAR) < (_MIN) ? (_VAR) = (_MIN) : (_VAR)), ((_VAR) > (_MAX) ? (_VAR) = (_MAX) : (_VAR)), (_VAR))
+
+//* get if a numeric variable is within the range [_MIN, _MAX] or (_MIN, _MAX)
+#define CUTIL_IN_RANGE(_VAR, _MIN, _MAX)		((_VAR) >= (_MIN) && (_VAR) <= (_MAX) ? 1 : 0) // inclusive range
+#define CUTIL_IN_OPEN_RANGE(_VAR, _MIN, _MAX)	((_VAR) >= (_MIN) && (_VAR) <= (_MAX) ? 1 : 0) // open range
+/*
+	int a = 35, b = 26, c = 19;
+	
+	CUTIL_LIMIT(a, 20, 30);		// a: 35 -> 30
+	CUTIL_LIMIT(b, 20, 30);		// b: 26
+	CUTIL_LIMIT(c, 20, 30);		// c: 19 -> 20
+	
+	printf("%d %d %d\n", a, b, c);
+	// output: 30 26 20
+	
+	printf("%d %d", CUTIL_IN_RANGE(a, 20, 40), CUTIL_IN_OPEN_RANGE(c, 20, 30));
+	// output: 1 0
+*/
+
+
+//* increase or decrease the value of variable within the range [_min, _max]
+#define CUTIL_INCREASE_LIMIT(_var, _inc, _max)		((_var) < (_max) ? (_var) += (_inc) : (_var))
+#define CUTIL_DECREASE_LIMIT(_var, _inc, _min)		((_var) > (_min) ? (_var) -= (_inc) : (_var))
+
+//* increase or decrease the value, and prevent overflowing, only for GNU C, C23, C++11
+#define CUTIL_INCREASE(_var, _inc)					((_var) = (((CUTIL_TYPEOF(_var))((_var) + (_inc)) > (_var))) ? (CUTIL_TYPEOF(_var))((_var) + (_inc)) : (_var))
+#define CUTIL_DECREASE(_var, _inc)					((_var) = (((CUTIL_TYPEOF(_var))((_var) - (_inc)) < (_var))) ? (CUTIL_TYPEOF(_var))((_var) - (_inc)) : (_var))
+
+//* increase or decrease the value of variable, and rolling within the range [_min, _max]
+#define CUTIL_INCREASE_ROLL(_var, _inc, _min, _max)	((_var) < (_max) ? (_var) += (_inc) : (_var) = (_min))
+#define CUTIL_DECREASE_ROLL(_var, _inc, _min, _max)	((_var) > (_min) ? (_var) -= (_inc) : (_var) = (_max))
+/*
+	int num = 0;
+	
+	for(int i = 0; i < 50; i++){
+		printf("%d ", CUTIL_INCREASE_LIMIT(num, 1, 5));     // 1 2 3 4 5 5 5 5 5 5 5 5
+	}
+	for(int i = 0; i < 50; i++){
+		printf("%d ", CUTIL_DECREASE_LIMIT(num, 1, 0));     // 5 4 3 2 1 0 0 0 0 0 0 0
+	}
+	
+	for(int i = 0; i < 50; i++){
+		printf("%d ", CUTIL_INCREASE_ROLL(num, 1, 0, 5));   // 1 2 3 4 5 0 1 2 3 4 5 0
+	}
+	for(int i = 0; i < 50; i++){
+		printf("%d ", CUTIL_DECREASE_ROLL(num, 1, 0, 5));   // 5 4 3 2 1 0 5 4 3 2 1 0
+	}
+	
+	int8_t num = -125;
+	for(int i = 0; i < 30; i++){
+		CUTIL_DECREASE(num, 1u);
+		printf("%d ", num); // -> -126 -127 -128 -128 -128 -128
+	}
+	num = 124;
+	for(int i = 0; i < 30; i++){
+		CUTIL_INCREASE(num, 1u);
+		printf("%d ", num); // -> 125 126 127 127 127 127
+	}
+*/
+
+
+//* get size of a C array
+// WARNING: if a C array is passed to a function, it will decay to a pointer, then this macro dose not work.
+#define CUTIL_ARRAY_SIZE(_arr)			(sizeof((_arr)) / sizeof((_arr[0])))
+
+
+//* C char conversion and assertion
+#define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
+#define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
+#define CUTIL_CHAR_IS_ALPHABET(_ch)		(CUTIL_CHAR_IS_UPPER(_ch) || CUTIL_CHAR_IS_LOWER(_ch))
+#define CUTIL_CHAR_GET_UPPER(_ch)		((char)(CUTIL_CHAR_IS_LOWER(_ch) ? ((_ch) - 0x20) : (_ch)))
+#define CUTIL_CHAR_GET_LOWER(_ch)		((char)(CUTIL_CHAR_IS_UPPER(_ch) ? ((_ch) + 0x20) : (_ch)))
+#define CUTIL_CHAR_SET_UPPER(_ch)		((_ch) = CUTIL_CHAR_GET_UPPER(_ch), (_ch))
+#define CUTIL_CHAR_SET_LOWER(_ch)		((_ch) = CUTIL_CHAR_GET_LOWER(_ch), (_ch))
+
+#define CUTIL_CHAR_IS_NUMBER(_ch)		((_ch) >= '0' && (_ch) <= '9')
+// #define CUTIL_CHAR_IS_DIGIT(_ch)		CUTIL_CHAR_IS_DEC(_ch)
+#define CUTIL_CHAR_IS_DEC(_ch)			CUTIL_CHAR_IS_NUMBER(_ch)
+#define CUTIL_CHAR_IS_HEX(_ch)			(CUTIL_CHAR_IS_NUMBER(_ch) || ((_ch) >= 'A' && (_ch) <= 'F') || ((_ch) >= 'a' && (_ch) <= 'f'))
+
+#define CUTIL_CHAR_IS_ALPHANUMERIC(_ch)	(CUTIL_CHAR_IS_ALPHABET(_ch) || CUTIL_CHAR_IS_NUMBER(_ch))
+#define CUTIL_CHAR_IS_PUNCT(_ch)		(((_ch) >= '!' && (_ch) <= '/') || ((_ch) >= ':' && (_ch) <= '@') || ((_ch) >= '[' && (_ch) <= '`') || ((_ch) >= '{' && (_ch) <= '~'))
+#define CUTIL_CHAR_IS_CONTROL(_ch)		((_ch) <= 0x1F && (_ch) >= 0x00)
+#define CUTIL_CHAR_IS_ASCII(_ch)		((_ch) >= 0x01 && (_ch) <= 0x7E)
+#define CUTIL_CHAR_IS_SYMBOL(_ch)		((_ch) >= 0x20 && (_ch) <= 0x7E)
+/*
+	#define TEST(_x)    fmt::println("{}: {}", _x, CUTIL_CHAR_IS_UPPER(_x))
+	CUTIL_SEQ_FOREACH(TEST, '`', 'a', 'b', 'z', '{', '0', '9', '@', 'A', 'B', 'Z', '[');
+	// fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+	// fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+	//  ...
+	// fmt::println("{}: {}", '[', CUTIL_CHAR_IS_UPPER('['));
+
+*/
 
 
 //* determine if two float/double numbers are regarded as equal (within epsilon)
@@ -468,6 +724,68 @@ Usage Example:
 	#define CU_EQU_D(_F1, _F2)				CUTIL_EQUAL_D(_F1, _F2)
 	#define CU_EQU_LD(_F1, _F2)				CUTIL_EQUAL_LD(_F1, _F2)
 #endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
+/*
+	float a = -1.00000f, b = -0.99999f; // they can regarded as equal
+	double c = 1.000000000, d = 1.0000000001;
+
+	bool isEqual1 = CUTIL_EQUAL_F(a, b); // fabs(a-b) within (-epsilon, +epsilon), epsilon == FLT_EPSILON in <float.h>
+	bool isEqual2 = CUTIL_EQUAL_D(c, d); // epsilon == DBL_EPSILON in <float.h>
+	bool isEqual3 = CUTIL_EQUAL(c, d, 0.0001); // custom epsilon value
+*/
+
+
+//* get high or low byte (uint8_t) of a word (uint16_t)
+#define CUTIL_GET_WORD_LOW(_W)			((uint8_t) ((uint16_t)(_W) & 0xFF))
+#define CUTIL_GET_WORD_HIGH(_W)			((uint8_t) ((uint16_t)(_W) >> 8u))
+
+#define CUTIL_SET_WORD_LOW(_W, _val)	((_W) = (((uint16_t)(_W) & 0xFF00) | (uint8_t)(_val)), (_W))
+#define CUTIL_SET_WORD_HIGH(_W, _val)	((_W) = (((uint16_t)(_W) & 0x00FF) | (uint16_t)(_val) << 8u), (_W))
+/*
+	uint16_t v {0x1234};
+	
+	printf("%x \n", v); // -> 1234
+	printf("%x %x \n", CUTIL_GET_WORD_HIGH(v), CUTIL_GET_WORD_LOW(v));	// -> 12 34
+	printf("%x %x \n", CUTIL_SET_WORD_HIGH(v, 0xFE), CUTIL_SET_WORD_LOW(v, 0xBA)); // -> FE BA
+	printf("%x \n", v);	// -> FEBA
+*/
+
+
+//* operate value of specific memory location
+#define CUTIL_GET_PTR_VOID(_var)				(			 (void*) &(_var))
+#define CUTIL_GET_PTR_U8(_var)					((uint8_t*)	 (void*) &(_var))
+#define CUTIL_GET_PTR_U16(_var)					((uint16_t*) (void*) &(_var))
+#define CUTIL_GET_PTR_U32(_var)					((uint32_t*) (void*) &(_var))
+#define CUTIL_GET_PTR_U64(_var)					((uint64_t*) (void*) &(_var))
+#define CUTIL_GET_PTR_SIZE(_var)				((size_t*)	 (void*) &(_var))
+#define CUTIL_GET_PTR_TYPE(_var, _type)			((_type*)	 (void*) &(_var))
+
+#define CUTIL_GET_MEM_U8(_ptr)					(*((volatile uint8_t*)	(_ptr)))
+#define CUTIL_GET_MEM_U16(_ptr)					(*((volatile uint16_t*)	(_ptr)))
+#define CUTIL_GET_MEM_U32(_ptr)					(*((volatile uint32_t*)	(_ptr)))
+#define CUTIL_GET_MEM_U64(_ptr)					(*((volatile uint64_t*)	(_ptr)))
+#define CUTIL_GET_MEM_SIZE(_ptr)				(*((volatile size_t*)	(_ptr)))
+#define CUTIL_GET_MEM_TYPE(_ptr, _type)			(*((volatile _type*)		(_ptr)))
+
+#define CUTIL_SET_MEM_U8(_ptr, _val)			(*((volatile uint8_t*)	_ptr) = _val, _val)
+#define CUTIL_SET_MEM_U16(_ptr, _val)			(*((volatile uint16_t*)	_ptr) = _val, _val)
+#define CUTIL_SET_MEM_U32(_ptr, _val)			(*((volatile uint32_t*)	_ptr) = _val, _val)
+#define CUTIL_SET_MEM_U64(_ptr, _val)			(*((volatile uint64_t*)	_ptr) = _val, _val)
+#define CUTIL_SET_MEM_SIZE(_ptr, _val)			(*((volatile size_t*)	_ptr) = _val, _val)
+#define CUTIL_SET_MEM_TYPE(_ptr, _val, _type) 	(*((volatile _type*)		_ptr) = _val, _val)
+/*
+	uint32_t a = 0x12345678;
+	uint32_t b = 0xFEDCBA98;
+	printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+	printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));
+	
+	CUTIL_SET_MEM_U32(&a, 0x66666666);
+	printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+	// output:
+	//		12345678, fedcba98
+	//		000000C48D7BFB04, 000000C48D7BFB24
+	//		66666666, fedcba98
+*/
+
 
 //* C memory allocations
 // malloc by type and amount, only alloc heap memory without initialization. returns nullptr if failed.
@@ -477,7 +795,7 @@ Usage Example:
 // realloc memory by type and amount. returns nullptr if failed.
 #define CUTIL_TYPE_REALLOC(_TYPE, _PTR, _AMOUNT)	(_TYPE*)realloc((_PTR), (_AMOUNT)*sizeof(_TYPE))
 // free heap memory allocated with malloc/calloc, then set to nullptr.
-#define CUTIL_TYPE_FREE(_PTR) 						{if((_PTR) != NULL) {free(_PTR); _PTR = NULL;}}
+#define CUTIL_TYPE_FREE(_PTR) 						do {if((_PTR) != NULL) {free(_PTR); _PTR = NULL;}} while(0)
 #define CUTIL_FREE(_PTR)							CUTIL_TYPE_FREE(_PTR) // alias
 
 
@@ -494,7 +812,6 @@ Usage Example:
 // compare a range of memory blocks data, returns integer values <0, >0 or =0(equal).
 #define CUTIL_TYPE_MEMCMP(_TYPE, _PTR1, _PTR2, _AMOUNT)			\
 		memcmp((_PTR1), (_PTR2), (_AMOUNT)*sizeof(_TYPE))
-
 /*
 * Examples:
 	const size_t amount = 20; // amount of variables (!= length in bytes! )
@@ -514,31 +831,61 @@ Usage Example:
 */
 
 
+//* C struct with memory offset
+// calculate the struct address from the member's address
+#define CUTIL_OFFSET_OF(_type, _field) 			((size_t) &((_type*) 0)->_field)
+// use the address of a struct member, to calculate the address of the containing struct object
+#define CUTIL_CONTAINER_OF(_ptr, _type, _field)	((_type*)((char*)(_ptr) - (char*) &((_type*)0)->_field)) // must use `char*`
+// get the size of a struct member
+#define CUTIL_FIELD_SIZE(_type, _field)			sizeof(((_type*)0)->_field)
+/*
+	struct MyStruct {s
+		uint8_t 	a;	// 0    (+0)
+		uint8_t 	b;	// 1      |--(+1)
+		uint32_t 	c;	// 4    (+4)
+		uint8_t 	d;	// 8    (+4)
+		uint8_t 	e;	// 9      |--(+1)
+		uint8_t 	f;	// 10     |--(+1)
+		uint64_t 	g;	// 16   (+8)
+		uint32_t 	h;	// 24   (+8)
+	};
+
+	struct MyStruct myStruct;
+	
+	//* calculate the struct address from the member's address
+	#define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_OFFSET_OF(struct MyStruct, _x)
+	printf("offset: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+			, CUTIL_SEQ_ENUM(MYSTRUCT_OFFSET_OF_ELEMENT, a, b, c, d, e, f, g, h)
+				// , CUTIL_OFFSET_OF(struct MyStruct, a)
+				// , CUTIL_OFFSET_OF(struct MyStruct, b)
+				//  ...
+				// , CUTIL_OFFSET_OF(struct MyStruct, h)
+	);	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
+	
+	//* use the address of a struct member, to calculate the address of the containing struct object
+	printf("loc of myStruct: %p %p \n", &myStruct, CUTIL_CONTAINER_OF(&myStruct.b, struct MyStruct, b));
+	// output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
+
+	//* get the size of a struct member
+	#define MYSTRUCT_SIZE_OF_ELEMENT(_x)  CUTIL_FIELD_SIZE(struct MyStruct, _x)
+	printf("size: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+			, CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
+				// , CUTIL_OFFSET_OF(struct MyStruct, a)
+				// , CUTIL_OFFSET_OF(struct MyStruct, b)
+				//  ...
+				// , CUTIL_OFFSET_OF(struct MyStruct, h)
+	);	// output: `size: a:1, b:1, c:4, zu:1, e:1, f:1, g:8, h:4`
+*/
+
+
+
 
 //======================= C++ Utils ==========================
 #ifdef __cplusplus
 
-//* get C++ language standard version, do not add "L" suffix after number
- // in MSVC compiler, __cplusplus always equals to 199711L, but _MSVC_LANG(Prior to VS2015) equals to cpp standard version
-#ifdef _MSVC_LANG // example: #if CUTIL_CPP_LANG >= 201103L
-	#define CUTIL_CPP_LANG			_MSVC_LANG	// for MSVC
-#else //. !defined _MSVC_LANG
-	#define CUTIL_CPP_LANG			__cplusplus // for GCC, Clang (also MSVC with the copiler argument "/Zc:__cplusplus")
-#endif // _MSVC_LANG
-/*
-* example:
-	#if CUTIL_CPP_LANG >= 199711L	// C++98
-	#if CUTIL_CPP_LANG >= 201103L	// C++11
-	#if CUTIL_CPP_LANG >= 201402L	// C++14
-	#if CUTIL_CPP_LANG >= 201703L	// C++17
-	#if CUTIL_CPP_LANG >= 202002L	// C++20
-	#if CUTIL_CPP_LANG >= 202302L	// C++23 (temporary not supported)
-*/
-
-
 //* delete a heap pointer, and set it nullptr. arg "p" must be a pointer inited by "new" or "new[]".
-#define CUTIL_DELETE(p)		{delete   p; p = NULL;}
-#define CUTIL_DELETE_ARR(p)	{delete[] p; p = NULL;}
+#define CUTIL_DELETE(p)			do {delete   p; p = NULL;} while(0)
+#define CUTIL_DELETE_ARR(p)		do {delete[] p; p = NULL;} while(0)
 	// keyword "nullptr" is unsupported in C++98
 
 
@@ -595,6 +942,54 @@ Usage Example:
 	#define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
 	
 #endif // >= C++11
+
+
+//* generate getter and setter (>= C++11)
+#if CUTIL_CPP_LANG >= 201103L
+	#define CUTIL_GETTER(_name, _getter) 		public: CUTIL_TYPEOF(_name) _getter() {return this->_name;}
+	#define CUTIL_SETTER(_name, _setter) 		public: void _setter(const CUTIL_TYPEOF(_name)& _val)	{this->_name = _val;}
+	
+	#define CUTIL_MEMBER(_type, _name, _val, ...)	CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_MEMBER_, CUTIL_VA_CNT(__VA_ARGS__))(_type, _name, _val, __VA_ARGS__))
+	#define _CUTIL_MEMBER_2(_type, _name, _val, _getter, _setter)	private: _type _name {_val}; CUTIL_GETTER(_name, _getter) CUTIL_SETTER(_name, _setter)
+	#define _CUTIL_MEMBER_1(_type, _name, _val, _func)				private: _type _name {_val}; CUTIL_GETTER(_name, _func)	CUTIL_SETTER(_name, _func)
+#endif // >= C++11
+/* example:
+	class Test{
+	public:
+		int a {666};
+		CUTIL_GETTER(a, getA)
+		// public: std::decay<decltype(a)>::type getA() {return this->a;}
+		CUTIL_SETTER(a, setA)
+		// public: void setA(const std::decay<decltype(a)>::type& _val) {this->a = _val;}
+
+		CUTIL_MEMBER(int, m_b, CUTIL_DEFAULT, getB, setB)   // default initialization `{}`
+		CUTIL_MEMBER(int, m_c, 666, getC, setC)             // custom initializing value
+	};
+
+	Test test;
+
+	fmt::println("Shabi::a = {}", test.getA());
+
+	test.setC(55);
+	fmt::println("Test::c = {}", test.getC());
+*/
+
+
+//* foreach support for C++98
+#define CUTIL_FOREACH(_iterType, _iterName, _container)	 	\
+	for(_iterType _iterName = _container.begin(); _iterName < _container.end(); _iterName++)
+/*
+	std::vector<int> vec1 = {1, 2, 3,4, 5};
+	CUTIL_FOREACH(std::vector<int>::iterator, it, vec1){
+		std::cout << *it << " ";
+	}
+	for(auto&& var : vec1){		// C++11
+		std::cout << var << " ";
+	}
+*/
+
+
+
 #endif // __cplusplus
 
 

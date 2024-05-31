@@ -27,7 +27,7 @@ Reference of Ansi Escape Codes:
 - features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
     - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
-- C language version `≥ C99`, C++ language `≥ C++98`, with `##__VA_ARGS__` extension support. 
+- C language version `≥ C99`, C++ language `≥ C++98`, with `##__VA_ARGS__` extension support.
 
     (**MSVC supports `##__VA_ARGS__` since VS2015 Update 3**. if your MSVC or VS version is older, pls delete "`##`", MSVC eats trailing comma before `__VA_ARGS__` by default without `/Zc::preprocessor` command)
 
@@ -230,33 +230,107 @@ Reference of Ansi Escape Codes:
         CUTIL_BIT_ROTATE_LEFT_SIZE(8*sizeof(uint16_t), var, 1); // rotate bits of `var` by 1 bit step
         CUTIL_BIT_ROTATE_RIGHT_SIZE(8*sizeof(uint16_t), var, 1);
         
-        CUTIL_BIT_ROTATE_LEFT_TYPE(decltype(var), var, 1); // equivelent, also `typeof` for GNU C or C23
-        CUTIL_BIT_ROTATE_RIGHT_TYPE(decltype(var), var, 1);
+        CUTIL_BIT_ROTATE_LEFT_TYPE(std::decay<decltype(var)>::type, var, 1); // equivelent, also `typeof` for GNU C or C23
+        CUTIL_BIT_ROTATE_RIGHT_TYPE(std::decay<decltype(var)>::type, var, 1);
         
         CUTIL_BIT_ROTATE_LEFT(var, 1); // equivelent, C++, GNU C, C23 only
         CUTIL_BIT_ROTATE_RIGHT(var, 1);
         
         ```
     
-    - swap variables in C (types of `_VAR1` and `_VAR2` should be strictly equal; do not use in C++, pls replace with std::swap()), 
+        - get high or low byte (uint8_t) of a word (uint16_t)
     
-        or get the maximum or minimum item between two numbers;
+        ```c++
+        uint16_t v {0x1234};
+        
+        printf("%x \n", v); // -> 1234
+        printf("%x %x \n", CUTIL_GET_WORD_HIGH(v), CUTIL_GET_WORD_LOW(v));	// -> 12 34
+        printf("%x %x \n", CUTIL_SET_WORD_HIGH(v, 0xFE), CUTIL_SET_WORD_LOW(v, 0xBA)); // -> FE BA
+        printf("%x \n", v);	// -> FEBA
+        ```
+    
+        
+    
+    - swap variables in C (types of `_VAR1` and `_VAR2` should be strictly equal; do not use in C++, pls replace with std::swap()),
+    
+        > **WARNING**: DO NOT use for **C arrays**!
     
         ```c
         #include <ConsoleUtil/CppUtil.h>
         uint32_t a = 1, b = 2; // type of `a` and `b` must be strictly equal.
         
-        CUTIL_SWAP(a, b); // use in C++(decltype), GNU C(typeof), or C23(typeof)
+        CUTIL_SWAP(a, b); // in C++(std::decay<decltype(var)>::type), GNU C(typeof), or C23(typeof)
         
         CUTIL_SWAP_TYPE(uint32_t, a, b); 	// equivelent, specify the type.
         CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivelent, in GNU C or C23
-        CUTIL_SWAP_TYPE(decltype(a), a, b); // equivelent in C++, but prefer to use `std::swap()`
+        CUTIL_SWAP_TYPE(std::decay<decltype(var)>::type, a, b); // equivelent in C++, but prefer to use `std::swap()`
         
         int max_ab = CUTIL_MAX(a, b); // maximum number between a and b
         int min_ab = CUTIL_MIN(a, b); // minimum number between a and b
+        
+        
         ```
     
-    - check if two floating-point numbers are equal (float, double, long double) by checking diff of two numbers is within epsilon limit.
+        - get the bigger or smaller item between two numeric variables
+    
+        ```
+        uint32_t a = 1, b = 2; // type of `a` and `b` must be strictly equal.
+        
+        int max_ab = CUTIL_MAX(a, b); // bigger number between a and b
+        int min_ab = CUTIL_MIN(a, b); // smaller number between a and b
+        ```
+    
+        - limit the numeric variable in range, and get if the value of variable is within the range
+    
+        ```
+        int a = 35, b = 26, c = 19;
+        
+        CUTIL_LIMIT(a, 20, 30);		// a: 35 -> 30
+        CUTIL_LIMIT(b, 20, 30);		// b: 26
+        CUTIL_LIMIT(c, 20, 30);		// c: 19 -> 20
+        
+        printf("%d %d %d\n", a, b, c);
+        // output: 30 26 20
+        
+        printf("%d %d", CUTIL_IN_RANGE(a, 20, 40), CUTIL_IN_OPEN_RANGE(c, 20, 30));
+        // output: 1 0
+        ```
+    
+        - increase or decrease the value of numeric variable within the range [_min, _max]
+        - increase or decrease the value of numeric variable, and rolling within the range [_min, _max]
+        - increase or decrease the value, and prevent overflowing, only for GNU C, C23, C++11
+    
+        ```c++
+        int num = 0;
+        
+        for(int i = 0; i < 50; i++){
+            printf("%d ", CUTIL_INCREASE_LIMIT(num, 1, 5));     // 1 2 3 4 5 5 5 5 5 5 5 5
+        }
+        for(int i = 0; i < 50; i++){
+            printf("%d ", CUTIL_DECREASE_LIMIT(num, 1, 0));     // 5 4 3 2 1 0 0 0 0 0 0 0
+        }
+        
+        for(int i = 0; i < 50; i++){
+            printf("%d ", CUTIL_INCREASE_ROLL(num, 1, 0, 5));   // 1 2 3 4 5 0 1 2 3 4 5 0
+        }
+        for(int i = 0; i < 50; i++){
+            printf("%d ", CUTIL_DECREASE_ROLL(num, 1, 0, 5));   // 5 4 3 2 1 0 5 4 3 2 1 0
+        }
+        
+        int8_t num = -125;
+        for(int i = 0; i < 30; i++){
+            CUTIL_DECREASE(num, 1u);
+            printf("%d ", num); // -> -126 -127 -128 -128 -128 -128
+        }
+        num = 124;
+        for(int i = 0; i < 30; i++){
+            CUTIL_INCREASE(num, 1u);
+            printf("%d ", num); // -> 125 126 127 127 127 127
+        }
+        ```
+    
+        - check if two floating-point numbers are equal (float, double, long double) by checking diff of two numbers is within epsilon limit.
+    
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
@@ -269,22 +343,91 @@ Reference of Ansi Escape Codes:
         
         ```
     
+    - input a comma `,` to argument of functional macro
+    
+        ```c++
+        #define MY_MACRO(_x, _y)	_x	// extract first param
+        MY_MACRO(a CUTIL_COMMA b, c);	// expands to `a, b`
+        // CUTIL_COMMA inserts a comma `,` to an argument, and avoid being regarded as seperator of arguments
+        
+        ```
+    
+    - **C character** conversion & assertion (`char` only, not `wchar_t`)
+    
+        ```c++
+        #define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
+        #define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
+        #define CUTIL_CHAR_IS_ALPHABET(_ch)		(CUTIL_CHAR_IS_UPPER(_ch) || CUTIL_CHAR_IS_LOWER(_ch))
+        #define CUTIL_CHAR_GET_UPPER(_ch)		((char)(CUTIL_CHAR_IS_LOWER(_ch) ? ((_ch) - 0x20) : (_ch)))
+        #define CUTIL_CHAR_GET_LOWER(_ch)		((char)(CUTIL_CHAR_IS_UPPER(_ch) ? ((_ch) + 0x20) : (_ch)))
+        #define CUTIL_CHAR_SET_UPPER(_ch)		(_ch = CUTIL_CHAR_GET_UPPER(_ch), _ch)
+        #define CUTIL_CHAR_SET_LOWER(_ch)		(_ch = CUTIL_CHAR_GET_LOWER(_ch), _ch)
+        
+        #define CUTIL_CHAR_IS_NUMBER(_ch)		((_ch) >= '0' && (_ch) <= '9')
+        // #define CUTIL_CHAR_IS_DIGIT(_ch)		CUTIL_CHAR_IS_DEC(_ch)
+        #define CUTIL_CHAR_IS_DEC(_ch)			CUTIL_CHAR_IS_NUMBER(_ch)
+        #define CUTIL_CHAR_IS_HEX(_ch)			(CUTIL_CHAR_IS_NUMBER(_ch) || ((_ch) >= 'A' && (_ch) <= 'F') || ((_ch) >= 'a' && (_ch) <= 'f'))
+        
+        #define CUTIL_CHAR_IS_ALPHANUMERIC(_ch)	(CUTIL_CHAR_IS_ALPHABET(_ch) || CUTIL_CHAR_IS_NUMBER(_ch))
+        #define CUTIL_CHAR_IS_PUNCT(_ch)		(((_ch) >= '!' && (_ch) <= '/') || ((_ch) >= ':' && (_ch) <= '@') || ((_ch) >= '[' && (_ch) <= '`') || ((_ch) >= '{' && (_ch) <= '~'))
+        #define CUTIL_CHAR_IS_CONTROL(_ch)		((_ch) <= 0x1F && (_ch) >= 0x00)
+        #define CUTIL_CHAR_IS_ASCII(_ch)		((_ch) >= 0x01 && (_ch) <= 0x7E)
+        #define CUTIL_CHAR_IS_SYMBOL(_ch)		((_ch) >= 0x20 && (_ch) <= 0x7E)
+        ```
+    
+        ```
+        #define TEST(_x)    fmt::println("{}: {}", _x, CUTIL_CHAR_IS_UPPER(_x))
+        CUTIL_SEQ_FOREACH(TEST, '`', 'a', 'b', 'z', '{', '0', '9', '@', 'A', 'B', 'Z', '[');
+        // fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+        // fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+        //  ...
+        // fmt::println("{}: {}", '[', CUTIL_CHAR_IS_UPPER('['));
+        
+        // case conversion
+        char b = 'a';
+        auto c = CUTIL_CHAR_SET_UPPER(b);
+        fmt::println("{} {}", b, c);
+        ```
+    
+    - operate value of specific memory location
+    
+        ```c++
+        uint32_t a = 0x12345678;
+        uint32_t b = 0xFEDCBA98;
+        printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+        printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));
+        
+        CUTIL_SET_MEM_U32(&a, 0x66666666);
+        printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+        // output:
+        //		12345678, fedcba98
+        //		000000C48D7BFB04, 000000C48D7BFB24
+        //		66666666, fedcba98
+        ```
+    
         
     
     - count amount of arguments (up to 35 params)
     
-        ```c
+        - `CUTIL_VA_CNT(...)` (also compatible for compiler that do not support `##__VA_ARGS__` , to eliminate a leading comma if `__VA_ARGS__` is empty)
+    
+        ```c++
         #include <ConsoleUtil/CppUtil.h>
         int a = CUTIL_VA_CNT(); 			// -> 0
         int b = CUTIL_VA_CNT(b1); 			// -> 1
         int c = CUTIL_VA_CNT(c1, c2); 		// -> 2
         int d = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
-        ...
+        ```
+    
+        - `CUTIL_VA_EXISTS(...)` get if arguments exists
+    
+        ```c++
         int a = CUTIL_VA_EXISTS(); 			// -> 0
         int b = CUTIL_VA_EXISTS(b1); 		// -> 1
         int c = CUTIL_VA_EXISTS(c1, c2); 	// -> 1
         int d = CUTIL_VA_EXISTS(c1, c2, c3);// -> 1
         ```
+    
     
     - match C++ language version, especially if you want to let the project build both by MSVC and G++.
     
@@ -417,7 +560,7 @@ Reference of Ansi Escape Codes:
         CUTIL_OVERLOAD_IDX(var_, 3) = 10; 	// var_3 = 10;
         
         // Deduce suffix by amount of arguments within the macro
-        CUTIL_OVERLOAD_AMOUNT(MyFunc, 2, 4, 6)(2, 4, 6); // MyFunc3(2, 4, 6); 
+        CUTIL_OVERLOAD_AMOUNT(MyFunc, 2, 4, 6)(2, 4, 6); // MyFunc3(2, 4, 6);
         
         
         ```
@@ -446,13 +589,108 @@ Reference of Ansi Escape Codes:
     
     - generate code like `int arg0, int arg1, int arg2`, similar to `BOOST_PP_ENUM`, up to 25 params
     
+        - `CUTIL_ENUM(_count, _name, _type)`
+    
+            ```c++
+            void func(CUTIL_ENUM(3, var_, int)){
+                // equivalent to `void func(int var_0, int var_1, int var_2)`
+            }
+            ```
+    
+        - `CUTIL_SEQ_ENUM(_action, ...)`
+    
+            ```c++
+            #define TEST(_x)    test_##_x 		//* Must take exactly 1 argument
+            #define TEST2(_x)   test_##_x = 1
+            
+            int CUTIL_SEQ_ENUM(TEST2, a, b, c, d);
+            // -> int test_a = 1, test_b = 1, test_c = 1, test_d = 1;
+            
+            printf("%d %d %d %d", CUTIL_SEQ_ENUM(TEST, a, b, c, d));
+            printf("%d %d %d %d", test_a, test_b, test_c, test_d);	// equivalent to above
+            ```
+    
+    - tools for C struct with memory offset (DO NOT use in C++)
+        - `CUTIL_OFFSET_OF(_type, _field)`: calculate the struct address from the member's address
+        - `CUTIL_CONTAINER_OF(_ptr, _type, _field)`: use the address of a struct member, to calculate the address of the containing struct object
+        - `CUTIL_FIELD_SIZE(_type, _field)`: get the size of a struct member
+    
         ```c++
-        void func(CUTIL_ENUM(3, var_, int)){
-            // equivalent to `void func(int var_0, int var_1, int var_2)`
+        struct MyStruct {s
+            uint8_t     a;  // 0    (+0)
+            uint8_t     b;  // 1      |--(+1)
+            uint32_t    c;  // 4    (+4)
+            uint8_t     d;  // 8    (+4)
+            uint8_t     e;  // 9      |--(+1)
+            uint8_t     f;  // 10     |--(+1)
+            uint64_t    g;  // 16   (+8)
+            uint32_t    h;  // 24   (+8)
+        };
+        
+        struct MyStruct myStruct;
+        
+        //* calculate the struct address from the member's address
+        #define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_OFFSET_OF(struct MyStruct, _x)
+        printf("offset: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+                , CUTIL_SEQ_ENUM(MYSTRUCT_OFFSET_OF_ELEMENT, a, b, c, d, e, f, g, h)
+                    // , CUTIL_OFFSET_OF(struct MyStruct, a)
+                    // , CUTIL_OFFSET_OF(struct MyStruct, b)
+                    //  ...
+                    // , CUTIL_OFFSET_OF(struct MyStruct, h)
+        );  // output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
+        
+        //* use the address of a struct member, to calculate the address of the containing struct object
+        printf("loc of myStruct: %p %p \n", &myStruct, CUTIL_CONTAINER_OF(&myStruct.b, struct MyStruct, b));
+        // output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
+        
+        //* get the size of a struct member
+        #define MYSTRUCT_SIZE_OF_ELEMENT(_x)  CUTIL_FIELD_SIZE(struct MyStruct, _x)
+        printf("size: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+                , CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
+                    // , CUTIL_OFFSET_OF(struct MyStruct, a)
+                    // , CUTIL_OFFSET_OF(struct MyStruct, b)
+                    //  ...
+                    // , CUTIL_OFFSET_OF(struct MyStruct, h)
+        );  // output: `size: a:1, b:1, c:4, zu:1, e:1, f:1, g:8, h:4`
+        ```
+    
+    - generate **getter or setter functions** in a class, or member variable with getter and setter (≥ C++11)
+    
+        ```c++
+        class Test{
+        public:
+            int a {666};
+            CUTIL_GETTER(a, getA)
+            // public: std::decay<decltype(a)>::type getA() {return this->a;}
+            CUTIL_SETTER(a, setA)
+            // public: void setA(const std::decay<decltype(a)>::type& _val) {this->a = _val;}
+        
+            CUTIL_MEMBER(int, m_b, CUTIL_DEFAULT, getB, setB)   // default initialization `{}`
+            CUTIL_MEMBER(int, m_c, 666, getC, setC)             // custom initializing value
+        };
+        
+        Test test;
+        
+        fmt::println("Shabi::a = {}", test.getA());
+        
+        test.setC(55);
+        fmt::println("Test::c = {}", test.getC());
+        ```
+    
+    - **foreach** support for **C++98**
+    
+        ```c++
+        std::vector<int> vec1 = {1, 2, 3,4, 5};
+        CUTIL_FOREACH(std::vector<int>::iterator, it, vec1){
+        	std::cout << *it << " ";
+        }
+        for(auto&& var : vec1){		// C++11
+            std::cout << var << " ";
         }
         ```
     
         
+
 
 
 

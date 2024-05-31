@@ -115,8 +115,8 @@
 	
 	
 //* ==== specific foreground and background color combinations
-	#define CTurn 			CAnsiEsc("107;30m")	// 白底黑字, white text on a black background
-	#define CLYelBold 		CAnsiEsc("1;93m")	// bold, and light yellow
+	#define CTurn 			CAnsiEsc("107;30m")		// 白底黑字, white text on a black background
+	#define CLYelBold 		CAnsiEsc("1;93m")		// bold, and light yellow
 	#define CInvLYel		CAnsiEsc("1;30;103m")
 	#define CLRedBold		CAnsiEsc("1;91m")
 	#define CLightBold		CAnsiEsc("1;97;100m")
@@ -128,14 +128,14 @@
 	#define CDown(n)		CAnsiEsc(#n"B") // cursor Down: e.g. std::cout << CDown("2") // moves cursor 2 cells down
 	#define CForward(n)		CAnsiEsc(#n"C") // cursor Forward:
 	#define CBack(n)		CAnsiEsc(#n"D") // cursor Back
-	#define CFwd(n)			CForward(n)  // shorter alias
+	#define CFwd(n)			CForward(n)  	// shorter alias
 
 	#define CNextLn(n)		CAnsiEsc(#n"E") // Moves cursor to beginning of the line n (default 1) lines down
 	#define CPrevLn(n)		CAnsiEsc(#n"F") // Moves cursor to beginning of the line n (default 1) lines up.
 	#define CHorzPos(n)		CAnsiEsc(#n"G") // Moves the cursor to column n (default 1, absolute).
 
-	#define CCursorPos(x, y) CAnsiEsc(#x";"#y"H") // Moves the cursor to row n, column m
-	#define CPos(x, y) 		 CCursorPos(x, y) // shorter alias
+	#define CCursorPos(x, y) CAnsiEsc(#x";"#y"H") 	// Moves the cursor to row n, column m
+	#define CPos(x, y) 		 CCursorPos(x, y) 		// shorter alias
 
 //* clear the screen or line
 	#define CClear(n)		CAnsiEsc(#n"J") //  If the cursor is already at the edge of the screen, this has no effect.
@@ -178,21 +178,21 @@
 //* macros for console window/application and streams
 #if defined(CUTIL_OS_WINDOWS) // in Windows
 	#if defined(_WINDOWS_) || defined(WINAPI)
-		#define CUTIL_CHCP_ENCODING(_NUM)	{SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM); system("chcp "#_NUM);}
+		#define CUTIL_CHCP_ENCODING(_NUM)	do {SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM); system("chcp "#_NUM);} while(0)
 	#else // in windows system, but without <windows.h> winapi
-		#define CUTIL_CHCP_ENCODING(_NUM)	system("chcp "#_NUM);	// custom chcp encoding (number) in Windows
+		#define CUTIL_CHCP_ENCODING(_NUM)	system("chcp "#_NUM)	// custom chcp encoding (number) in Windows
 	#endif
 	
-	#define CUTIL_CONSOLE_CLEAR()			system("cls");			// clear the screen (console)
-	#define CUTIL_CONSOLE_SIZE(X, Y) 		system("mode con cols=" #X "lines=" #Y); // set console window size
-	#define CUTIL_CONSOLE_PAUSE()			system("pause");		// pause the console application
+	#define CUTIL_CONSOLE_CLEAR()			system("cls")			// clear the screen (console)
+	#define CUTIL_CONSOLE_SIZE(X, Y) 		system("mode con cols=" #X "lines=" #Y) // set console window size
+	#define CUTIL_CONSOLE_PAUSE()			system("pause")			// pause the console application
 	
 #else 	// in Linux/MacOS
 	#define CUTIL_CHCP_ENCODING(_NUM)
 	
-	#define CUTIL_CONSOLE_CLEAR()			system("clear"); 		// clear the screen (console)
+	#define CUTIL_CONSOLE_CLEAR()			system("clear") 		// clear the screen (console)
 	#define CUTIL_CONSOLE_SIZE(X, Y)
-	#define CUTIL_CONSOLE_PAUSE()			getchar();				// pause the console application
+	#define CUTIL_CONSOLE_PAUSE()			getchar()				// pause the console application
 	
 #endif
 
@@ -200,28 +200,28 @@
 
 //* features with win32api
 #if defined(_WINDOWS_) || defined(WINAPI)
-	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitle(_STR);  // set console title in windows by winapi, (_A/_W?)
-	#define CUTIL_CONSOLE_TITLE_A(_STR)			SetConsoleTitleA(_STR);
-	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR);
+	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitle(_STR)  // set console title in windows by winapi, (_A/_W?)
+	#define CUTIL_CONSOLE_TITLE_A(_STR)			SetConsoleTitleA(_STR)
+	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR)
 	
 	#define CUTIL_CONSOLE_CURSOR_POS(x, y)	\
-		{COORD pos; pos.X=x; pos.Y=y;   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);}
-	#define CUTIL_CONSOLE_ATTR(_ATTR)			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR));
+		do {COORD pos; pos.X=x; pos.Y=y; SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);} while(0)
+	#define CUTIL_CONSOLE_ATTR(_ATTR)			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR))
 	#define CUTIL_CONSOLE_RESET_STYLE()			CUTIL_SET_CONSOLE_ATTR(0)
 	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()	\
-		{HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);DWORD mode;GetConsoleMode(handle, &mode); \
-		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;SetConsoleMode(handle, mode);}
+		do {HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE); DWORD mode; GetConsoleMode(handle, &mode); \
+			mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING; SetConsoleMode(handle, mode);} while(0)
 	//? 据说上面的函数在设置时只需要设置一次就可以自动适配到 STD_OUTPUT_HANDLE(stdout) 和 STD_ERROR_HANDLE(stderr) ?
 	
 //#else // without win32api, or in Linux
 #elif (CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED == 0) // without win32api, or in Linux
-	#define CUTIL_CONSOLE_TITLE(_STR)			printf("\033]0;%s\007", _STR); // set console title in linux
+	#define CUTIL_CONSOLE_TITLE(_STR)			printf("\033]0;%s\007", _STR) // set console title in linux
 	#define CUTIL_CONSOLE_TITLE_A(_STR)			CUTIL_CONSOLE_TITLE(_STR)
-	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		wprintf("\033]0;%s\007", _WSTR);
+	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		wprintf("\033]0;%s\007", _WSTR)
 	
-	#define CUTIL_CONSOLE_CURSOR_POS(x, y)		printf(CCursorPos(x, y));
+	#define CUTIL_CONSOLE_CURSOR_POS(x, y)		printf(CCursorPos(x, y))
 	#define CUTIL_CONSOLE_ATTR(_ATTR)
-	#define CUTIL_CONSOLE_RESET_STYLE()			printf(CReset);
+	#define CUTIL_CONSOLE_RESET_STYLE()			printf(CReset)
 	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()
 	
 #else
@@ -235,21 +235,21 @@
 
 
 //* Flush the input buffer to ensure that subsequent "scanf()" or "cin" calls receive valid input.
-#define CUTIL_CONSOLE_FLUSH_INPUTBUFFER()	{char ch; while((ch = getchar()) != '\n') continue;}
+#define CUTIL_CONSOLE_FLUSH_INPUTBUFFER()	do {char ch; while((ch = getchar()) != '\n') continue;} while(0)
 	// 吸收输入缓存区内的其余字符, 以便下次 scanf 或 cin 时能够获取到正确的输入内容
 
 //* Set Console Encoding by "chcp" command in Windows
-#define CUTIL_CHCP_ENCODING_UTF8()       CUTIL_CHCP_ENCODING(65001);   //* set console encoding to UTF-8 in windows
-#define CUTIL_CHCP_ENCODING_GB2312()     CUTIL_CHCP_ENCODING(936);     //  Simp. Chinese, or 54936 for GB18030
-#define CUTIL_CHCP_ENCODING_BIG5()       CUTIL_CHCP_ENCODING(950);     //  Trad. Chinese
-#define CUTIL_CHCP_ENCODING_KOR()        CUTIL_CHCP_ENCODING(949);     //  Korean
-#define CUTIL_CHCP_ENCODING_JIS()        CUTIL_CHCP_ENCODING(932);     //  Shift_JIS,
-#define CUTIL_CHCP_ENCODING_LATIN1()     CUTIL_CHCP_ENCODING(850);     //  Latin 1 multilingual
-#define CUTIL_CHCP_ENCODING_LATIN2()     CUTIL_CHCP_ENCODING(852);     //  Latin 2 multilingual (Slavic)
-#define CUTIL_CHCP_ENCODING_CYR()        CUTIL_CHCP_ENCODING(855);     //  Cyrillic / Russian
-#define CUTIL_CHCP_ENCODING_WIN1250()    CUTIL_CHCP_ENCODING(1250);    //  windows 1250, Central European
-#define CUTIL_CHCP_ENCODING_WIN1251()    CUTIL_CHCP_ENCODING(1251);    //  windows 1251, Cyrillic
-#define CUTIL_CHCP_ENCODING_WIN1252()    CUTIL_CHCP_ENCODING(1252);    //  windows 1252, western European
+#define CUTIL_CHCP_ENCODING_UTF8()       CUTIL_CHCP_ENCODING(65001)		//* set console encoding to UTF-8 in windows
+#define CUTIL_CHCP_ENCODING_GB2312()     CUTIL_CHCP_ENCODING(936)		//  Simp. Chinese, or 54936 for GB18030
+#define CUTIL_CHCP_ENCODING_BIG5()       CUTIL_CHCP_ENCODING(950)		//  Trad. Chinese
+#define CUTIL_CHCP_ENCODING_KOR()        CUTIL_CHCP_ENCODING(949)		//  Korean
+#define CUTIL_CHCP_ENCODING_JIS()        CUTIL_CHCP_ENCODING(932)		//  Shift_JIS,
+#define CUTIL_CHCP_ENCODING_LATIN1()     CUTIL_CHCP_ENCODING(850)		//  Latin 1 multilingual
+#define CUTIL_CHCP_ENCODING_LATIN2()     CUTIL_CHCP_ENCODING(852)		//  Latin 2 multilingual (Slavic)
+#define CUTIL_CHCP_ENCODING_CYR()        CUTIL_CHCP_ENCODING(855)		//  Cyrillic / Russian
+#define CUTIL_CHCP_ENCODING_WIN1250()    CUTIL_CHCP_ENCODING(1250)		//  windows 1250, Central European
+#define CUTIL_CHCP_ENCODING_WIN1251()    CUTIL_CHCP_ENCODING(1251)		//  windows 1251, Cyrillic
+#define CUTIL_CHCP_ENCODING_WIN1252()    CUTIL_CHCP_ENCODING(1252)		//  windows 1252, western European
 
 
 /*
@@ -296,7 +296,7 @@
 //============= PROGRAM DEBUGGING: Print Args/Error Messages ===============
 
 //* print all argc and argv[n] arguments for main(int argc, char* argv[]) function
-#define CUTIL_PRINT_ARGV(_argc, _argv) { \
+#define CUTIL_PRINT_ARGV(_argc, _argv) do { \
 		printf(CRst "\n"); \
 		printf(FLCyan CBold "====== Print Program params for `int main(int " FLWhite "argc" FLCyan ", char* " FLYellow "argv[]" FLCyan ")` =====" CRst "\n");\
 		printf(FLWhite CBold 	"  argc: " FLWhite "%d" CRst "\n", (_argc)); \
@@ -305,7 +305,7 @@
 			printf(FLYellow 	"    argv[%3d]: " FLGreen "%.256s\n", i, (_argv)[i]); \
 		} \
 		printf(CRst "\n"); \
-	}
+	} while (0)
 		
 //* print an error message with filename, function name and line number ATTACHED.
 #define CUTIL_ERROR_MESSAGE(_REASON) \
@@ -314,7 +314,7 @@
 			FRed "    func: " FCyan "%s\n" \
 			FRed "    line: " FCyan "%d\n" \
 			CRst "\n" , __func__, __LINE__ \
-	);
+	)
 
 //* print an warning message with filename, function name and line number ATTACHED.
 #define CUTIL_WARNING_MESSAGE(_REASON) \
@@ -323,28 +323,28 @@
 			FYellow "    func: " FCyan "%s\n" \
 			FYellow "    line: " FCyan "%d\n" \
 			CRst "\n" , __func__, __LINE__ \
-	);
+	)
 
 // print an error message, and force abort application.
-#define CUTIL_ABORT_ERR(_REASON) 	 	{CUTIL_ERROR_MESSAGE(_REASON); exit(-1);}
-#define CUTIL_ABORT_ERR_ASM(_REASON) 	{CUTIL_ERROR_MESSAGE(_REASON); asm("exit");}
+#define CUTIL_ABORT_ERR(_REASON) 	 	do {CUTIL_ERROR_MESSAGE(_REASON); exit(-1);		} while(0)
+#define CUTIL_ABORT_ERR_ASM(_REASON) 	do {CUTIL_ERROR_MESSAGE(_REASON); asm("exit");	} while(0)
 
 
 //* macros for print something ONLY IN DEBUG BUILD
 
 #if CUTIL_DEBUG_BUILD // Only Print in Debug Build
 	#if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
-		#define CUTIL_DEBUG_PRINT(_STR, ...)			fmt::print(_STR, ##__VA_ARGS__);
-		#define CUTIL_DEBUG_PRINTLN(_STR, ...)			fmt::println(_STR, ##__VA_ARGS__);
-		#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)		fmt::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
-		#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+		#define CUTIL_DEBUG_PRINT(_STR, ...)			fmt::print(_STR, ##__VA_ARGS__)
+		#define CUTIL_DEBUG_PRINTLN(_STR, ...)			fmt::println(_STR, ##__VA_ARGS__)
+		#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)		fmt::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
+		#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
 		// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
 	#elif CUTIL_CPP_LANG >= 202302L // C++23 std::print(), std::println()
 		#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
-			#define CUTIL_DEBUG_PRINT(_STR, ...)		std::print(_STR, ##__VA_ARGS__);
-			#define CUTIL_DEBUG_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__);
-			#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)	std::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
-			#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)	std::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+			#define CUTIL_DEBUG_PRINT(_STR, ...)		std::print(_STR, ##__VA_ARGS__)
+			#define CUTIL_DEBUG_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__)
+			#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)	std::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
+			#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)	std::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
 		#else // no fmtlib, and after C++23
 			#define CUTIL_DEBUG_PRINT(_STR, ...)
 			#define CUTIL_DEBUG_PRINTLN(_STR, ...)
@@ -359,15 +359,15 @@
 	#endif // _PRINT_
 	
 	// for std::cout, and printf()
-	#define CUTIL_DEBUG_COUT(...)			std::cout << __VA_ARGS__;
-	#define CUTIL_DEBUG_COUTLN(...)			std::cout << __VA_ARGS__ << '\n';
-	#define CUTIL_DEBUG_CERR(...)			std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "";
-	#define CUTIL_DEBUG_CERRLN(...)			std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "" << '\n';
+	#define CUTIL_DEBUG_COUT(...)				std::cout << __VA_ARGS__
+	#define CUTIL_DEBUG_COUTLN(...)				std::cout << __VA_ARGS__ << '\n'
+	#define CUTIL_DEBUG_CERR(...)				std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) ""
+	#define CUTIL_DEBUG_CERRLN(...)				std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "" << '\n'
 	
-	#define CUTIL_DEBUG_PRINTF(_STR, ...)		printf(_STR, ##__VA_ARGS__);
-	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)		printf(_STR "\n", ##__VA_ARGS__);
-	#define CUTIL_DEBUG_PRINTF_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
-	#define CUTIL_DEBUG_PRINTFLN_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) "\n", ##__VA_ARGS__);
+	#define CUTIL_DEBUG_PRINTF(_STR, ...)		printf(_STR, ##__VA_ARGS__)
+	#define CUTIL_DEBUG_PRINTFLN(_STR, ...)		printf(_STR "\n", ##__VA_ARGS__)
+	#define CUTIL_DEBUG_PRINTF_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
+	#define CUTIL_DEBUG_PRINTFLN_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) "\n", ##__VA_ARGS__)
 	
 	#define CUTIL_DEBUG_PRINT_ARGV(_argc, _argv) 	CUTIL_PRINT_ARGV(_argc, _argv)
 	
@@ -422,41 +422,49 @@
 	CUTIL_DEBUG_CERR("err: cannot ... !" << 2 << std::endl);
 */
 
+
+#if defined(__cplusplus)
+	#define CUTIL_COUT_VAR(_VAR)				std::cout << _VAR << "\n"
+#endif // __cplusplus
 #if defined(FMT_VERSION) && defined(__cplusplus) // fmt::print(), fmt::println()
-	#define CUTIL_PRINT(_STR, ...)				fmt::print(_STR,   ##__VA_ARGS__);
-	#define CUTIL_PRINTLN(_STR, ...)			fmt::println(_STR, ##__VA_ARGS__);
-	#define CUTIL_PRINT_ERR(_STR, ...)			fmt::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__);
-	#define CUTIL_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__);
 	// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
+	#define CUTIL_PRINT(_STR, ...)				fmt::print(_STR,   ##__VA_ARGS__)
+	#define CUTIL_PRINTLN(_STR, ...)			fmt::println(_STR, ##__VA_ARGS__)
+	#define CUTIL_PRINT_ERR(_STR, ...)			fmt::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__)
+	#define CUTIL_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__)
+	#define CUTIL_PRINT_VAR(_VAR)				fmt::println("{}", _VAR)
 #elif CUTIL_CPP_LANG >= 202302L // C++23 std::print(), std::println()
 	#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
-		#define CUTIL_PRINT(_STR, ...)			std::print(_STR,   ##__VA_ARGS__);
-		#define CUTIL_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__);
-		#define CUTIL_PRINT_ERR(_STR, ...)		std::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
-		#define CUTIL_PRINTLN_ERR(_STR, ...)	std::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
+		#define CUTIL_PRINT(_STR, ...)			std::print(_STR,   ##__VA_ARGS__)
+		#define CUTIL_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__)
+		#define CUTIL_PRINT_ERR(_STR, ...)		std::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
+		#define CUTIL_PRINTLN_ERR(_STR, ...)	std::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
+		#define CUTIL_PRINT_VAR(_VAR)			std::println("{}", _VAR)
 	#else // no fmtlib, and after C++23
 		#define CUTIL_PRINT(_STR, ...)
 		#define CUTIL_PRINTLN(_STR, ...)
 		#define CUTIL_PRINT_ERR(_STR, ...)
 		#define CUTIL_PRINTLN_ERR(_STR, ...)
+		#define CUTIL_PRINT_VAR(_VAR)			CUTIL_COUT_VAR(_VAR)
 	#endif
 #else // no fmtlib, and before C++23
 	#define CUTIL_PRINT(_STR, ...)
 	#define CUTIL_PRINTLN(_STR, ...)
 	#define CUTIL_PRINT_ERR(_STR, ...)
 	#define CUTIL_PRINTLN_ERR(_STR, ...)
+	#define CUTIL_PRINT_VAR(_VAR)			CUTIL_COUT_VAR(_VAR)
 #endif // _PRINT_
 
 // for std::cout, and printf()
-// #define CUTIL_COUT(...)			std::cout << __VA_ARGS__;
-// #define CUTIL_COUTLN(...)		std::cout << __VA_ARGS__ << '\n';
-// #define CUTIL_CERR(...)			std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "";
-// #define CUTIL_CERRLN(...)		std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "" << '\n';
+// #define CUTIL_COUT(...)			std::cout << __VA_ARGS__
+// #define CUTIL_COUTLN(...)		std::cout << __VA_ARGS__ << '\n'
+// #define CUTIL_CERR(...)			std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) ""
+// #define CUTIL_CERRLN(...)		std::cerr << CUTIL_COLOR_OPT(FLRed) "" << __VA_ARGS__ << CUTIL_COLOR_OPT(CRst) "" << '\n'
 
-// #define CUTIL_PRINTF(_STR, ...)		printf(_STR, ##__VA_ARGS__);
-// #define CUTIL_PRINTFLN(_STR, ...)		printf(_STR "\n", ##__VA_ARGS__);
-#define CUTIL_PRINTF_ERR(_STR, ...)		fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__);
-#define CUTIL_PRINTFLN_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) "\n", ##__VA_ARGS__);
+// #define CUTIL_PRINTF(_STR, ...)		printf(_STR, ##__VA_ARGS__)
+// #define CUTIL_PRINTFLN(_STR, ...)		printf(_STR "\n", ##__VA_ARGS__)
+#define CUTIL_PRINTF_ERR(_STR, ...)		fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
+#define CUTIL_PRINTFLN_ERR(_STR, ...)	fprintf(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) "\n", ##__VA_ARGS__)
 
 
 
