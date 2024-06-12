@@ -20,6 +20,18 @@ Reference of Ansi Escape Codes:
 
 
 
+### Included Following External Codes & credits to:
+
+| name        | author         | link                                     | path                | license    |
+| :---------- | :------------- | :--------------------------------------- | ------------------- | :--------- |
+| scope_guard | ricab          | https://github.com/ricab/scope_guard     | include/scope_guard | Unlicense  |
+| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | include/xorstr      | Apache 2.0 |
+|             |                |                                          |                     |            |
+
+
+
+
+
 ----------
 
 ### WARNING:
