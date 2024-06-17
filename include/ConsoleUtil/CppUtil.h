@@ -1,6 +1,8 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
+  Updated:		17 JUN 2024
+  License:		MIT License
 * You can include this header in header files.
 */
 #ifndef CONSOLEUTIL_CPP_UTIL_H__
@@ -432,35 +434,35 @@ Usage Example:
 
 
 //* generate code like `int arg0, int arg1, int arg2`, similar to `BOOST_PP_ENUM`, up to 25 params
-#define CUTIL_ENUM(_count, _name, _type)	CUTIL_OVERLOAD_IDX(_CUTIL_ENUM_, _count)(_name, _type)
+#define CUTIL_ENUM(_type, _name, _count)	CUTIL_OVERLOAD_IDX(_CUTIL_ENUM_, _count)(_name, _type)
 	// The following macro definitions are private, DO NOT call them EXTERNALLY.
-#define _CUTIL_ENUM_1(_name, _type)			_type _name##0
-#define _CUTIL_ENUM_2(_name, _type)			_CUTIL_ENUM_1(_name, _type), _type _name##1
-#define _CUTIL_ENUM_3(_name, _type)			_CUTIL_ENUM_2(_name, _type), _type _name##2
-#define _CUTIL_ENUM_4(_name, _type)			_CUTIL_ENUM_3(_name, _type), _type _name##3
-#define _CUTIL_ENUM_5(_name, _type)			_CUTIL_ENUM_4(_name, _type), _type _name##4
-#define _CUTIL_ENUM_6(_name, _type)			_CUTIL_ENUM_5(_name, _type), _type _name##5
-#define _CUTIL_ENUM_7(_name, _type)			_CUTIL_ENUM_6(_name, _type), _type _name##6
-#define _CUTIL_ENUM_8(_name, _type)			_CUTIL_ENUM_7(_name, _type), _type _name##7
-#define _CUTIL_ENUM_9(_name, _type)			_CUTIL_ENUM_8(_name, _type), _type _name##8
-#define _CUTIL_ENUM_10(_name, _type)		_CUTIL_ENUM_9(_name, _type), _type _name##9
-#define _CUTIL_ENUM_11(_name, _type)		_CUTIL_ENUM_10(_name, _type), _type _name##10
-#define _CUTIL_ENUM_12(_name, _type)		_CUTIL_ENUM_11(_name, _type), _type _name##11
-#define _CUTIL_ENUM_13(_name, _type)		_CUTIL_ENUM_12(_name, _type), _type _name##12
-#define _CUTIL_ENUM_14(_name, _type)		_CUTIL_ENUM_13(_name, _type), _type _name##13
-#define _CUTIL_ENUM_15(_name, _type)		_CUTIL_ENUM_14(_name, _type), _type _name##14
-#define _CUTIL_ENUM_16(_name, _type)		_CUTIL_ENUM_15(_name, _type), _type _name##15
-#define _CUTIL_ENUM_17(_name, _type)		_CUTIL_ENUM_16(_name, _type), _type _name##16
-#define _CUTIL_ENUM_18(_name, _type)		_CUTIL_ENUM_17(_name, _type), _type _name##17
-#define _CUTIL_ENUM_19(_name, _type)		_CUTIL_ENUM_18(_name, _type), _type _name##18
-#define _CUTIL_ENUM_20(_name, _type)		_CUTIL_ENUM_19(_name, _type), _type _name##19
-#define _CUTIL_ENUM_21(_name, _type)		_CUTIL_ENUM_20(_name, _type), _type _name##20
-#define _CUTIL_ENUM_22(_name, _type)		_CUTIL_ENUM_21(_name, _type), _type _name##21
-#define _CUTIL_ENUM_23(_name, _type)		_CUTIL_ENUM_22(_name, _type), _type _name##22
-#define _CUTIL_ENUM_24(_name, _type)		_CUTIL_ENUM_23(_name, _type), _type _name##23
-#define _CUTIL_ENUM_25(_name, _type)		_CUTIL_ENUM_24(_name, _type), _type _name##24
+#define _CUTIL_ENUM_1(_type, _name)			_type _name##0
+#define _CUTIL_ENUM_2(_type, _name)			_CUTIL_ENUM_1(_type, _name), _type _name##1
+#define _CUTIL_ENUM_3(_type, _name)			_CUTIL_ENUM_2(_type, _name), _type _name##2
+#define _CUTIL_ENUM_4(_type, _name)			_CUTIL_ENUM_3(_type, _name), _type _name##3
+#define _CUTIL_ENUM_5(_type, _name)			_CUTIL_ENUM_4(_type, _name), _type _name##4
+#define _CUTIL_ENUM_6(_type, _name)			_CUTIL_ENUM_5(_type, _name), _type _name##5
+#define _CUTIL_ENUM_7(_type, _name)			_CUTIL_ENUM_6(_type, _name), _type _name##6
+#define _CUTIL_ENUM_8(_type, _name)			_CUTIL_ENUM_7(_type, _name), _type _name##7
+#define _CUTIL_ENUM_9(_type, _name)			_CUTIL_ENUM_8(_type, _name), _type _name##8
+#define _CUTIL_ENUM_10(_type, _name)		_CUTIL_ENUM_9(_type, _name), _type _name##9
+#define _CUTIL_ENUM_11(_type, _name)		_CUTIL_ENUM_10(_type, _name), _type _name##10
+#define _CUTIL_ENUM_12(_type, _name)		_CUTIL_ENUM_11(_type, _name), _type _name##11
+#define _CUTIL_ENUM_13(_type, _name)		_CUTIL_ENUM_12(_type, _name), _type _name##12
+#define _CUTIL_ENUM_14(_type, _name)		_CUTIL_ENUM_13(_type, _name), _type _name##13
+#define _CUTIL_ENUM_15(_type, _name)		_CUTIL_ENUM_14(_type, _name), _type _name##14
+#define _CUTIL_ENUM_16(_type, _name)		_CUTIL_ENUM_15(_type, _name), _type _name##15
+#define _CUTIL_ENUM_17(_type, _name)		_CUTIL_ENUM_16(_type, _name), _type _name##16
+#define _CUTIL_ENUM_18(_type, _name)		_CUTIL_ENUM_17(_type, _name), _type _name##17
+#define _CUTIL_ENUM_19(_type, _name)		_CUTIL_ENUM_18(_type, _name), _type _name##18
+#define _CUTIL_ENUM_20(_type, _name)		_CUTIL_ENUM_19(_type, _name), _type _name##19
+#define _CUTIL_ENUM_21(_type, _name)		_CUTIL_ENUM_20(_type, _name), _type _name##20
+#define _CUTIL_ENUM_22(_type, _name)		_CUTIL_ENUM_21(_type, _name), _type _name##21
+#define _CUTIL_ENUM_23(_type, _name)		_CUTIL_ENUM_22(_type, _name), _type _name##22
+#define _CUTIL_ENUM_24(_type, _name)		_CUTIL_ENUM_23(_type, _name), _type _name##23
+#define _CUTIL_ENUM_25(_type, _name)		_CUTIL_ENUM_24(_type, _name), _type _name##24
 /* Instruction:
-	void func(CUTIL_ENUM(3, var_, int)){
+	void func(CUTIL_ENUM(int, var_, 3)){
 		// equivalent to `void func(int var_0, int var_1, int var_2)`
 	}
 */
@@ -518,11 +520,11 @@ Usage Example:
 #define CUTIL_BIT_SET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_SET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// must use them in separate lines, returns nothing
 #define CUTIL_BIT_CLEAR_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_CLEAR_MASK(_NUM, 	(1u << (_BIT_IDX)))
 #define CUTIL_BIT_TOGGLE_IDX(_NUM, _BIT_IDX) 	CUTIL_BIT_TOGGLE_MASK(_NUM, (1u << (_BIT_IDX)))
-#define CUTIL_BIT_CHK_IDX(_NUM, _BIT_IDX)		(CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX) ? 1 : 0) 	// returns 1 if bit of _BIT_IDX is 1, != CUTIL_BIT_GET_IDX()
+#define CUTIL_BIT_CHECK_IDX(_NUM, _BIT_IDX)		(CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX) ? 1 : 0) 	// returns 1 if bit of _BIT_IDX is 1, != CUTIL_BIT_GET_IDX()
 
 #if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
 	#define CU_BIT_IDX(_NUM, _BIT_IDX)			CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX)
-	#define CU_BIT_1(_NUM, _BIT_IDX)			CUTIL_BIT_CHK_IDX(_NUM, _BIT_IDX)
+	#define CU_BIT_IDX_01(_NUM, _BIT_IDX)		CUTIL_BIT_CHECK_IDX(_NUM, _BIT_IDX)
 #endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
 
 
@@ -544,10 +546,10 @@ Usage Example:
 	CUTIL_BIT_TOGGLE_IDX(num, 3);   // equals to {num ^=  (1u << 3));}
 
 
-	if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns (1<<BIT_IDX), NOT 1
+	if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
 		printf("%x\n", num);
 	}
-	if(CUTIL_BIT_CHK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns 1, != CUTIL_BIT_GET_IDX()
+	if(CUTIL_BIT_CHECK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns `1`, `!= CUTIL_BIT_GET_IDX()`
 		printf("%x\n", num);
 	}
 
@@ -751,38 +753,49 @@ Usage Example:
 
 
 //* operate value of specific memory location
+// get pointer (in specific type) which points to the address of specific variable
 #define CUTIL_GET_PTR_VOID(_var)				(			 (void*) &(_var))
 #define CUTIL_GET_PTR_U8(_var)					((uint8_t*)	 (void*) &(_var))
 #define CUTIL_GET_PTR_U16(_var)					((uint16_t*) (void*) &(_var))
 #define CUTIL_GET_PTR_U32(_var)					((uint32_t*) (void*) &(_var))
 #define CUTIL_GET_PTR_U64(_var)					((uint64_t*) (void*) &(_var))
 #define CUTIL_GET_PTR_SIZE(_var)				((size_t*)	 (void*) &(_var))
-#define CUTIL_GET_PTR_TYPE(_var, _type)			((_type*)	 (void*) &(_var))
+#define CUTIL_GET_PTR_TYPE(_type, _var)			((_type *)	 (void*) &(_var))
 
+// get value from the memory address in the specific type
 #define CUTIL_GET_MEM_U8(_ptr)					(*((volatile uint8_t*)	(_ptr)))
 #define CUTIL_GET_MEM_U16(_ptr)					(*((volatile uint16_t*)	(_ptr)))
 #define CUTIL_GET_MEM_U32(_ptr)					(*((volatile uint32_t*)	(_ptr)))
 #define CUTIL_GET_MEM_U64(_ptr)					(*((volatile uint64_t*)	(_ptr)))
 #define CUTIL_GET_MEM_SIZE(_ptr)				(*((volatile size_t*)	(_ptr)))
-#define CUTIL_GET_MEM_TYPE(_ptr, _type)			(*((volatile _type*)		(_ptr)))
+#define CUTIL_GET_MEM_TYPE(_type, _ptr)			(*((volatile _type *)	(_ptr)))
 
+// set memory at the specific location in the specific type
 #define CUTIL_SET_MEM_U8(_ptr, _val)			(*((volatile uint8_t*)	_ptr) = _val, _val)
 #define CUTIL_SET_MEM_U16(_ptr, _val)			(*((volatile uint16_t*)	_ptr) = _val, _val)
 #define CUTIL_SET_MEM_U32(_ptr, _val)			(*((volatile uint32_t*)	_ptr) = _val, _val)
 #define CUTIL_SET_MEM_U64(_ptr, _val)			(*((volatile uint64_t*)	_ptr) = _val, _val)
 #define CUTIL_SET_MEM_SIZE(_ptr, _val)			(*((volatile size_t*)	_ptr) = _val, _val)
-#define CUTIL_SET_MEM_TYPE(_ptr, _val, _type) 	(*((volatile _type*)		_ptr) = _val, _val)
+#define CUTIL_SET_MEM_TYPE(_type, _ptr, _val) 	(*((volatile _type *)	_ptr) = _val, _val)
 /*
 	uint32_t a = 0x12345678;
 	uint32_t b = 0xFEDCBA98;
-	printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
-	printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));
 	
-	CUTIL_SET_MEM_U32(&a, 0x66666666);
+	printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b)); 	// get content as type `uint32_t` at the location `&a and `&b`, it prints the value of `a` and `b`
+	
+	printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));	// get address as type `uint32_t*` of the variable `a` and `b`
+	printf("%p\n", CUTIL_GET_PTR_TYPE(uint32_t, a));					// equivelent
+	
+	CUTIL_SET_MEM_U32(&a, 0x66666666);				// set content of address `&b` as `0x66666666`, in the type of `uint32_t`
+	CUTIL_SET_MEM_TYPE(uint32_t, &b, 0x77777777);	// set content of address `&b` as `0x77777777`, in the type of `uint32_t`
+	
 	printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+	
+	
 	// output:
 	//		12345678, fedcba98
 	//		000000C48D7BFB04, 000000C48D7BFB24
+	//		000000C48D7BFB04
 	//		66666666, fedcba98
 */
 
@@ -831,15 +844,25 @@ Usage Example:
 */
 
 
-//* C struct with memory offset
-// calculate the struct address from the member's address
-#define CUTIL_OFFSET_OF(_type, _field) 			((size_t) &((_type*) 0)->_field)
-// use the address of a struct member, to calculate the address of the containing struct object
-#define CUTIL_CONTAINER_OF(_ptr, _type, _field)	((_type*)((char*)(_ptr) - (char*) &((_type*)0)->_field)) // must use `char*`
+//* features with C struct and memory offset/address
+// calculate the struct address from the member's address, within the type `size_t`
+#define CUTIL_STRUCT_FIELD_OFFSET(_type, _field) 		((size_t) &((_type*) 0)->_field)
+
 // get the size of a struct member
-#define CUTIL_FIELD_SIZE(_type, _field)			sizeof(((_type*)0)->_field)
+#define CUTIL_STRUCT_FIELD_SIZE(_type, _field)			sizeof(((_type*)0)->_field)
+
+// use the address of a struct member, to calculate the address of the containing struct object, within the type `_type*`
+#define CUTIL_STRUCT_FIELD_CONTAINER(_type, _field, _fieldAddr)	\
+			((_type*)((char*)(_fieldAddr) - (char*) &((_type*)0)->_field)) // must use `char*`
+
+#if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
+	#define CU_FIELD_OFFSET(_type, _field)					CUTIL_STRUCT_FIELD_OFFSET(_type, _field)
+	#define CU_FIELD_SIZE(_type, _field)					CUTIL_STRUCT_FIELD_SIZE(_type, _field)
+	#define CU_FIELD_CONTAINER(_type, _field, _fieldAddr)	CUTIL_STRUCT_FIELD_CONTAINER(_type, _field, _fieldAddr)
+#endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
 /*
-	struct MyStruct {s
+	//* define a struct type `struct MyStruct`(C) or `MyStruct`(C++)
+	struct MyStruct {
 		uint8_t 	a;	// 0    (+0)
 		uint8_t 	b;	// 1      |--(+1)
 		uint32_t 	c;	// 4    (+4)
@@ -849,32 +872,68 @@ Usage Example:
 		uint64_t 	g;	// 16   (+8)
 		uint32_t 	h;	// 24   (+8)
 	};
-
-	struct MyStruct myStruct;
+	struct MyStruct myStruct; //* create a struct object `myStruct`
 	
-	//* calculate the struct address from the member's address
-	#define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_OFFSET_OF(struct MyStruct, _x)
+	//* get the memory offset of a struct member
+	printf("offset: a-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a));	// output: `offset: a-0`
+	printf("offset: b-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b));	// output: `offset: b-1`
+	printf("offset: c-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, c));	// output: `offset: c-4`
+	//...
+	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
+	
+	// you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
+	#define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, _x)
 	printf("offset: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
 			, CUTIL_SEQ_ENUM(MYSTRUCT_OFFSET_OF_ELEMENT, a, b, c, d, e, f, g, h)
-				// , CUTIL_OFFSET_OF(struct MyStruct, a)
-				// , CUTIL_OFFSET_OF(struct MyStruct, b)
+				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a)
+				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b)
 				//  ...
-				// , CUTIL_OFFSET_OF(struct MyStruct, h)
+				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, h)
 	);	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
 	
-	//* use the address of a struct member, to calculate the address of the containing struct object
-	printf("loc of myStruct: %p %p \n", &myStruct, CUTIL_CONTAINER_OF(&myStruct.b, struct MyStruct, b));
-	// output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
-
+	
 	//* get the size of a struct member
+	printf("size: a-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a));	// output: `size: a-1`
+	printf("size: b-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b));	// output: `size: b-1`
+	printf("size: g-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, g));	// output: `size: g-8`
+	// ...
+	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
+	
+	// you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
 	#define MYSTRUCT_SIZE_OF_ELEMENT(_x)  CUTIL_FIELD_SIZE(struct MyStruct, _x)
-	printf("size: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+	printf("size: a:%zu, b:%zu, c:%zu, d:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
 			, CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
-				// , CUTIL_OFFSET_OF(struct MyStruct, a)
-				// , CUTIL_OFFSET_OF(struct MyStruct, b)
-				//  ...
-				// , CUTIL_OFFSET_OF(struct MyStruct, h)
-	);	// output: `size: a:1, b:1, c:4, zu:1, e:1, f:1, g:8, h:4`
+				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a)
+				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b)
+				//  ...  
+				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, h)
+	);	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
+	
+	
+	//* use the address of a struct member, to calculate the address of the containing struct object
+	printf("loc of myStruct: %p %p \n",
+		&myStruct,
+		CUTIL_STRUCT_FIELD_CONTAINER(struct MyStruct, b, &myStruct.b) // [b, &myStruct.b] => &myStruct
+	);
+	// output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
+*/
+
+
+//* for loop in range [0, _end) or [_first, _end)
+#define CUTIL_FOR_TYPE(_type, ...)		 CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_FOR_TYPE_, CUTIL_VA_CNT(__VA_ARGS__))(_type, __VA_ARGS__))
+#define _CUTIL_FOR_TYPE_1(_type, _var, _end)		 for(_type _var = 0;        (_var) <= (_end); (_var)++)
+#define _CUTIL_FOR_TYPE_2(_type, _var, _first, _end) for(_type _var = (_first); (_var) <= (_end); (_var)++)
+
+#define CUTIL_FOR(_var, ...)			 CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_FOR_, CUTIL_VA_CNT(__VA_ARGS__))(_var, __VA_ARGS__))
+#define _CUTIL_FOR_1(_var, _end)		 _CUTIL_FOR_TYPE_1(CUTIL_TYPEOF(_end), _var, _end)
+#define _CUTIL_FOR_2(_var, _first, _end) _CUTIL_FOR_TYPE_2(CUTIL_TYPEOF(_end), _var, _first, _end)
+/*
+	CUTIL_FOR_TYPE(int, i, 5)	 {} // `for(int i = 0; i < 5; i++)`; i <- [0..4];
+	CUTIL_FOR_TYPE(int, i, 2, 4) {}	// `for(int i = 2; i < 4; i++)`; i <- [2..3];
+	
+	// for C23, GNU C, C++; type of `_var` is deduced from `_end`
+	CUTIL_FOR(i, 5)				 {}	// `for(int i = 0; i < 5; i++)`; i <- [0..4];
+	CUTIL_FOR(i, 0, 10)			 {}	// `for(int vi = 2; i < 4; i++)`; i <- [2..3];
 */
 
 
@@ -884,8 +943,8 @@ Usage Example:
 #ifdef __cplusplus
 
 //* delete a heap pointer, and set it nullptr. arg "p" must be a pointer inited by "new" or "new[]".
-#define CUTIL_DELETE(p)			do {delete   p; p = NULL;} while(0)
-#define CUTIL_DELETE_ARR(p)		do {delete[] p; p = NULL;} while(0)
+#define CUTIL_DELETE(p)				do {delete   p; p = NULL;} while(0)
+#define CUTIL_DELETE_ARRAY(p)		do {delete[] p; p = NULL;} while(0)
 	// keyword "nullptr" is unsupported in C++98
 
 
@@ -946,45 +1005,84 @@ Usage Example:
 
 //* generate getter and setter (>= C++11)
 #if CUTIL_CPP_LANG >= 201103L
-	#define CUTIL_GETTER(_name, _getter) 		public: CUTIL_TYPEOF(_name) _getter() {return this->_name;}
-	#define CUTIL_SETTER(_name, _setter) 		public: void _setter(const CUTIL_TYPEOF(_name)& _val)	{this->_name = _val;}
+	// generate getter and setter with specific type (not recommended after C++11, and do not add `const` to the first parameter)
+	#define CUTIL_GETTER_TYPE(_type, _name, _getter) 	public: _type _getter() {return this->_name;}
+	#define CUTIL_SETTER_TYPE(_type, _name, _setter) 	public: void _setter(const _type& _val)	{this->_name = _val;}
+	#define CUTIL_MEMBER_TYPE(_type, _name, ...)		CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_MEMBER_TYPE_, CUTIL_VA_CNT(__VA_ARGS__))(_type, _name, __VA_ARGS__))
+	#define _CUTIL_MEMBER_TYPE_2(_type, _name, _getter, _setter)	CUTIL_GETTER_TYPE(_type, _name, _getter) CUTIL_SETTER_TYPE(_type, _name, _setter)
+	#define _CUTIL_MEMBER_TYPE_1(_type, _name, _func)				_CUTIL_MEMBER_TYPE_2(_type, _name, _func, _func)
 	
-	#define CUTIL_MEMBER(_type, _name, _val, ...)	CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_MEMBER_, CUTIL_VA_CNT(__VA_ARGS__))(_type, _name, _val, __VA_ARGS__))
-	#define _CUTIL_MEMBER_2(_type, _name, _val, _getter, _setter)	private: _type _name {_val}; CUTIL_GETTER(_name, _getter) CUTIL_SETTER(_name, _setter)
-	#define _CUTIL_MEMBER_1(_type, _name, _val, _func)				private: _type _name {_val}; CUTIL_GETTER(_name, _func)	CUTIL_SETTER(_name, _func)
+	// generate getter and setter with type deducing (>=C++11, uses `std::decay<decltype(_name)>::type`)
+	#define CUTIL_GETTER(_name, _getter) 		CUTIL_GETTER_TYPE(CUTIL_TYPEOF(_name), _name, _getter)
+	#define CUTIL_SETTER(_name, _setter) 		CUTIL_SETTER_TYPE(CUTIL_TYPEOF(_name), _name, _setter)
+	#define CUTIL_MEMBER(_name, ...) 			CUTIL_EXPAND(CUTIL_MEMBER_TYPE(CUTIL_TYPEOF(_name), _name, __VA_ARGS__))
+	
 #endif // >= C++11
 /* example:
-	class Test{
-	public:
-		int a {666};
-		CUTIL_GETTER(a, getA)
-		// public: std::decay<decltype(a)>::type getA() {return this->a;}
-		CUTIL_SETTER(a, setA)
-		// public: void setA(const std::decay<decltype(a)>::type& _val) {this->a = _val;}
+	class Test {
+		private: int m_a {};
+		CUTIL_GETTER(m_a, getA) // public: int  getA() {return this->m_a;}
+		CUTIL_SETTER(m_a, setA) // public: void setA(const int& _val) {this->m_a = _val;}
+		
+		private: double m_b {};
+		CUTIL_MEMBER(m_b, getB, setB)
+		// public: double getB() {return this->m_b;}
+		// public:  void  setB(const double& _val) {this->m_b = _val;}
 
-		CUTIL_MEMBER(int, m_b, CUTIL_DEFAULT, getB, setB)   // default initialization `{}`
-		CUTIL_MEMBER(int, m_c, 666, getC, setC)             // custom initializing value
+		private: std::string m_c {};
+		CUTIL_MEMBER(m_c, c)
+		// public: std::string c() {return this->m_c;}
+		// public:      void   c(const std::string& _val) {this->m_c = _val;}
 	};
-
 	Test test;
+	
+	// print
+	fmt::println("Test::m_a = {}", test.getA());
+	
+	test.setB(3.1615925);
+	fmt::println("Test::m_b = {}", test.getB());
 
-	fmt::println("Shabi::a = {}", test.getA());
-
-	test.setC(55);
-	fmt::println("Test::c = {}", test.getC());
+	test.c("hello world!");
+	fmt::println("Test::m_c = {}", test.c());
 */
 
 
 //* foreach support for C++98
-#define CUTIL_FOREACH(_iterType, _iterName, _container)	 	\
-	for(_iterType _iterName = _container.begin(); _iterName < _container.end(); _iterName++)
+#define CUTIL_ITER(_iterType, _iterName, ...)				\
+			CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_ITER_, CUTIL_VA_CNT(__VA_ARGS__))(_iterType, _iterName, __VA_ARGS__))
+#define _CUTIL_ITER_1(_iterType, _iterName, _container)		\
+			for(_iterType _iterName = (_container).begin(); _iterName != (_container).end(); ++_iterName)
+#define _CUTIL_ITER_2(_iterType, _iterName, _begin, _end)	\
+			for(_iterType _iterName = _begin; _iterName != _end; ++_iterName)
+// >= C++11
+#define CUTIL_FOREACH(_iterName, ...)		CUTIL_ITER(auto, _iterName, __VA_ARGS__) //* >= C++11
 /*
-	std::vector<int> vec1 = {1, 2, 3,4, 5};
-	CUTIL_FOREACH(std::vector<int>::iterator, it, vec1){
-		std::cout << *it << " ";
+	std::vector<int> vec1 = {1, 2, 3, 4, 5, 6, 7};
+	//* forward iteration
+	CUTIL_ITER(std::vector<int>::iterator, iter, vec1){		// auto it = [vec1.begin() -> vec1.end()]
+		std::cout << *iter << " ";
 	}
-	for(auto&& var : vec1){		// C++11
+	CUTIL_ITER(std::vector<int>::iterator, iter, vec1.begin(), vec1.end()){
+		std::cout << *iter << " ";
+	}
+	
+	//* reverse iteration
+	CUTIL_ITER(std::vector<int>::iterator, iter, vec1.rbegin(), vec1.rend()){ // auto it = [vec1.rbegin() -> vec1.rend()]
+		std::cout << *iter << " ";
+	}
+	
+	//* >= C++11
+	for(auto&& var : vec1){
 		std::cout << var << " ";
+	}
+	CUTIL_ITER(auto, iter, vec1){
+		std::cout << *iter << " ";
+	}
+	CUTIL_FOREACH(iter, vec1){
+		std::cout << *iter << " ";	// `iter` is an iterator!
+	}
+	CUTIL_FOREACH(iter, vec1.begin(), vec.end()){
+		std::cout << *iter << " ";
 	}
 */
 

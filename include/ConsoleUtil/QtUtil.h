@@ -1,6 +1,9 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
+  Updated:		28 MAY 2024
+  License:		MIT License
+* You can include this header in header files.
 */
 #ifndef CONSOLEUTIL_QT_UTIL_H__
 #define CONSOLEUTIL_QT_UTIL_H__

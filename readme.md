@@ -220,11 +220,11 @@ Reference of Ansi Escape Codes:
         CUTIL_BIT_TOGGLE_IDX(num, 3);	// equals to {num ^=  (1u << 3));}
         
         
-        if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns (1<<BIT_IDX), NOT 1
-        	printf("%x\n", num);
+        if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
+            printf("%x\n", num);
         }
-        if(CUTIL_BIT_CHK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns 1, != CUTIL_BIT_GET_IDX()
-        	printf("%x\n", num);
+        if(CUTIL_BIT_CHECK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns `1`, `!= CUTIL_BIT_GET_IDX()`
+            printf("%x\n", num);
         }
         
         // operate bit by mask
@@ -366,6 +366,15 @@ Reference of Ansi Escape Codes:
     
     - **C character** conversion & assertion (`char` only, not `wchar_t`)
     
+        - is in uppercase/lowercase
+    
+        - is an alphabet/number/punctuation
+    
+        - is in range of ASCII/ASCII symbol/ASCII control characters
+    
+        - get or convert `char` to lowercase/uppercase
+    
+    
         ```c++
         #define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
         #define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
@@ -403,17 +412,36 @@ Reference of Ansi Escape Codes:
     
     - operate value of specific memory location
     
+        - get pointer (in specific type) which points to the address of specific variable
+    
+        - get value from the memory address in the specific type
+    
+        - set memory at the specific location in the specific type
+    
+    
         ```c++
+        #define CUTIL_GET_PTR_TYPE(_type, _var)			((_type *)	 (void*) &(_var))
+        #define CUTIL_GET_MEM_TYPE(_type, _ptr)			(*((volatile _type *)	(_ptr)))
+        #define CUTIL_SET_MEM_TYPE(_type, _ptr, _val) 	(*((volatile _type *)	_ptr) = _val, _val)
+        
         uint32_t a = 0x12345678;
         uint32_t b = 0xFEDCBA98;
-        printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
-        printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));
         
-        CUTIL_SET_MEM_U32(&a, 0x66666666);
+        printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b)); 	// get content as type `uint32_t` at the location `&a and `&b`, it prints the value of `a` and `b`
+        
+        printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));	// get address as type `uint32_t*` of the variable `a` and `b`
+        printf("%p\n", CUTIL_GET_PTR_TYPE(uint32_t, a));					// equivelent
+        
+        CUTIL_SET_MEM_U32(&a, 0x66666666);				// set content of address `&b` as `0x66666666`, in the type of `uint32_t`
+        CUTIL_SET_MEM_TYPE(uint32_t, &b, 0x77777777);	// set content of address `&b` as `0x77777777`, in the type of `uint32_t`
+        
         printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+        
+        
         // output:
         //		12345678, fedcba98
         //		000000C48D7BFB04, 000000C48D7BFB24
+        //		000000C48D7BFB04
         //		66666666, fedcba98
         ```
     
@@ -514,8 +542,8 @@ Reference of Ansi Escape Codes:
         
         uint32_t* p1 = new uint32_t(123);
         uint32_t* p2 = new uint32_t[50];
-        CUTIL_DELETE(p1);		// delete p1; p1 = nullptr;
-        CUTIL_DELETE_ARR(p2); 	// delete[] p2; p2 = nullptr;
+        CUTIL_DELETE(p1);		// do {delete   p; p = NULL;} while(0)
+        CUTIL_DELETE_ARRAY(p2); // do {delete[] p; p = NULL;} while(0)
         // you need't add `p1 = nullptr`.
         ```
     
@@ -601,10 +629,10 @@ Reference of Ansi Escape Codes:
     
     - generate code like `int arg0, int arg1, int arg2`, similar to `BOOST_PP_ENUM`, up to 25 params
     
-        - `CUTIL_ENUM(_count, _name, _type)`
+        - `CUTIL_ENUM(_type, _name, _count)`
     
             ```c++
-            void func(CUTIL_ENUM(3, var_, int)){
+            void func(CUTIL_ENUM(var_, int, 3)){
                 // equivalent to `void func(int var_0, int var_1, int var_2)`
             }
             ```
@@ -622,90 +650,144 @@ Reference of Ansi Escape Codes:
             printf("%d %d %d %d", test_a, test_b, test_c, test_d);	// equivalent to above
             ```
     
-    - tools for C struct with memory offset (DO NOT use in C++)
-        - `CUTIL_OFFSET_OF(_type, _field)`: calculate the struct address from the member's address
-        - `CUTIL_CONTAINER_OF(_ptr, _type, _field)`: use the address of a struct member, to calculate the address of the containing struct object
-        - `CUTIL_FIELD_SIZE(_type, _field)`: get the size of a struct member
+    - features with C struct and memory offset/address
+        - `CUTIL_STRUCT_FIELD_OFFSET(_type, _field)`: calculate the struct address from the member's address, within the type `size_t`
+        - `CUTIL_STRUCT_FIELD_SIZE(_type, _field)`: get the size of a struct member
+        - `CUTIL_STRUCT_FIELD_CONTAINER(_type, _field, _fieldAddr)`: use the address of a struct member, to calculate the address of the containing struct object, within the type `_type*`
     
         ```c++
-        struct MyStruct {s
-            uint8_t     a;  // 0    (+0)
-            uint8_t     b;  // 1      |--(+1)
-            uint32_t    c;  // 4    (+4)
-            uint8_t     d;  // 8    (+4)
-            uint8_t     e;  // 9      |--(+1)
-            uint8_t     f;  // 10     |--(+1)
-            uint64_t    g;  // 16   (+8)
-            uint32_t    h;  // 24   (+8)
+        //* define a struct type `struct MyStruct`(C) or `MyStruct`(C++)
+        struct MyStruct {
+            uint8_t 	a;	// 0    (+0)
+            uint8_t 	b;	// 1      |--(+1)
+            uint32_t 	c;	// 4    (+4)
+            uint8_t 	d;	// 8    (+4)
+            uint8_t 	e;	// 9      |--(+1)
+            uint8_t 	f;	// 10     |--(+1)
+            uint64_t 	g;	// 16   (+8)
+            uint32_t 	h;	// 24   (+8)
         };
+        struct MyStruct myStruct; //* create a struct object `myStruct`
         
-        struct MyStruct myStruct;
+        //* get the memory offset of a struct member
+        printf("offset: a-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a));	// output: `offset: a-0`
+        printf("offset: b-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b));	// output: `offset: b-1`
+        printf("offset: c-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, c));	// output: `offset: c-4`
+        //...
+        // output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
         
-        //* calculate the struct address from the member's address
-        #define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_OFFSET_OF(struct MyStruct, _x)
+        // you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
+        #define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, _x)
         printf("offset: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
                 , CUTIL_SEQ_ENUM(MYSTRUCT_OFFSET_OF_ELEMENT, a, b, c, d, e, f, g, h)
-                    // , CUTIL_OFFSET_OF(struct MyStruct, a)
-                    // , CUTIL_OFFSET_OF(struct MyStruct, b)
+                    // , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a)
+                    // , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b)
                     //  ...
-                    // , CUTIL_OFFSET_OF(struct MyStruct, h)
-        );  // output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
+                    // , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, h)
+        );	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
         
-        //* use the address of a struct member, to calculate the address of the containing struct object
-        printf("loc of myStruct: %p %p \n", &myStruct, CUTIL_CONTAINER_OF(&myStruct.b, struct MyStruct, b));
-        // output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
         
         //* get the size of a struct member
+        printf("size: a-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a));	// output: `size: a-1`
+        printf("size: b-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b));	// output: `size: b-1`
+        printf("size: g-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, g));	// output: `size: g-8`
+        // ...
+        // output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
+        
+        // you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
         #define MYSTRUCT_SIZE_OF_ELEMENT(_x)  CUTIL_FIELD_SIZE(struct MyStruct, _x)
-        printf("size: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+        printf("size: a:%zu, b:%zu, c:%zu, d:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
                 , CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
-                    // , CUTIL_OFFSET_OF(struct MyStruct, a)
-                    // , CUTIL_OFFSET_OF(struct MyStruct, b)
-                    //  ...
-                    // , CUTIL_OFFSET_OF(struct MyStruct, h)
-        );  // output: `size: a:1, b:1, c:4, zu:1, e:1, f:1, g:8, h:4`
+                    // , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a)
+                    // , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b)
+                    //  ...  
+                    // , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, h)
+        );	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
+        
+        
+        //* use the address of a struct member, to calculate the address of the containing struct object
+        printf("loc of myStruct: %p %p \n",
+            &myStruct,
+            CUTIL_STRUCT_FIELD_CONTAINER(struct MyStruct, b, &myStruct.b) // [b, &myStruct.b] => &myStruct
+        );
+        // output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
         ```
-    
-    - generate **getter or setter functions** in a class, or member variable with getter and setter (≥ C++11)
+        
+    - generate **getter or setter functions** within a class (≥ C++11)
     
         ```c++
-        class Test{
-        public:
-            int a {666};
-            CUTIL_GETTER(a, getA)
-            // public: std::decay<decltype(a)>::type getA() {return this->a;}
-            CUTIL_SETTER(a, setA)
-            // public: void setA(const std::decay<decltype(a)>::type& _val) {this->a = _val;}
+        class Test {
+            private: int m_a {};
+            CUTIL_GETTER(m_a, getA) // public: int  getA() {return this->m_a;}
+            CUTIL_SETTER(m_a, setA) // public: void setA(const int& _val) {this->m_a = _val;}
         
-            CUTIL_MEMBER(int, m_b, CUTIL_DEFAULT, getB, setB)   // default initialization `{}`
-            CUTIL_MEMBER(int, m_c, 666, getC, setC)             // custom initializing value
+            private: double m_b {};
+            CUTIL_MEMBER(m_b, getB, setB)
+            // public: double getB() {return this->m_b;}
+            // public:  void  setB(const double& _val) {this->m_b = _val;}
+        
+            private: std::string m_c {};
+            CUTIL_MEMBER(m_c, c)
+            // public: std::string c() {return this->m_c;}
+            // public:      void   c(const std::string& _val) {this->m_c = _val;}
         };
-        
         Test test;
         
-        fmt::println("Shabi::a = {}", test.getA());
+        // print
+        fmt::println("Test::m_a = {}", test.getA());
         
-        test.setC(55);
-        fmt::println("Test::c = {}", test.getC());
+        test.setB(3.1615925);
+        fmt::println("Test::m_b = {}", test.getB());
+        
+        test.c("hello world!");
+        fmt::println("Test::m_c = {}", test.c());
         ```
     
     - **foreach** support for **C++98**
     
         ```c++
-        std::vector<int> vec1 = {1, 2, 3,4, 5};
-        CUTIL_FOREACH(std::vector<int>::iterator, it, vec1){
-        	std::cout << *it << " ";
+        std::vector<int> vec1 = {1, 2, 3, 4, 5, 6, 7};
+        //* forward iteration
+        CUTIL_ITER(std::vector<int>::iterator, iter, vec1){		// auto it = [vec1.begin() -> vec1.end()]
+            std::cout << *iter << " ";
         }
-        for(auto&& var : vec1){		// C++11
+        CUTIL_ITER(std::vector<int>::iterator, iter, vec1.begin(), vec1.end()){
+            std::cout << *iter << " ";
+        }
+        
+        //* reverse iteration
+        CUTIL_ITER(std::vector<int>::iterator, iter, vec1.rbegin(), vec1.rend()){ // auto it = [vec1.rbegin() -> vec1.rend()]
+            std::cout << *iter << " ";
+        }
+        
+        //* >= C++11
+        for(auto&& var : vec1){
             std::cout << var << " ";
         }
+        CUTIL_ITER(auto, iter, vec1){
+            std::cout << *iter << " ";
+        }
+        CUTIL_FOREACH(iter, vec1){
+            std::cout << *iter << " ";	// `iter` is an iterator!
+        }
+        CUTIL_FOREACH(iter, vec1.begin(), vec.end()){
+            std::cout << *iter << " ";
+        }
         ```
-    
         
-
-
-
-
+    
+    - **for loop** in **range** `[0, _end)` or `[_first, _end)`
+    
+      ```
+      CUTIL_FOR_TYPE(int, i, 5)	 {} // `for(int i = 0; i < 5; i++)`; i <- [0..4];
+      CUTIL_FOR_TYPE(int, i, 2, 4) {}	// `for(int i = 2; i < 4; i++)`; i <- [2..3];
+      
+      // for C23, GNU C, C++; type of `_var` is deduced from `_end`
+      CUTIL_FOR(i, 5)				 {}	// `for(int i = 0; i < 5; i++)`; i <- [0..4];
+      CUTIL_FOR(i, 0, 10)			 {}	// `for(int i = 2; i < 4; i++)`; i <- [2..3];
+      ```
+    
+      
 
 
 

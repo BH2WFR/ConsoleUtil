@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: 	https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		May 28, 2024
+  Updated:		28 MAY 2024
   License:		MIT License
 * Do not include this header in header files.
 * If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
