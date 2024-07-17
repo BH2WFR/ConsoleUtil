@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: 	https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		28 MAY 2024
+  Updated:		17 JUL 2024
   License:		MIT License
 * Do not include this header in header files.
 * If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
@@ -128,7 +128,9 @@
 	#define CDown(n)		CAnsiEsc(#n"B") // cursor Down: e.g. std::cout << CDown("2") // moves cursor 2 cells down
 	#define CForward(n)		CAnsiEsc(#n"C") // cursor Forward:
 	#define CBack(n)		CAnsiEsc(#n"D") // cursor Back
-	#define CFwd(n)			CForward(n)  	// shorter alias
+	#define CFwd(n)			CForward(n)  	// aliases
+	#define CRight(n)		CForward(n)
+	#define CLeft(n)		CBack(n)
 
 	#define CNextLn(n)		CAnsiEsc(#n"E") // Moves cursor to beginning of the line n (default 1) lines down
 	#define CPrevLn(n)		CAnsiEsc(#n"F") // Moves cursor to beginning of the line n (default 1) lines up.
@@ -279,7 +281,7 @@
 		printf(CStyle(BRed FGreen CQFlash, "test\n"));// Equivalent
 		
 		
-		printf(CForward(2)); // move thr cursor 2 characters right
+		printf(CForward(2)); // move thr cursor 2 characters right, equals to `CRight(2)` or `CFwd(2)`.
 		
 		
 		CUTIL_ERROR_MESSAGE("error occured!"); // print an error message with filename, function name and line number ATTACHED.

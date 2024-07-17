@@ -22,13 +22,12 @@ Reference of Ansi Escape Codes:
 
 ### Included Following External Codes & credits to:
 
-| name        | author         | link                                     | path                | license    |
-| :---------- | :------------- | :--------------------------------------- | ------------------- | :--------- |
-| scope_guard | ricab          | https://github.com/ricab/scope_guard     | include/scope_guard | Unlicense  |
-| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | include/xorstr      | Apache 2.0 |
-|             |                |                                          |                     |            |
-
-
+| name        | author         | link                                     | path                  | license    |
+| :---------- | :------------- | :--------------------------------------- | --------------------- | :--------- |
+| scope_guard | ricab          | https://github.com/ricab/scope_guard     | `include/scope_guard` | Unlicense  |
+| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | `include/xorstr`      | Apache 2.0 |
+| yamc        | yohhoy         | https://github.com/yohhoy/yamc           | `include/yamc`        | MIT        |
+|             |                |                                          |                       |            |
 
 
 
@@ -95,7 +94,7 @@ Reference of Ansi Escape Codes:
     Just print them, use individual or append to string literals.
 
     ```c++
-    printf(CForward(2)); // move thr cursor 2 characters right
+    printf(CForward(2)); // move thr cursor 2 characters right, equals to `CRight(2)` or `CFwd(2)`.
     printf(CCursorPos(15, 20)); // move the text cursor to (15, 20) position
     CUTIL_CONSOLE_CURSOR_POS(15, 20); // equivalent, calls SetConsoleCursorPosition() in win32.
     ```
@@ -395,7 +394,7 @@ Reference of Ansi Escape Codes:
         #define CUTIL_CHAR_IS_ASCII(_ch)		((_ch) >= 0x01 && (_ch) <= 0x7E)
         #define CUTIL_CHAR_IS_SYMBOL(_ch)		((_ch) >= 0x20 && (_ch) <= 0x7E)
         ```
-    
+        
         ```
         #define TEST(_x)    fmt::println("{}: {}", _x, CUTIL_CHAR_IS_UPPER(_x))
         CUTIL_SEQ_FOREACH(TEST, '`', 'a', 'b', 'z', '{', '0', '9', '@', 'A', 'B', 'Z', '[');
@@ -436,8 +435,9 @@ Reference of Ansi Escape Codes:
         CUTIL_SET_MEM_TYPE(uint32_t, &b, 0x77777777);	// set content of address `&b` as `0x77777777`, in the type of `uint32_t`
         
         printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
-        
-        
+    
+    
+    ​
         // output:
         //		12345678, fedcba98
         //		000000C48D7BFB04, 000000C48D7BFB24
@@ -445,7 +445,8 @@ Reference of Ansi Escape Codes:
         //		66666666, fedcba98
         ```
     
-        
+    
+    ​
     
     - count amount of arguments (up to 35 params)
     
@@ -471,7 +472,7 @@ Reference of Ansi Escape Codes:
     
     - match C++ language version, especially if you want to let the project build both by MSVC and G++.
     
-        `CUITIL_CPP_LANG` equals to "`_MSVC_LANG`" for MSVC, and "`__cplusplus`" for other compilers.
+        `CUTIL_CPP_LANG` equals to "`_MSVC_LANG`" for MSVC, and "`__cplusplus`" for other compilers.
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
@@ -700,7 +701,7 @@ Reference of Ansi Escape Codes:
                 , CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
                     // , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a)
                     // , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b)
-                    //  ...  
+                    //  ...
                     // , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, h)
         );	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
         
@@ -775,7 +776,6 @@ Reference of Ansi Escape Codes:
         }
         ```
         
-    
     - **for loop** in **range** `[0, _end)` or `[_first, _end)`
     
       ```
