@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		17 JUN 2024
+  Updated:		23 JUL 2024
   License:		MIT License
 * You can include this header in header files.
 */
@@ -510,16 +510,16 @@ Usage Example:
 
 //======================= C Utils ============================
 
-//* bit calculating macros
+//* bit calculating macros, not recommended in C++ (std::bitset<>)
 #define CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK)		((_NUM) &   (_BIT_MASK)        )
 #define CUTIL_BIT_SET_MASK(_NUM, _BIT_MASK)		((_NUM) |=  (_BIT_MASK), (_NUM))
 #define CUTIL_BIT_CLEAR_MASK(_NUM, _BIT_MASK)	((_NUM) &= ~(_BIT_MASK), (_NUM))
-#define CUTIL_BIT_TOGGLE_MASK(_NUM, _BIT_MASK)	((_NUM) ^=  (_BIT_MASK), (_NUM))
+#define CUTIL_BIT_FLIP_MASK(_NUM, _BIT_MASK)	((_NUM) ^=  (_BIT_MASK), (_NUM))
 
 #define CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_GET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// if bit of index _BIT_IDX is 1, returns (1<<_BIT_IDX), NOT 1
 #define CUTIL_BIT_SET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_SET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// must use them in separate lines, returns nothing
 #define CUTIL_BIT_CLEAR_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_CLEAR_MASK(_NUM, 	(1u << (_BIT_IDX)))
-#define CUTIL_BIT_TOGGLE_IDX(_NUM, _BIT_IDX) 	CUTIL_BIT_TOGGLE_MASK(_NUM, (1u << (_BIT_IDX)))
+#define CUTIL_BIT_FLIP_IDX(_NUM, _BIT_IDX) 	CUTIL_BIT_FLIP_MASK(_NUM, (1u << (_BIT_IDX)))
 #define CUTIL_BIT_CHECK_IDX(_NUM, _BIT_IDX)		(CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX) ? 1 : 0) 	// returns 1 if bit of _BIT_IDX is 1, != CUTIL_BIT_GET_IDX()
 
 #if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
@@ -543,7 +543,7 @@ Usage Example:
 	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
 	CUTIL_BIT_SET_IDX(num, 0);      // equals to {num |=  (1u << 0));}
 	CUTIL_BIT_CLEAR_IDX(num, 2);    // equals to {num &= ~(1u << 2));}
-	CUTIL_BIT_TOGGLE_IDX(num, 3);   // equals to {num ^=  (1u << 3));}
+	CUTIL_BIT_FLIP_IDX(num, 3);   // equals to {num ^=  (1u << 3));}
 
 
 	if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
@@ -556,7 +556,7 @@ Usage Example:
 	// operate bit by mask
 	CUTIL_BIT_SET_MASK(num, 0x2B00);    // equals to {num |=  0x2B00;}
 	CUTIL_BIT_CLEAR_MASK(num, 0x2B00);  // equals to {num &= ~0x2B00;}
-	CUTIL_BIT_TOGGLE_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
+	CUTIL_BIT_FLIP_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
 
 	if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0){ // returns (num & 0x0022)
 		printf("%x\n", num);
@@ -574,6 +574,19 @@ Usage Example:
 	CUTIL_BIT_ROTATE_LEFT(var, 1); // equivelent, C++, GNU C, C23 only
 	CUTIL_BIT_ROTATE_RIGHT(var, 1);
 */
+
+
+//* assign or cast bitwise
+#define CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR)	memcpy(&_OUT_PTR, &_IN_PTR, sizeof(_OUT_TYPE))
+#define CUTIL_BITWISE_MEMCPY(_OUT_TYPE, _OUT_PTR, _IN_PTR)	CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR) // alias
+#define CUTIL_BITWISE_CAST_UNSAFE(_OUT_TYPE, _IN_PTR)		(* (volatile _OUT_TYPE*) (volatile void*) _IN_PTR)
+/*
+	uint32_t i = 0x12345678;
+	float f;
+	CUTIL_BITWISE_MEMCPY(float, &f, &i); // assign `i` to `f` bitwise
+	f = CUTIL_BITWISE_CAST_UNSAFE(float, &f) // UB, unrecommended
+*/
+
 
 
 //* swap items, only for C, types of `_VAR1` and `_VAR2` should be strictly equal, do not use in
@@ -621,8 +634,8 @@ Usage Example:
 #define CUTIL_LIMIT(_VAR, _MIN, _MAX)		(((_VAR) < (_MIN) ? (_VAR) = (_MIN) : (_VAR)), ((_VAR) > (_MAX) ? (_VAR) = (_MAX) : (_VAR)), (_VAR))
 
 //* get if a numeric variable is within the range [_MIN, _MAX] or (_MIN, _MAX)
-#define CUTIL_IN_RANGE(_VAR, _MIN, _MAX)		((_VAR) >= (_MIN) && (_VAR) <= (_MAX) ? 1 : 0) // inclusive range
-#define CUTIL_IN_OPEN_RANGE(_VAR, _MIN, _MAX)	((_VAR) >= (_MIN) && (_VAR) <= (_MAX) ? 1 : 0) // open range
+#define CUTIL_IN_RANGE(_VAR, _MIN, _MAX)		((((_VAR) >= (_MIN)) && ((_VAR) <= (_MAX))) ? 1 : 0) // inclusive range
+#define CUTIL_IN_OPEN_RANGE(_VAR, _MIN, _MAX)	((((_VAR) > (_MIN)) && ((_VAR) < (_MAX))) ? 1 : 0)   // open range
 /*
 	int a = 35, b = 26, c = 19;
 	
@@ -905,7 +918,7 @@ Usage Example:
 			, CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
 				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a)
 				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b)
-				//  ...  
+				//  ...
 				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, h)
 	);	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
 	

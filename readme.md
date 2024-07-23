@@ -193,7 +193,7 @@ Reference of Ansi Escape Codes:
     // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead in source files.
     // <ConsoleUtil/CppUtil.h> can be included in header files.
     ```
-    - decide if the project is under debug build or Release build mode.
+    - **decide if the project is under debug build or Release build mode.**
     
         in MSVC, macro `_DEBUG` is defined under debug build; in GCC, macro `NDEBUG` is defined under release build.
     
@@ -208,7 +208,9 @@ Reference of Ansi Escape Codes:
         #endif
         ```
     
-    - set bit to a unsigned integer variable in some hardware projects; rotate bits
+    - **set bit to a unsigned integer variable in some hardware projects; rotate bits**
+    
+        not recommended in C++, pls use `std::bitset<length>`.
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
@@ -216,7 +218,7 @@ Reference of Ansi Escape Codes:
         // operate bit by index, starts at 0. use them in a seperate line, and returns nothing
         CUTIL_BIT_SET_IDX(num, 0);		// equals to {num |=  (1u << 0));}
         CUTIL_BIT_CLEAR_IDX(num, 2);	// equals to {num &= ~(1u << 2));}
-        CUTIL_BIT_TOGGLE_IDX(num, 3);	// equals to {num ^=  (1u << 3));}
+        CUTIL_BIT_FLIP_IDX(num, 3);	// equals to {num ^=  (1u << 3));}
         
         
         if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
@@ -229,7 +231,7 @@ Reference of Ansi Escape Codes:
         // operate bit by mask
         CUTIL_BIT_SET_MASK(num, 0x2B00); 	// equals to {num |=  0x2B00;}
         CUTIL_BIT_CLEAR_MASK(num, 0x2B00); 	// equals to {num &= ~0x2B00;}
-        CUTIL_BIT_TOGGLE_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
+        CUTIL_BIT_FLIP_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
         
         if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0){ // returns (num & 0x0022)
         	printf("%x\n", num);
@@ -249,7 +251,7 @@ Reference of Ansi Escape Codes:
         
         ```
     
-        - get high or low byte (uint8_t) of a word (uint16_t)
+        - **get high or low byte (uint8_t) of a word (uint16_t)**
     
         ```c++
         uint16_t v {0x1234};
@@ -260,7 +262,22 @@ Reference of Ansi Escape Codes:
         printf("%x \n", v);	// -> FEBA
         ```
     
+        - **convert variable to another type bitwise**
+    
+          use `std::bit_cast<NewType>` after C++20.
+    
+        ```c++
+        uint32_t i = 0x12345678;
+        float f;
+        CUTIL_BITWISE_MEMCPY(float, &f, &i); // assign `i` to `f` bitwise
+        // -> memcpy(&f, &i, sizeof(float))
+        f = CUTIL_BITWISE_CAST_UNSAFE(float, &f) // UB, unrecommended
+        // -> f = (* (volatile float*) (volatile void*) &i);
         
+        // auto f = std::bit_cast<float>(i) // C++20
+        ```
+    
+          
     
     - swap variables in C (types of `_VAR1` and `_VAR2` should be strictly equal; do not use in C++, pls replace with std::swap()),
     
@@ -437,7 +454,7 @@ Reference of Ansi Escape Codes:
         printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
     
     
-    ​
+    
         // output:
         //		12345678, fedcba98
         //		000000C48D7BFB04, 000000C48D7BFB24
@@ -446,7 +463,7 @@ Reference of Ansi Escape Codes:
         ```
     
     
-    ​
+    
     
     - count amount of arguments (up to 35 params)
     
