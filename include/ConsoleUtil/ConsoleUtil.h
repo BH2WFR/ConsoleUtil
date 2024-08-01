@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: 	https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		17 JUL 2024
+  Updated:		1 AUG 2024
   License:		MIT License
 * Do not include this header in header files.
 * If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
@@ -253,10 +253,21 @@
 #define CUTIL_CHCP_ENCODING_WIN1251()    CUTIL_CHCP_ENCODING(1251)		//  windows 1251, Cyrillic
 #define CUTIL_CHCP_ENCODING_WIN1252()    CUTIL_CHCP_ENCODING(1252)		//  windows 1252, western European
 
-
+//* set execution locale
+#define CUTIL_LOCALE_UTF8()				setlocale(LC_ALL, ".UTF-8")
+#define CUTIL_LOCALE_DEFAULT()			setlocale(LC_ALL, "")
+#define CUTIL_LOCALE_UTF8_PRINT()		do {char* pLocale = setlocale(LC_ALL, ".UTF-8");	\
+											if(pLocale == NULL){ \
+												printf(FLRed "  setlocale(): unknown locale!\n" CRst); \
+											}else{	\
+												printf(FLGreen "  setlocale(): locale set to %s" CRst, pLocale); \
+											}		\
+											printf("\n"); \
+										} while(0)
 /*
 * Instruction:
-	#include <print.h>			// C++23
+	#include <locale.h>
+	#include <stdio.h>
 	#include <windows.h>		// include other headers first
 	#include <fmt/core.h>		// include other headers first
 	
@@ -330,6 +341,14 @@
 // print an error message, and force abort application.
 #define CUTIL_ABORT_ERR(_REASON) 	 	do {CUTIL_ERROR_MESSAGE(_REASON); exit(-1);		} while(0)
 #define CUTIL_ABORT_ERR_ASM(_REASON) 	do {CUTIL_ERROR_MESSAGE(_REASON); asm("exit");	} while(0)
+
+
+// print if the application is in debug or release build
+#if CUTIL_DEBUG_BUILD
+	#define CUTIL_PRINT_BUILD_TYPE()	printf(FLGreen "  build type: `Debug`\n" CRst)
+#else // release
+	#define CUTIL_PRINT_BUILD_TYPE()	printf(FLGreen "  build type: `Release`\n" CRst)
+#endif
 
 
 //* macros for print something ONLY IN DEBUG BUILD
