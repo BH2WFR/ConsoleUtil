@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		23 JUL 2024
+  Updated:		8 AUG 2024
   License:		MIT License
 * You can include this header in header files.
 */
@@ -146,12 +146,24 @@ Usage Example:
 #define CUTIL_NOT(_x)				_CUTIL_CHK_2ND_ARG(CUTIL_CAT_TOKENS(_CUTIL_NOT_, _x))
 #define _CUTIL_NOT_0				~, 1
 #define _CUTIL_NOT_false			~, 1
+#define _CUTIL_NOT_FALSE			~, 1
 #define _CUTIL_NOT_nullptr			~, 1
 #define _CUTIL_NOT_NULL				~, 1
 #define _CUTIL_NOT_00				~, 1
 #define _CUTIL_NOT_000				~, 1
 #define _CUTIL_NOT_0000				~, 1
+#define _CUTIL_NOT_00000			~, 1
+#define _CUTIL_NOT_000000			~, 1
+#define _CUTIL_NOT_0000000			~, 1
+#define _CUTIL_NOT_00000000			~, 1
 #define _CUTIL_NOT_0b0				~, 1
+#define _CUTIL_NOT_0b00				~, 1
+#define _CUTIL_NOT_0b000			~, 1
+#define _CUTIL_NOT_0b0000			~, 1
+#define _CUTIL_NOT_0b00000			~, 1
+#define _CUTIL_NOT_0b000000			~, 1
+#define _CUTIL_NOT_0b0000000		~, 1
+#define _CUTIL_NOT_0b00000000		~, 1
 #define _CUTIL_NOT_0x0				~, 1
 #define _CUTIL_NOT_0x00				~, 1
 #define _CUTIL_NOT_0x000			~, 1
@@ -577,6 +589,7 @@ Usage Example:
 
 
 //* assign or cast bitwise
+//  use `std::bit_cast<T>()` in C++20
 #define CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR)	memcpy(&_OUT_PTR, &_IN_PTR, sizeof(_OUT_TYPE))
 #define CUTIL_BITWISE_MEMCPY(_OUT_TYPE, _OUT_PTR, _IN_PTR)	CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR) // alias
 #define CUTIL_BITWISE_CAST_UNSAFE(_OUT_TYPE, _IN_PTR)		(* (volatile _OUT_TYPE*) (volatile void*) _IN_PTR)
@@ -589,8 +602,8 @@ Usage Example:
 
 
 
-//* swap items, only for C, types of `_VAR1` and `_VAR2` should be strictly equal, do not use in
-//	WARNING: cannot use for C arrays
+//* swap items, only for C, types of `_VAR1` and `_VAR2` should be strictly equal
+//	WARNING: cannot use for C arrays, use `std::swap` in C++
 #define CUTIL_SWAP_TYPE(_TYPE, _VAR1, _VAR2) 	do {_TYPE _sw = (_VAR2); (_VAR2) = (_VAR1); (_VAR1) = _sw;} while(0) // CUTIL_SWAP_VARS(uint32_t, a, b);
 #define CUTIL_SWAP(_VAR1, _VAR2)			 	CUTIL_SWAP_TYPE(CUTIL_TYPEOF(_VAR1), _VAR1, _VAR2) // only for GNU C and C23 because it uses `typeof`
 /*
@@ -605,6 +618,7 @@ Usage Example:
 
 
 //* get the bigger or smaller item between two numeric variables
+//  use std::max(), std::min() function in C++
 #define CUTIL_MAX(_VAR1, _VAR2) 			(((_VAR1) > (_VAR2)) ? (_VAR1) : (_VAR2))
 #define CUTIL_MIN(_VAR1, _VAR2)				(((_VAR1) < (_VAR2)) ? (_VAR1) : (_VAR2))
 /*
@@ -612,6 +626,8 @@ Usage Example:
 	
 	int max_ab = CUTIL_MAX(a, b); // bigger number between a and b
 	int min_ab = CUTIL_MIN(a, b); // smaller number between a and b
+	
+	max_ab = std::max(a, b); // equivalent to above in C++
 */
 
 
@@ -631,17 +647,22 @@ Usage Example:
 
 
 //* limit the numeric variable to the range [_MIN, _MAX]
+	// recommended to use `std::clamp` after C++17.
 #define CUTIL_LIMIT(_VAR, _MIN, _MAX)		(((_VAR) < (_MIN) ? (_VAR) = (_MIN) : (_VAR)), ((_VAR) > (_MAX) ? (_VAR) = (_MAX) : (_VAR)), (_VAR))
+#define CUTIL_CLAMP(_VAR, _MIN, _MAX)		((_VAR) < (_MIN) ? (_MIN) : ((_VAR) > (_MAX) ? (_MAX) : (_VAR)))
 
 //* get if a numeric variable is within the range [_MIN, _MAX] or (_MIN, _MAX)
 #define CUTIL_IN_RANGE(_VAR, _MIN, _MAX)		((((_VAR) >= (_MIN)) && ((_VAR) <= (_MAX))) ? 1 : 0) // inclusive range
 #define CUTIL_IN_OPEN_RANGE(_VAR, _MIN, _MAX)	((((_VAR) > (_MIN)) && ((_VAR) < (_MAX))) ? 1 : 0)   // open range
 /*
-	int a = 35, b = 26, c = 19;
+	int a = 35, b = 26, c = 19, d = 35;
 	
 	CUTIL_LIMIT(a, 20, 30);		// a: 35 -> 30
 	CUTIL_LIMIT(b, 20, 30);		// b: 26
 	CUTIL_LIMIT(c, 20, 30);		// c: 19 -> 20
+	
+	d = CUTIL_CLAMP(d, 20, 30);	// d: 35 -> 30, only returns value
+	d = std::clamp(d, 20, 30);  // C++17, equivalent to above
 	
 	printf("%d %d %d\n", a, b, c);
 	// output: 30 26 20
@@ -814,6 +835,7 @@ Usage Example:
 
 
 //* C memory allocations
+	// use `std::allocator()` in C++11 to replace malloc
 // malloc by type and amount, only alloc heap memory without initialization. returns nullptr if failed.
 #define CUTIL_TYPE_MALLOC(_TYPE, _AMOUNT) 			(_TYPE*)malloc((_AMOUNT)*sizeof(_TYPE)) // only alloc.
 // calloc by type and amount, alloc heap memory then initialize with 0x00. returns nullptr if failed.
@@ -826,6 +848,7 @@ Usage Example:
 
 
 //* C memory operations
+	// use `std::uninitialized_copy` `std::uninitialized_fill` `std::uninitialized_move`  in  C++
 // memcpy by type and amount. returns dest pointer.
 #define CUTIL_TYPE_MEMCPY(_TYPE, _DESTPTR, _SRCPTR, _AMOUNT)	\
 		(_TYPE*)memcpy((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))

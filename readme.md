@@ -20,14 +20,14 @@ Reference of Ansi Escape Codes:
 
 
 
-### Included Following External Codes & credits to:
+### Included Following External Header-Only Libraries & credits to:
 
-| name        | author         | link                                     | path                  | license    |
-| :---------- | :------------- | :--------------------------------------- | --------------------- | :--------- |
-| scope_guard | ricab          | https://github.com/ricab/scope_guard     | `include/scope_guard` | Unlicense  |
-| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | `include/xorstr`      | Apache 2.0 |
-| yamc        | yohhoy         | https://github.com/yohhoy/yamc           | `include/yamc`        | MIT        |
-|             |                |                                          |                       |            |
+| name        | author         | link                                     | path                      | license    |
+| :---------- | :------------- | :--------------------------------------- | ------------------------- | :--------- |
+| scope_guard | ricab          | https://github.com/ricab/scope_guard     | `include/scope_guard`     | Unlicense  |
+| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | `include/xorstr`          | Apache 2.0 |
+| yamc        | yohhoy         | https://github.com/yohhoy/yamc           | `include/LegacyUtil/yamc` | MIT        |
+| span        | tcbrindle      | https://github.com/tcbrindle/span        | `include/LegacyUtil/span` | BSL 1.0    |
 
 
 
@@ -132,6 +132,16 @@ Reference of Ansi Escape Codes:
         CUTIL_CHCP_ENCODING_WIN1252();
     ```
 
+    - set program locale to `UTF-8`
+
+    ```c++
+    CUTIL_LOCALE_UTF8();            // setlocale(LC_ALL, ".UTF-8")
+    CUTIL_LOCALE_DEFAULT()			// setlocale(LC_ALL, "")
+    CUTIL_LOCALE_UTF8_PRINT()		// print if succeed or not
+    ```
+
+    
+
 4. **Print Text only in Debug Build**, and do Not Print in Release Build.
 
     pls make sure that macro "`_DEBUG`" is defined in Debug Build, or macro "`NDEBUG`" is defined in Release Build.
@@ -210,7 +220,7 @@ Reference of Ansi Escape Codes:
     
     - **set bit to a unsigned integer variable in some hardware projects; rotate bits**
     
-        not recommended in C++, pls use `std::bitset<length>`.
+        >  use `std::bitset<>` in C++.
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
@@ -264,7 +274,7 @@ Reference of Ansi Escape Codes:
     
         - **convert variable to another type bitwise**
     
-          use `std::bit_cast<NewType>` after C++20.
+          >  use `std::bit_cast<NewType>` after C++20.
     
         ```c++
         uint32_t i = 0x12345678;
@@ -279,11 +289,15 @@ Reference of Ansi Escape Codes:
     
           
     
-    - swap variables in C (types of `_VAR1` and `_VAR2` should be strictly equal; do not use in C++, pls replace with std::swap()),
+    - swap variables in C
     
         > **WARNING**: DO NOT use for **C arrays**!
+        >
+        >  types of `_VAR1` and `_VAR2` should be strictly equal
+        >
+        >  do not use in C++, pls replace with `std::swap()`
     
-        ```c
+        ```c++
         #include <ConsoleUtil/CppUtil.h>
         uint32_t a = 1, b = 2; // type of `a` and `b` must be strictly equal.
         
@@ -293,29 +307,34 @@ Reference of Ansi Escape Codes:
         CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivelent, in GNU C or C23
         CUTIL_SWAP_TYPE(std::decay<decltype(var)>::type, a, b); // equivelent in C++, but prefer to use `std::swap()`
         
-        int max_ab = CUTIL_MAX(a, b); // maximum number between a and b
-        int min_ab = CUTIL_MIN(a, b); // minimum number between a and b
-        
-        
         ```
     
-        - get the bigger or smaller item between two numeric variables
+        - get the bigger or smaller item between two numeric variables.
     
-        ```
+          > use `std::min()` and  `std::max` in C++.
+    
+        ```c++
         uint32_t a = 1, b = 2; // type of `a` and `b` must be strictly equal.
         
         int max_ab = CUTIL_MAX(a, b); // bigger number between a and b
         int min_ab = CUTIL_MIN(a, b); // smaller number between a and b
+        
+        max_ab = std::max(a, b); // equivalent to above in C++
         ```
     
         - limit the numeric variable in range, and get if the value of variable is within the range
     
-        ```
-        int a = 35, b = 26, c = 19;
+          >  recommended to use `var = std::clamp(var, min, max)` after C++17.
+    
+        ```c++
+        int a = 35, b = 26, c = 19, d = 35;
         
         CUTIL_LIMIT(a, 20, 30);		// a: 35 -> 30
         CUTIL_LIMIT(b, 20, 30);		// b: 26
         CUTIL_LIMIT(c, 20, 30);		// c: 19 -> 20
+        
+        d = CUTIL_CLAMP(d, 20, 30);	// d: 35 -> 30, only returns value
+        d = std::clamp(d, 20, 30);  // C++17, equivalent to above
         
         printf("%d %d %d\n", a, b, c);
         // output: 30 26 20
@@ -359,6 +378,7 @@ Reference of Ansi Escape Codes:
     
         - check if two floating-point numbers are equal (float, double, long double) by checking diff of two numbers is within epsilon limit.
     
+          > `FLT_EPSILON` `DBL_EPSILON` in `<float.h>`, or  `std::numeric_limits<double>::epsilon()` in `<limits>`
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
@@ -368,7 +388,6 @@ Reference of Ansi Escape Codes:
         bool isEqual1 = CUTIL_EQUAL_F(a, b); // fabs(a-b) within (-epsilon, +epsilon), epsilon == FLT_EPSILON in <float.h>
         bool isEqual2 = CUTIL_EQUAL_D(c, d); // epsilon == DBL_EPSILON in <float.h>
         bool isEqual3 = CUTIL_EQUAL(c, d, 0.0001); // custom epsilon value
-        
         ```
     
     - input a comma `,` to argument of functional macro
@@ -391,40 +410,42 @@ Reference of Ansi Escape Codes:
         - get or convert `char` to lowercase/uppercase
     
     
-        ```c++
-        #define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
-        #define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
-        #define CUTIL_CHAR_IS_ALPHABET(_ch)		(CUTIL_CHAR_IS_UPPER(_ch) || CUTIL_CHAR_IS_LOWER(_ch))
-        #define CUTIL_CHAR_GET_UPPER(_ch)		((char)(CUTIL_CHAR_IS_LOWER(_ch) ? ((_ch) - 0x20) : (_ch)))
-        #define CUTIL_CHAR_GET_LOWER(_ch)		((char)(CUTIL_CHAR_IS_UPPER(_ch) ? ((_ch) + 0x20) : (_ch)))
-        #define CUTIL_CHAR_SET_UPPER(_ch)		(_ch = CUTIL_CHAR_GET_UPPER(_ch), _ch)
-        #define CUTIL_CHAR_SET_LOWER(_ch)		(_ch = CUTIL_CHAR_GET_LOWER(_ch), _ch)
-        
-        #define CUTIL_CHAR_IS_NUMBER(_ch)		((_ch) >= '0' && (_ch) <= '9')
-        // #define CUTIL_CHAR_IS_DIGIT(_ch)		CUTIL_CHAR_IS_DEC(_ch)
-        #define CUTIL_CHAR_IS_DEC(_ch)			CUTIL_CHAR_IS_NUMBER(_ch)
-        #define CUTIL_CHAR_IS_HEX(_ch)			(CUTIL_CHAR_IS_NUMBER(_ch) || ((_ch) >= 'A' && (_ch) <= 'F') || ((_ch) >= 'a' && (_ch) <= 'f'))
-        
-        #define CUTIL_CHAR_IS_ALPHANUMERIC(_ch)	(CUTIL_CHAR_IS_ALPHABET(_ch) || CUTIL_CHAR_IS_NUMBER(_ch))
-        #define CUTIL_CHAR_IS_PUNCT(_ch)		(((_ch) >= '!' && (_ch) <= '/') || ((_ch) >= ':' && (_ch) <= '@') || ((_ch) >= '[' && (_ch) <= '`') || ((_ch) >= '{' && (_ch) <= '~'))
-        #define CUTIL_CHAR_IS_CONTROL(_ch)		((_ch) <= 0x1F && (_ch) >= 0x00)
-        #define CUTIL_CHAR_IS_ASCII(_ch)		((_ch) >= 0x01 && (_ch) <= 0x7E)
-        #define CUTIL_CHAR_IS_SYMBOL(_ch)		((_ch) >= 0x20 && (_ch) <= 0x7E)
-        ```
-        
-        ```
-        #define TEST(_x)    fmt::println("{}: {}", _x, CUTIL_CHAR_IS_UPPER(_x))
-        CUTIL_SEQ_FOREACH(TEST, '`', 'a', 'b', 'z', '{', '0', '9', '@', 'A', 'B', 'Z', '[');
-        // fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
-        // fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
-        //  ...
-        // fmt::println("{}: {}", '[', CUTIL_CHAR_IS_UPPER('['));
-        
-        // case conversion
-        char b = 'a';
-        auto c = CUTIL_CHAR_SET_UPPER(b);
-        fmt::println("{} {}", b, c);
-        ```
+    ~~~c++
+    ```c++
+    #define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
+    #define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
+    #define CUTIL_CHAR_IS_ALPHABET(_ch)		(CUTIL_CHAR_IS_UPPER(_ch) || CUTIL_CHAR_IS_LOWER(_ch))
+    #define CUTIL_CHAR_GET_UPPER(_ch)		((char)(CUTIL_CHAR_IS_LOWER(_ch) ? ((_ch) - 0x20) : (_ch)))
+    #define CUTIL_CHAR_GET_LOWER(_ch)		((char)(CUTIL_CHAR_IS_UPPER(_ch) ? ((_ch) + 0x20) : (_ch)))
+    #define CUTIL_CHAR_SET_UPPER(_ch)		(_ch = CUTIL_CHAR_GET_UPPER(_ch), _ch)
+    #define CUTIL_CHAR_SET_LOWER(_ch)		(_ch = CUTIL_CHAR_GET_LOWER(_ch), _ch)
+    
+    #define CUTIL_CHAR_IS_NUMBER(_ch)		((_ch) >= '0' && (_ch) <= '9')
+    // #define CUTIL_CHAR_IS_DIGIT(_ch)		CUTIL_CHAR_IS_DEC(_ch)
+    #define CUTIL_CHAR_IS_DEC(_ch)			CUTIL_CHAR_IS_NUMBER(_ch)
+    #define CUTIL_CHAR_IS_HEX(_ch)			(CUTIL_CHAR_IS_NUMBER(_ch) || ((_ch) >= 'A' && (_ch) <= 'F') || ((_ch) >= 'a' && (_ch) <= 'f'))
+    
+    #define CUTIL_CHAR_IS_ALPHANUMERIC(_ch)	(CUTIL_CHAR_IS_ALPHABET(_ch) || CUTIL_CHAR_IS_NUMBER(_ch))
+    #define CUTIL_CHAR_IS_PUNCT(_ch)		(((_ch) >= '!' && (_ch) <= '/') || ((_ch) >= ':' && (_ch) <= '@') || ((_ch) >= '[' && (_ch) <= '`') || ((_ch) >= '{' && (_ch) <= '~'))
+    #define CUTIL_CHAR_IS_CONTROL(_ch)		((_ch) <= 0x1F && (_ch) >= 0x00)
+    #define CUTIL_CHAR_IS_ASCII(_ch)		((_ch) >= 0x01 && (_ch) <= 0x7E)
+    #define CUTIL_CHAR_IS_SYMBOL(_ch)		((_ch) >= 0x20 && (_ch) <= 0x7E)
+    ```
+    
+    ```
+    #define TEST(_x)    fmt::println("{}: {}", _x, CUTIL_CHAR_IS_UPPER(_x))
+    CUTIL_SEQ_FOREACH(TEST, '`', 'a', 'b', 'z', '{', '0', '9', '@', 'A', 'B', 'Z', '[');
+    // fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+    // fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+    //  ...
+    // fmt::println("{}: {}", '[', CUTIL_CHAR_IS_UPPER('['));
+    
+    // case conversion
+    char b = 'a';
+    auto c = CUTIL_CHAR_SET_UPPER(b);
+    fmt::println("{} {}", b, c);
+    ```
+    ~~~
     
     - operate value of specific memory location
     
@@ -435,32 +456,36 @@ Reference of Ansi Escape Codes:
         - set memory at the specific location in the specific type
     
     
-        ```c++
-        #define CUTIL_GET_PTR_TYPE(_type, _var)			((_type *)	 (void*) &(_var))
-        #define CUTIL_GET_MEM_TYPE(_type, _ptr)			(*((volatile _type *)	(_ptr)))
-        #define CUTIL_SET_MEM_TYPE(_type, _ptr, _val) 	(*((volatile _type *)	_ptr) = _val, _val)
-        
-        uint32_t a = 0x12345678;
-        uint32_t b = 0xFEDCBA98;
-        
-        printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b)); 	// get content as type `uint32_t` at the location `&a and `&b`, it prints the value of `a` and `b`
-        
-        printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));	// get address as type `uint32_t*` of the variable `a` and `b`
-        printf("%p\n", CUTIL_GET_PTR_TYPE(uint32_t, a));					// equivelent
-        
-        CUTIL_SET_MEM_U32(&a, 0x66666666);				// set content of address `&b` as `0x66666666`, in the type of `uint32_t`
-        CUTIL_SET_MEM_TYPE(uint32_t, &b, 0x77777777);	// set content of address `&b` as `0x77777777`, in the type of `uint32_t`
-        
-        printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+    ~~~c++
+    ```c++
+    #define CUTIL_GET_PTR_TYPE(_type, _var)			((_type *)	 (void*) &(_var))
+    #define CUTIL_GET_MEM_TYPE(_type, _ptr)			(*((volatile _type *)	(_ptr)))
+    #define CUTIL_SET_MEM_TYPE(_type, _ptr, _val) 	(*((volatile _type *)	_ptr) = _val, _val)
+    
+    uint32_t a = 0x12345678;
+    uint32_t b = 0xFEDCBA98;
+    
+    printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b)); 	// get content as type `uint32_t` at the location `&a and `&b`, it prints the value of `a` and `b`
+    
+    printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));	// get address as type `uint32_t*` of the variable `a` and `b`
+    printf("%p\n", CUTIL_GET_PTR_TYPE(uint32_t, a));					// equivelent
+    
+    CUTIL_SET_MEM_U32(&a, 0x66666666);				// set content of address `&b` as `0x66666666`, in the type of `uint32_t`
+    CUTIL_SET_MEM_TYPE(uint32_t, &b, 0x77777777);	// set content of address `&b` as `0x77777777`, in the type of `uint32_t`
+    
+    printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b));
+    ~~~
     
     
     
-        // output:
-        //		12345678, fedcba98
-        //		000000C48D7BFB04, 000000C48D7BFB24
-        //		000000C48D7BFB04
-        //		66666666, fedcba98
-        ```
+    ~~~c++
+    // output:
+    //		12345678, fedcba98
+    //		000000C48D7BFB04, 000000C48D7BFB24
+    //		000000C48D7BFB04
+    //		66666666, fedcba98
+    ```
+    ~~~
     
     
     
@@ -532,6 +557,10 @@ Reference of Ansi Escape Codes:
     
     - memory allocation and operations for C (wrapped `malloc()` `free()` `memset()` `memcpy()` with typename to macros. use AMOUNT of variables to substitute length in bytes.) `CUTIL_TYPE_FREE()` macro also sets pointer to `nullptr`.
     
+        > use `std::allocator()` in C++11 to replace malloc
+        >
+        > use `std::uninitialized_copy` `std::uninitialized_fill` `std::uninitialized_move`  in  C++
+    
         ```c++
         #include <ConsoleUtil/CppUtil.h>
         
@@ -568,7 +597,7 @@ Reference of Ansi Escape Codes:
     
     - convert to string
     
-        ```
+        ```c++
         #define CUTIL_STR(_1)           #_1
         #define CUTIL_LSTR(_1)          CUTIL_CAT_TOKENS(L, #_1)    // wchar_t
         #define CUTIL_U8STR(_1)         CUTIL_CAT_TOKENS(u8, #_1)   // C++17, char8_t
@@ -795,7 +824,7 @@ Reference of Ansi Escape Codes:
         
     - **for loop** in **range** `[0, _end)` or `[_first, _end)`
     
-      ```
+      ```c++
       CUTIL_FOR_TYPE(int, i, 5)	 {} // `for(int i = 0; i < 5; i++)`; i <- [0..4];
       CUTIL_FOR_TYPE(int, i, 2, 4) {}	// `for(int i = 2; i < 4; i++)`; i <- [2..3];
       
