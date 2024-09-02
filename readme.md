@@ -615,7 +615,7 @@ Reference of Ansi Escape Codes:
     
     - generate the code like `(var == 1 || var == 2 || var == 3 || ...)` or `(var != 1 && var != 2 && var != 3 && ...)`, up to 25 compared params
     
-        > **WARNING**: you can't compare some return value of functions like `getchar()`
+        > **WARNING**: you can't compare some return value of functions like `getchar()`, or `++` `--` operators.
         > 	if you use `if(CUTIL_EQUAL_OR(getchar(), 'a', 'b'))`
         > 	it will expand as `if(getchar() == 'a' || getchar() == 'b')`
     
@@ -638,6 +638,25 @@ Reference of Ansi Escape Codes:
             // equivalent to `if(! CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10))`
         }
         
+        ```
+    
+    - get if variables in parameters **mutually different**
+    
+        > **WARNING**: you can't compare some return value of functions like `getchar()`, or `++` `--` operators.
+    
+        ```c++
+        if(CUTIL_UNEQUAL_ALL(a1, a2, a3, a4)){ // is `a1`, `a2`, `a3`, `a4` mutually different?
+            // (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4))
+            // && ((a2) != (a3) && (a2) != (a4))
+            // && ((a3) != (a4))   )
+        }
+        
+        if(CUTIL_UNEQUAL_ALL(a1, a2, a3, a4, a5)){
+            // (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4) && (a1) != (a5))
+            // && ((a2) != (a3) && (a2) != (a4) && (a2) != (a5))
+            // && ((a3) != (a4) && (a3) != (a5))
+            // && ((a4) != (a5))   )
+        }
         ```
     
     - Implement function overloading based on the number of parameters and the trailing digit by token concatenation.

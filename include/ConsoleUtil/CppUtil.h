@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		8 AUG 2024
+  Updated:		2 SEP 2024
   License:		MIT License
 * You can include this header in header files.
 */
@@ -96,6 +96,8 @@
 							A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,_63,...)  _63
 
 
+// #define _CUTIL_PARAMS_SINCE_2ND(_1, ...)	 CUTIL_EXPAND(__VA_ARGS__) // retrive all params since 2nd, and drop 1st param
+// #define _CUTIL_PARAMS_SINCE_3RD(_1, _2, ...) CUTIL_EXPAND(__VA_ARGS__)
 
 
 
@@ -371,6 +373,53 @@ Usage Example:
 */
 
 
+//* generate codes for check if all of the variables are mutually nonequal, up to 25 params
+	// CUTIL_UNEQUAL_ALL(a1, a2, a3, a4)
+	//   -> (a1 != a2) && (a1 != a3) && (a1 != a4) && (a2 != a3) && (a2 != a4) && (a3 != a4)
+#define CUTIL_UNEQUAL_ALL(...)			CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_UNEQUAL_ALL_, CUTIL_VA_CNT(__VA_ARGS__))(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_2(a1, a2)	CUTIL_UNEQUAL_AND(a1, a2)
+#define _CUTIL_UNEQUAL_ALL_3(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_2(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_4(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_3(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_5(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_4(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_6(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_5(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_7(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_6(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_8(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_7(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_9(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_8(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_10(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_9(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_11(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_10(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_12(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_11(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_13(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_12(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_14(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_13(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_15(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_14(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_16(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_15(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_17(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_16(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_18(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_17(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_19(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_18(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_20(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_19(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_21(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_20(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_22(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_21(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_23(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_22(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_24(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_23(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_25(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_24(__VA_ARGS__)) // recurse upwards
+/* Example:
+	if(CUTIL_UNEQUAL_ALL(a1, a2, a3, a4)){ // is `a1`, `a2`, `a3`, `a4` mutually different?
+		// (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4))
+		// && ((a2) != (a3) && (a2) != (a4))
+		// && ((a3) != (a4))   )
+	}
+	
+	if(CUTIL_UNEQUAL_ALL(a1, a2, a3, a4, a5)){
+		// (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4) && (a1) != (a5))
+		// && ((a2) != (a3) && (a2) != (a4) && (a2) != (a5))
+		// && ((a3) != (a4) && (a3) != (a5))
+		// && ((a4) != (a5))   )
+	}
+*/
+
+
+
+
+
 //* call a single-argument function/macro for each parameter, simillar to `BOOST_PP_SEQ_FOR_EACH`, up to 25 iterations
 #define CUTIL_SEQ_FOREACH(_action, ...)				do {CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_SEQ_FOREACH_, __VA_ARGS__)(_action, __VA_ARGS__))} while(0)
 	// The following macro definitions are private, DO NOT call them EXTERNALLY.
@@ -398,7 +447,7 @@ Usage Example:
 #define _CUTIL_SEQ_FOREACH_22(_action, _1, ...)		_action(_1); CUTIL_EXPAND(_CUTIL_SEQ_FOREACH_21(_action, __VA_ARGS__))
 #define _CUTIL_SEQ_FOREACH_23(_action, _1, ...)		_action(_1); CUTIL_EXPAND(_CUTIL_SEQ_FOREACH_22(_action, __VA_ARGS__))
 #define _CUTIL_SEQ_FOREACH_24(_action, _1, ...)		_action(_1); CUTIL_EXPAND(_CUTIL_SEQ_FOREACH_23(_action, __VA_ARGS__))
-#define _CUTIL_SEQ_FOREACH_25(_action, _1, ...)		_action(_1); CUTIL_EXPAND(_CUTIL_SEQ_FOREACH_24(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_FOREACH_25(_action, _1, ...)		_action(_1); CUTIL_EXPAND(_CUTIL_SEQ_FOREACH_24(_action, __VA_ARGS__)) // recurse upwards
 /* Instruction:
 	#define TEST_PRINT(x)   fmt::println("{}", x) //* Must take exactly 1 argument
 	
@@ -434,7 +483,7 @@ Usage Example:
 #define _CUTIL_REPEAT_22(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_21(_action, __VA_ARGS__))
 #define _CUTIL_REPEAT_23(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_22(_action, __VA_ARGS__))
 #define _CUTIL_REPEAT_24(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_23(_action, __VA_ARGS__))
-#define _CUTIL_REPEAT_25(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_24(_action, __VA_ARGS__))
+#define _CUTIL_REPEAT_25(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_24(_action, __VA_ARGS__)) // recurse upwards
 /* Instruction:
 	#define TEST_PRINT(x)   	fmt::println("{}", x)
 	#define TEST_1(x, y)   		fmt::println("{} {}", x, y)
@@ -472,7 +521,7 @@ Usage Example:
 #define _CUTIL_ENUM_22(_type, _name)		_CUTIL_ENUM_21(_type, _name), _type _name##21
 #define _CUTIL_ENUM_23(_type, _name)		_CUTIL_ENUM_22(_type, _name), _type _name##22
 #define _CUTIL_ENUM_24(_type, _name)		_CUTIL_ENUM_23(_type, _name), _type _name##23
-#define _CUTIL_ENUM_25(_type, _name)		_CUTIL_ENUM_24(_type, _name), _type _name##24
+#define _CUTIL_ENUM_25(_type, _name)		_CUTIL_ENUM_24(_type, _name), _type _name##24  // recurse upwards
 /* Instruction:
 	void func(CUTIL_ENUM(int, var_, 3)){
 		// equivalent to `void func(int var_0, int var_1, int var_2)`
@@ -506,7 +555,7 @@ Usage Example:
 #define _CUTIL_SEQ_ENUM_22(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_21(_action, __VA_ARGS__))
 #define _CUTIL_SEQ_ENUM_23(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_22(_action, __VA_ARGS__))
 #define _CUTIL_SEQ_ENUM_24(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_23(_action, __VA_ARGS__))
-#define _CUTIL_SEQ_ENUM_25(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_24(_action, __VA_ARGS__))
+#define _CUTIL_SEQ_ENUM_25(_action, _1, ...)	_action(_1), CUTIL_EXPAND(_CUTIL_SEQ_ENUM_24(_action, __VA_ARGS__)) // recurse upwards
 /* Instruction:
 	#define TEST(_x)    test_##_x 		//* Must take exactly 1 argument
 	#define TEST2(_x)   test_##_x = 1
