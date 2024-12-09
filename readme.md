@@ -379,6 +379,7 @@ Reference of Ansi Escape Codes:
         - check if two floating-point numbers are equal (float, double, long double) by checking diff of two numbers is within epsilon limit.
     
           > `FLT_EPSILON` `DBL_EPSILON` in `<float.h>`, or  `std::numeric_limits<double>::epsilon()` in `<limits>`
+          > `float.h` must be included.
     
         ```c++
         #include <ConsoleUtil/CppUtil.h>
@@ -852,13 +853,83 @@ Reference of Ansi Escape Codes:
       CUTIL_FOR(i, 0, 10)			 {}	// `for(int i = 2; i < 4; i++)`; i <- [2..3];
       ```
     
+    
+    - **Mathematical Constants**
+    
+      ```c++
+      #define CUTIL_E             2.71828182845904523536  // e
+      #define CUTIL_LOG2E         1.44269504088896340736  // log2(e)
+      #define CUTIL_LOG10E        0.43429448190325182765  // log10(e)
+      #define CUTIL_LN2           0.69314718055994530942  // ln(2)
+      #define CUTIL_LN10          2.30258509299404568402  // ln(10)
+      
+      #define CUTIL_PI            3.14159265358979323846  // pi
+      #define CUTIL_2_PI          6.28318530717958647692  // 2*pi
+      #define CUTIL_3_PI          9.42477796076937971538  // 3*pi
+      #define CUTIL_PI_2          1.57079632679489661923  // pi/2
+      #define CUTIL_PI_3          1.04719755119659774615  // pi/3
+      #define CUTIL_PI_4          0.78539816339744830962  // pi/4
+      #define CUTIL_INV_PI        0.31830988618379067154  // 1/pi
+      #define CUTIL_2_INV_PI      0.63661977236758134308  // 2/pi
+      #define CUTIL_2_SQRT_PI     1.12837916709551257390  // 2/sqrt(pi)
+      
+      #define CUTIL_SQRT_2        1.41421356237309504880  // sqrt(2)
+      #define CUTIL_INV_SQRT_2    0.70710678118654752440  // 1/sqrt(2)
+      #define CUTIL_SQRT_3        1.73205080756887729353  // sqrt(3)
+      
+      #define CUTIL_PHI           1.61803398874989484820  // (1 + sqrt(5)) / 2, golden ratio
+      #define CUTIL_INV_PHI       0.61803398874989484820  // 2 / (1 + sqrt(5)), inversed golden ratio
+      
+      #define CUTIL_EGAMMA        0.57721566490153286060  // Euler-Mascheroni constant
+      ```
+    
+      also, you can get float versions with macros with `_F` suffix:
+    
+      ```c
+      #define CUTIL_E_F			2.71828182845904523536f	// e
+      #define CUTIL_LOG2E_F		1.44269504088896340736f	// log2(e)
+      #define CUTIL_LOG10E_F		0.43429448190325182765f	// log10(e)
+      // ...
+      ```
+    
+    - **Power and Factorial for integer variables**
+    
+      > std::pow(base, exp) in `<cmath>` is for float/double, not for integer.
+    
+      ```c
+      int ret = CUTIL_INTPOW(2, 3); 	// 2^3 = 8; generates `(2 * 2 * 2)`; arg `exp` must be an constexpr.
+      ret = CUTIL_INTPOW(ret, 2); 	// 8^2 = 64; generates `(ret * ret)`
+      ```
+    
+      C++ versions (template functions):
+    
+      ```c++
+      int ret;
+      
+      ret = cutil::intPow(2, 3); 		// 2^3 = 8
+      ret = cutil::intPow<3>(2); 		// 2^3 = 8
+      
+      ret = cutil::factorial(3); 		// 3! = 6
+      ret = cutil::factorial<3>(); 	// 3! = 6
+      
+      ```
+    
       
 
 
 
+9. **Detect Operating System**
 
+    | OS               | defined macros                                             |
+    | ---------------- | ---------------------------------------------------------- |
+    | Windows (32-bit) | `CUTIL_OS_WIN32` && `CUTIL_OS_WINDOWS`                     |
+    | Windows (64-bit) | `CUTIL_OS_WIN32` && `CUTIL_OS_WINDOWS` && `CUTIL_OS_WIN64` |
+    | Windows (Cygwin) | `CUTIL_OS_CYGWIN`                                          |
+    | Linux            | `CUTIL_OS_LINUX`                                           |
+    | Apple            | `CUTIL_OS_APPLE`                                           |
+    | Android          | `CUTIL_OS_ANDROID` && `CUTIL_OS_LINUX`                     |
 
-
+    
 
 9. **Some Macros for Qt Projects**:
 
@@ -905,14 +976,14 @@ Reference of Ansi Escape Codes:
 
 9. **Some Macros for CUDA Programs**:
 
-    ```c++
-    #include <ConsoleUtil/CudaUtil.h>
-    // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead.
-    ```
+     ```c++
+     #include <ConsoleUtil/CudaUtil.h>
+     // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead.
+     ```
 
-    ...
+     ...
 
-     
+      
 
 
 

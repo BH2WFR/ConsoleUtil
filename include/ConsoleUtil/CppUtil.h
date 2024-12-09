@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		2 SEP 2024
+  Updated:		9 DEC 2024
   License:		MIT License
 * You can include this header in header files.
 */
@@ -73,11 +73,23 @@
 #endif // __cplusplus
 
 
+//* C++ namespace
+#define CUTIL_NAMESPACE_NAME		cutil
+// #define CUTIL_NAMESPACE_SHORTER		cu
 
+// #ifdef __cplusplus
+// 	#define CUTIL_NAMESPACE_BEGIN		namespace CUTIL_NAMESPACE_NAME {
+// 	#define CUTIL_NAMESPACE_END			}
+// #else //. !__cplusplus
+// 	#define CUTIL_NAMESPACE_BEGIN
+// 	#define CUTIL_NAMESPACE_END
+// #endif // __cplusplus
 
 
 
 //===================== Basic Macros =========================
+#pragma region Basic Macros
+
 #define CUTIL_EMPTY()										// empty macro function
 #define CUTIL_DEFAULT										// empty macro
 // #define CUTIL_DEFER(_x)			_x CUTIL_EMPTY
@@ -567,9 +579,11 @@ Usage Example:
 	printf("%d %d %d %d", test_a, test_b, test_c, test_d);	// equivalent to above
 */
 
+#pragma endregion
 
 
 //======================= C Utils ============================
+#pragma region C Utils
 
 //* bit calculating macros, not recommended in C++ (std::bitset<>)
 #define CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK)		((_NUM) &   (_BIT_MASK)        )
@@ -768,6 +782,7 @@ Usage Example:
 
 
 //* C char conversion and assertion
+// this feature contains in `<ctype.h>`, so it's just an alternative.
 #define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
 #define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
 #define CUTIL_CHAR_IS_ALPHABET(_ch)		(CUTIL_CHAR_IS_UPPER(_ch) || CUTIL_CHAR_IS_LOWER(_ch))
@@ -798,6 +813,7 @@ Usage Example:
 
 
 //* determine if two float/double numbers are regarded as equal (within epsilon)
+// 	<float.h> must be included
 #define CUTIL_EQUAL(_F1, _F2, _EPSILON)		(( CUTIL_ABS((_F1) - (_F2)) < CUTIL_ABS((_EPSILON)) ) ? 1 : 0) // diff within (-epsilon, +epsilon)
 #define CUTIL_EQUAL_F(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, FLT_EPSILON)	// float, using epsilon values defined in <float.h>
 #define CUTIL_EQUAL_D(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, DBL_EPSILON)	// double
@@ -810,6 +826,7 @@ Usage Example:
 	#define CU_EQU_LD(_F1, _F2)				CUTIL_EQUAL_LD(_F1, _F2)
 #endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
 /*
+	// include <float.h> first
 	float a = -1.00000f, b = -0.99999f; // they can regarded as equal
 	double c = 1.000000000, d = 1.0000000001;
 
@@ -1022,16 +1039,25 @@ Usage Example:
 */
 
 
+//* get if the expression is an ICE (integral constant expression)
+#define CUTIL_IS_ICE(_x)	(sizeof(int) == sizeof(*(1 ? ((void*)((_x) * 0l)) : (int*)1)))
+
+#pragma endregion C Utils
+
 
 
 //======================= C++ Utils ==========================
+#pragma region C++ Utils
 #ifdef __cplusplus
 
 //* delete a heap pointer, and set it nullptr. arg "p" must be a pointer inited by "new" or "new[]".
 #define CUTIL_DELETE(p)				do {delete   p; p = NULL;} while(0)
 #define CUTIL_DELETE_ARRAY(p)		do {delete[] p; p = NULL;} while(0)
 	// keyword "nullptr" is unsupported in C++98
-
+namespace CUTIL_NAMESPACE_NAME{
+	template<typename T> void deletePtr(T*& p) {delete p; p = NULL;}
+	template<typename T> void deleteArrayPtr(T*& p) {delete[] p; p = NULL;}
+}
 
 //* set C++11 class constructor/moving/copying to disabled/default
 #if CUTIL_CPP_LANG >= 201103L 	//* >= C++11
@@ -1174,15 +1200,18 @@ Usage Example:
 
 
 #endif // __cplusplus
+#pragma endregion C++ Utils
+
 
 
 //===================== OS Related ========================
+#pragma region OS Related
 
 #if defined(_WIN32) || defined(WIN32) || defined(__WIN32) && !defined(__CYGWIN__) // in Windows
 	#define CUTIL_OS_WIN32		//* Win32 || Win64
 	#define CUTIL_OS_WINDOWS
 	#if defined(WIN64) || defined(_WIN64) || defined(__WIN64)
-		#define CUTIL_OS_WIN64	//* Win64
+		#define CUTIL_OS_WIN64	//* Win64	(`CUTIL_OS_WIN32` is also defined)
 	#endif // WIN64
 #endif // WIN32
 #if defined (__CYGWIN__)
@@ -1200,6 +1229,152 @@ Usage Example:
 	#include <TargetConditionals.h>
 	//TODO: 进一步的判断
 #endif // apple
+#pragma endregion OS Related
+
+
+
+
+//================== Mathematical Utils ======================
+#pragma region Mathematical Utils
+
+//* Mathematical Constants:
+#define CUTIL_E				2.71828182845904523536	// e
+#define CUTIL_LOG2E			1.44269504088896340736	// log2(e)
+#define CUTIL_LOG10E		0.43429448190325182765	// log10(e)
+#define CUTIL_LN2			0.69314718055994530942	// ln(2)
+#define CUTIL_LN10			2.30258509299404568402	// ln(10)
+
+#define CUTIL_PI			3.14159265358979323846	// pi
+#define CUTIL_2_PI			6.28318530717958647692	// 2*pi
+#define CUTIL_3_PI			9.42477796076937971538	// 3*pi
+#define CUTIL_PI_2			1.57079632679489661923	// pi/2
+#define CUTIL_PI_3			1.04719755119659774615	// pi/3
+#define CUTIL_PI_4			0.78539816339744830962	// pi/4
+#define CUTIL_INV_PI		0.31830988618379067154	// 1/pi
+#define CUTIL_2_INV_PI		0.63661977236758134308	// 2/pi
+#define CUTIL_2_SQRT_PI		1.12837916709551257390	// 2/sqrt(pi)
+
+#define CUTIL_SQRT_2		1.41421356237309504880	// sqrt(2)
+#define CUTIL_INV_SQRT_2	0.70710678118654752440	// 1/sqrt(2)
+#define CUTIL_SQRT_3		1.73205080756887729353	// sqrt(3)
+
+#define CUTIL_PHI			1.61803398874989484820	// (1 + sqrt(5)) / 2, golden ratio
+#define CUTIL_INV_PHI		0.61803398874989484820	// 2 / (1 + sqrt(5)), inversed golden ratio
+
+#define CUTIL_EGAMMA		0.57721566490153286060	// Euler-Mascheroni constant
+
+// float versions of mathematical constants:
+#define CUTIL_E_F			2.71828182845904523536f	// e
+#define CUTIL_LOG2E_F		1.44269504088896340736f	// log2(e)
+#define CUTIL_LOG10E_F		0.43429448190325182765f	// log10(e)
+#define CUTIL_LN2_F			0.69314718055994530942f	// ln(2)
+#define CUTIL_LN10_F		2.30258509299404568402f	// ln(10)
+
+#define CUTIL_PI_F			3.14159265358979323846f	// pi
+#define CUTIL_2_PI_F		6.28318530717958647692f	// 2*pi
+#define CUTIL_3_PI_F		9.42477796076937971538f	// 3*pi
+#define CUTIL_PI_2_F		1.57079632679489661923f	// pi/2
+#define CUTIL_PI_3_F		1.04719755119659774615f	// pi/3
+#define CUTIL_PI_4_F		0.78539816339744830962f	// pi/4
+#define CUTIL_INV_PI_F		0.31830988618379067154f	// 1/pi
+#define CUTIL_2_INV_PI_F	0.63661977236758134308f	// 2/pi
+#define CUTIL_2_SQRT_PI_F	1.12837916709551257390f	// 2/sqrt(pi)
+
+#define CUTIL_SQRT_2_F		1.41421356237309504880f	// sqrt(2)
+#define CUTIL_INV_SQRT_2_F	0.70710678118654752440f	// 1/sqrt(2)
+#define CUTIL_SQRT_3_F		1.73205080756887729353f	// sqrt(3)
+
+#define CUTIL_PHI_F			1.61803398874989484820f	// (1 + sqrt(5)) / 2, golden ratio
+#define CUTIL_INV_PHI_F		0.61803398874989484820f	// 2 / (1 + sqrt(5)), inversed golden ratio
+
+#define CUTIL_EGAMMA_F		0.57721566490153286060f	// Euler-Mascheroni constant
+
+
+
+//* get power of an integer.
+// example: int ret = CUTIL_INTPOW(2, 3); 	// 2^3 = 8; generates `(2 * 2 * 2)`; arg `exp` must be an constexpr.
+//			ret = CUTIL_INTPOW(ret, 2); 	// 8^2 = 64; generates `(ret * ret)`
+// notice:  std::pow(base, exp) in `<cmath>` is for float/double, not for integer.
+#define CUTIL_INTPOW(_base, exp)	(CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_INTPOW_, exp)(_base)))
+#define _CUTIL_INTPOW_1(_base) 		(_base)
+#define _CUTIL_INTPOW_2(_base) 		(_base) * (_base)
+#define _CUTIL_INTPOW_3(_base) 		_CUTIL_INTPOW_2(_base) * (_base)
+#define _CUTIL_INTPOW_4(_base) 		_CUTIL_INTPOW_3(_base) * (_base)
+#define _CUTIL_INTPOW_5(_base) 		_CUTIL_INTPOW_4(_base) * (_base)
+#define _CUTIL_INTPOW_6(_base) 		_CUTIL_INTPOW_5(_base) * (_base)
+#define _CUTIL_INTPOW_7(_base) 		_CUTIL_INTPOW_6(_base) * (_base)
+#define _CUTIL_INTPOW_8(_base) 		_CUTIL_INTPOW_7(_base) * (_base)
+#define _CUTIL_INTPOW_9(_base) 		_CUTIL_INTPOW_8(_base) * (_base)
+#define _CUTIL_INTPOW_10(_base) 	_CUTIL_INTPOW_9(_base) * (_base)
+#define _CUTIL_INTPOW_11(_base) 	_CUTIL_INTPOW_10(_base) * (_base)
+#define _CUTIL_INTPOW_12(_base) 	_CUTIL_INTPOW_11(_base) * (_base)
+#define _CUTIL_INTPOW_13(_base) 	_CUTIL_INTPOW_12(_base) * (_base)
+#define _CUTIL_INTPOW_14(_base) 	_CUTIL_INTPOW_13(_base) * (_base)
+#define _CUTIL_INTPOW_15(_base) 	_CUTIL_INTPOW_14(_base) * (_base)
+#define _CUTIL_INTPOW_16(_base) 	_CUTIL_INTPOW_15(_base) * (_base)
+#define _CUTIL_INTPOW_17(_base) 	_CUTIL_INTPOW_16(_base) * (_base)
+#define _CUTIL_INTPOW_18(_base) 	_CUTIL_INTPOW_17(_base) * (_base)
+#define _CUTIL_INTPOW_19(_base) 	_CUTIL_INTPOW_18(_base) * (_base)
+#define _CUTIL_INTPOW_20(_base) 	_CUTIL_INTPOW_19(_base) * (_base)
+#define _CUTIL_INTPOW_21(_base) 	_CUTIL_INTPOW_20(_base) * (_base)
+#define _CUTIL_INTPOW_22(_base) 	_CUTIL_INTPOW_21(_base) * (_base)
+#define _CUTIL_INTPOW_23(_base) 	_CUTIL_INTPOW_22(_base) * (_base)
+#define _CUTIL_INTPOW_24(_base) 	_CUTIL_INTPOW_23(_base) * (_base)
+#define _CUTIL_INTPOW_25(_base) 	_CUTIL_INTPOW_24(_base) * (_base)
+
+
+#ifdef __cplusplus
+namespace CUTIL_NAMESPACE_NAME {
+	//* int ret = cutil::intPow(2, 3); // 2^3 = 8
+	template <typename T>
+	constexpr T intPow(T base, const int exp) {
+		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
+		if(exp <= 0){
+			return 1;
+		}
+		for(int i = 0; i < exp; ++i){
+			base *= base;
+		}
+		return base;
+	}
+	
+	//* int ret = cutil::intPow<3>(2); // 2^3 = 8
+	template <const uint32_t exp, typename T>
+	constexpr T intPow(T base){
+		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
+		if constexpr (exp == 0) {
+			return 1;
+		}else{
+			return base * intPow<exp - 1>(base);
+		}
+	}
+	
+	//* int ret = cutil::factorial(3); // 3! = 6
+	template <typename T>
+	constexpr T factorial(T base) {
+		static_assert(std::is_integral<T>::value, "factorial must be an integer value.");
+		if (base <= 1) {
+			return 1;
+		}
+		for(T i = (base - 1); i > 1; --i){
+			base *= i;
+		}
+		return base;
+	}
+	
+	//* int ret = cutil::factorial<3>(); // 3! = 6
+	template <const uint32_t base>
+	constexpr uint32_t factorial() {
+		if constexpr (base <= 1) {
+			return 1;
+		}else{
+			return base * factorial<base - 1>();
+		}
+	}
+}
+#endif // __cplusplus
+
+#pragma endregion Mathematical Utils
 
 
 #endif // CONSOLEUTIL_CPP_UTIL_H__
