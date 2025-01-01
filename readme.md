@@ -38,7 +38,7 @@ Reference of Ansi Escape Codes:
 - features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
     - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
-- C language version `≥ C99`, C++ language `≥ C++98`, with `##__VA_ARGS__` extension support.
+- C language version `≥ C99`, C++ language `≥ C++11`, with `##__VA_ARGS__` extension support.
 
     (**MSVC supports `##__VA_ARGS__` since VS2015 Update 3**. if your MSVC or VS version is older, pls delete "`##`", MSVC eats trailing comma before `__VA_ARGS__` by default without `/Zc::preprocessor` command)
 
@@ -203,61 +203,57 @@ Reference of Ansi Escape Codes:
     // already wrapped in <ConsoleUtil/ConsoleUtil.h>, you can include the latter instead in source files.
     // <ConsoleUtil/CppUtil.h> can be included in header files.
     ```
-    - **decide if the project is under debug build or Release build mode.**
-    
-        in MSVC, macro `_DEBUG` is defined under debug build; in GCC, macro `NDEBUG` is defined under release build.
-    
-        you can add `add_compile_definitions("$<IF:$<CONFIG:Debug>,_DEBUG,NDEBUG>")` in CMake.
-    
-        ```c++
-        #include <ConsoleUtil/CppUtil.h>
-        #if CUTIL_DEBUG_BUILD // Debug
-            //...
-        #else // Release RelWithDebInfo MinSizeRel
-            //...
-        #endif
-        ```
-    
     - **set bit to a unsigned integer variable in some hardware projects; rotate bits**
     
         >  use `std::bitset<>` in C++.
     
         ```c++
-        #include <ConsoleUtil/CppUtil.h>
-        uint16_t num {0b00000000'00000001}; // C++14
+        uint16_t num {0};
+        
         // operate bit by index, starts at 0. use them in a seperate line, and returns nothing
-        CUTIL_BIT_SET_IDX(num, 0);		// equals to {num |=  (1u << 0));}
-        CUTIL_BIT_CLEAR_IDX(num, 2);	// equals to {num &= ~(1u << 2));}
-        CUTIL_BIT_FLIP_IDX(num, 3);	// equals to {num ^=  (1u << 3));}
+        CUTIL_BIT_SET_IDX(num, 0);    // equals to {num |=  (1u << 0));}
+        CUTIL_BIT_CLEAR_IDX(num, 2);  // equals to {num &= ~(1u << 2));}
+        CUTIL_BIT_FLIP_IDX(num, 3);   // equals to {num ^=  (1u << 3));}
+        num = cutil::bit::setByIndex(num, 1);
+        num = cutil::bit::clearByIndex(num, 2);
+        num = cutil::bit::flipByIndex(num, 3);
         
+        if(CUTIL_BIT_GET_IDX(num, 0) != 0x0000){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
+        	printf("%x\n", num);
+        }
+        if(CUTIL_BIT_CHECK_IDX(num, 0) == true){ // reading bit, if bit is 1, returns `1`, `!= CUTIL_BIT_GET_IDX()`
+        	printf("%x\n", num);
+        }
+        if(cutil::bit::getByIndex(num, 0) != 0x0000){
+        	printf("%x\n", num);
+        }
+        if(cutil::bit::checkByIndex(num, 0) == true){
+        	printf("%x\n", num);
+        }
         
-        if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
-            printf("%x\n", num);
-        }
-        if(CUTIL_BIT_CHECK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns `1`, `!= CUTIL_BIT_GET_IDX()`
-            printf("%x\n", num);
-        }
         
         // operate bit by mask
-        CUTIL_BIT_SET_MASK(num, 0x2B00); 	// equals to {num |=  0x2B00;}
-        CUTIL_BIT_CLEAR_MASK(num, 0x2B00); 	// equals to {num &= ~0x2B00;}
-        CUTIL_BIT_FLIP_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
+        CUTIL_BIT_SET_MASK(num, 0x2B00);    // equals to {num |=  0x2B00;}
+        CUTIL_BIT_CLEAR_MASK(num, 0x2B00);  // equals to {num &= ~0x2B00;}
+        CUTIL_BIT_FLIP_MASK(num, 0x1100);   // equals to {num ^=  0x1100;}
+        num = cutil::bit::setByMask(num, 0x2B00);
+        num = cutil::bit::clearByMask(num, 0x2B00);
+        num = cutil::bit::flipByMask(num, 0x1100);
         
-        if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0){ // returns (num & 0x0022)
+        if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0x0000){ // returns (num & 0x0022)
+        	printf("%x\n", num);
+        }
+        if(cutil::bit::getByMask(num, 0x0022) == true){
         	printf("%x\n", num);
         }
         
         // rotate bits. use them in a seperate line, and returns nothing
         uint16_t var{0x1234};
-        
-        CUTIL_BIT_ROTATE_LEFT_SIZE(8*sizeof(uint16_t), var, 1); // rotate bits of `var` by 1 bit step
-        CUTIL_BIT_ROTATE_RIGHT_SIZE(8*sizeof(uint16_t), var, 1);
-        
-        CUTIL_BIT_ROTATE_LEFT_TYPE(std::decay<decltype(var)>::type, var, 1); // equivelent, also `typeof` for GNU C or C23
-        CUTIL_BIT_ROTATE_RIGHT_TYPE(std::decay<decltype(var)>::type, var, 1);
-        
-        CUTIL_BIT_ROTATE_LEFT(var, 1); // equivelent, C++, GNU C, C23 only
+        CUTIL_BIT_ROTATE_LEFT(var, 1);
         CUTIL_BIT_ROTATE_RIGHT(var, 1);
+        
+        var = cutil::bit::rotateLeft(var, 1);
+        var = cutil::bit::rotateRight(var, 1);
         
         ```
     
@@ -281,10 +277,13 @@ Reference of Ansi Escape Codes:
         float f;
         CUTIL_BITWISE_MEMCPY(float, &f, &i); // assign `i` to `f` bitwise
         // -> memcpy(&f, &i, sizeof(float))
-        f = CUTIL_BITWISE_CAST_UNSAFE(float, &f) // UB, unrecommended
+        f = CUTIL_BITWISE_CAST_UNSAFE(float, &f) // UB, unrecommended, similar as `reinterpret_cast<float&>(f)`
         // -> f = (* (volatile float*) (volatile void*) &i);
         
+        cutil::bitwiseAssign(f, i) // i -> f, bitwise memcpy
+        f = reinterpret_cast<decltype(f)>(i);   // equivelent
         // auto f = std::bit_cast<float>(i) // C++20
+        
         ```
     
           
@@ -307,6 +306,7 @@ Reference of Ansi Escape Codes:
         CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivelent, in GNU C or C23
         CUTIL_SWAP_TYPE(std::decay<decltype(var)>::type, a, b); // equivelent in C++, but prefer to use `std::swap()`
         
+        std::swap(a, b); // C++
         ```
     
         - get the bigger or smaller item between two numeric variables.
@@ -332,15 +332,22 @@ Reference of Ansi Escape Codes:
         CUTIL_LIMIT(a, 20, 30);		// a: 35 -> 30
         CUTIL_LIMIT(b, 20, 30);		// b: 26
         CUTIL_LIMIT(c, 20, 30);		// c: 19 -> 20
+        cutil::limit(d, 20, 30);	// d: 30, only modify value
         
         d = CUTIL_CLAMP(d, 20, 30);	// d: 35 -> 30, only returns value
         d = std::clamp(d, 20, 30);  // C++17, equivalent to above
+        d = cutil::number::clamp(d, 20, 30); // C++11, equivalent to above
         
         printf("%d %d %d\n", a, b, c);
         // output: 30 26 20
         
         printf("%d %d", CUTIL_IN_RANGE(a, 20, 40), CUTIL_IN_OPEN_RANGE(c, 20, 30));
         // output: 1 0
+        bool ret = cutil::number::inRange(a, 20, 40);		         //  whether a is in [20, 40]
+        bool ret = cutil::number::inOpenRange(c, 20, 30);	         //  whether c is in (20, 30)
+        bool ret = cutil::number::inRange<true, true>(a, 20, 40);   //  whether a is in [20, 40], C++17
+        bool ret = cutil::number::inRnage<true, false>(a, 20, 40);  //  whether a is in [20, 40), C++17
+        bool ret = cutil::number::inRnage<false, false>(a, 20, 40); //  whether a is in [20, 40], C++17
         ```
     
         - increase or decrease the value of numeric variable within the range [_min, _max]
@@ -349,31 +356,42 @@ Reference of Ansi Escape Codes:
     
         ```c++
         int num = 0;
+        for(int i = 0; i < 50; i++){
+        	printf("%d ", CUTIL_INCREASE_UNDER_LIMIT(num, 5, 1));     // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+        }
+        for(int i = 0; i < 50; i++){
+        	printf("%d ", CUTIL_DECREASE_ABOVE_LIMIT(num, 0, 1));     // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
+        }
+        cutil::number::increaseUnderLimit(num, 5, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+        cutil::number::increaseUnderLimit(num, 5);    // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+        cutil::number::decreaseAboveLimit(num, 0, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+        cutil::number::decreaseAboveLimit(num, 0);    // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
         
         for(int i = 0; i < 50; i++){
-            printf("%d ", CUTIL_INCREASE_LIMIT(num, 1, 5));     // 1 2 3 4 5 5 5 5 5 5 5 5
+        	printf("%d ", CUTIL_INCREASE_ROLLING(num, 0, 5, 1));   // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
         }
         for(int i = 0; i < 50; i++){
-            printf("%d ", CUTIL_DECREASE_LIMIT(num, 1, 0));     // 5 4 3 2 1 0 0 0 0 0 0 0
+        	printf("%d ", CUTIL_DECREASE_ROLLING(num, 0, 5, 1));   // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
         }
-        
-        for(int i = 0; i < 50; i++){
-            printf("%d ", CUTIL_INCREASE_ROLL(num, 1, 0, 5));   // 1 2 3 4 5 0 1 2 3 4 5 0
-        }
-        for(int i = 0; i < 50; i++){
-            printf("%d ", CUTIL_DECREASE_ROLL(num, 1, 0, 5));   // 5 4 3 2 1 0 5 4 3 2 1 0
-        }
+        cutil::number::increaseRolling(num, 0, 5, 1);  // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+        cutil::number::increaseRolling(num, 0, 5);     // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+        cutil::number::decreaseRolling(num, 0, 5, 1);  // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+        cutil::number::decreaseRolling(num, 0, 5);     // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
         
         int8_t num = -125;
         for(int i = 0; i < 30; i++){
-            CUTIL_DECREASE(num, 1u);
-            printf("%d ", num); // -> -126 -127 -128 -128 -128 -128
+        	CUTIL_DECREASE_PREVENT_OVERFLOWING(num, 1u);
+        	printf("%d ", num); // prevent overflowing: -126 -127 -128 -128 -128 -128
         }
+        bool isOverflowed  = cutil::number::increasePreventOverflowing(num, 1); // prevent overflowing
+        bool isOverflowed2 = cutil::number::increasePreventOverflowing(num);    // equivelent
         num = 124;
         for(int i = 0; i < 30; i++){
-            CUTIL_INCREASE(num, 1u);
-            printf("%d ", num); // -> 125 126 127 127 127 127
+        	CUTIL_INCREASE_PREVENT_OVERFLOWING(num, 1u);
+        	printf("%d ", num); // prevent overflowing: 125 126 127 127 127 127
         }
+        bool isOverflowed3 = cutil::number::decreasePreventOverflowing(num, 1); // prevent overflowing
+        bool isOverflowed4 = cutil::number::decreasePreventOverflowing(num);    // equivelent
         ```
     
         - check if two floating-point numbers are equal (float, double, long double) by checking diff of two numbers is within epsilon limit.
@@ -389,6 +407,9 @@ Reference of Ansi Escape Codes:
         bool isEqual1 = CUTIL_EQUAL_F(a, b); // fabs(a-b) within (-epsilon, +epsilon), epsilon == FLT_EPSILON in <float.h>
         bool isEqual2 = CUTIL_EQUAL_D(c, d); // epsilon == DBL_EPSILON in <float.h>
         bool isEqual3 = CUTIL_EQUAL(c, d, 0.0001); // custom epsilon value
+        
+        bool isEqual4 = cutil::number::isEqual(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
+        bool isEqual4 = cutil::number::isEqual(c, d, 0.0001); // equivelent
         ```
     
     - input a comma `,` to argument of functional macro
@@ -622,28 +643,52 @@ Reference of Ansi Escape Codes:
     
         ```c++
         int var = 10;
-        if(CUTIL_EQUAL_OR(var, 5, 10)){
-            // equivalent to `if(var == 5 || var == 10)`
-            // equivalent to `if(! CUTIL_UNEQUAL_AND(var, 5, 10))`
+        if(CUTIL_EQUAL_ANY(var, 5, 10)){
+        	// equivalent to `if(var == 5 || var == 10)`
+        	// equivalent to `if(!CUTIL_UNEQUAL_ALL(var, 5, 10))`
         }
-        if(CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10)){
-            // equivalent to `if(var == 2 || var == 4 || var == 6 || var == 8 || var == 10)`
-            // equivalent to `if(! CUTIL_UNEQUAL_AND(var, 2, 4, 6, 8, 10))`
+        if(CUTIL_EQUAL_ANY(var, 2, 4, 6, 8, 10)){
+        	// equivalent to `if(var == 2 || var == 4 || var == 6 || var == 8 || var == 10)`
+        	// equivalent to `if(!CUTIL_UNEQUAL_ALL(var, 2, 4, 6, 8, 10))`
         }
-        if(CUTIL_UNEQUAL_AND(var, 5, 10)){
-            // equivalent to `if(var != 5 && var != 10)`
-            // equivalent to `if(! CUTIL_EQUAL_OR(var, 5, 10))`
+        if(CUTIL_EQUAL_ALL(var, 2, 4, 6, 8, 10)){
+        	// equivalent to `if(var == 2 && var == 4 && var == 6 && var == 8 && var == 10)`
+        	// equivalent to `if(CUTIL_EQUAL_MUTUALLY(var, 2, 4, 6, 8, 10))`
+        	// equivalent to `if(!CUTIL_UNEQUAL_ANY(var, 2, 4, 6, 8, 10))`
         }
-        if(CUTIL_UNEQUAL_AND(var, 2, 4, 6, 8, 10)){
-            // equivalent to `if(var != 2 && var != 4 && var != 6 && var != 8 && var != 10)`
-            // equivalent to `if(! CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10))`
-        }
+        bool anyEquals = cutil::equalAny(var, 2, 4, 6, 8, 10); // C++
+        bool allEquals = cutil::equalAll(var, 2, 4, 6, 8, 10); // C++
         
+        //* WARNING: you can't compare some return value of functions like `getchar()`
+        // if you use `if(CUTIL_EQUAL_ANY(getchar(), 'a', 'b'))`
+        // it will expand as `if(getchar() == 'a' || getchar() == 'b')`
+        
+        //*-------------------------------------------
+        if(CUTIL_UNEQUAL_ALL(var, 5, 10)){
+        	// equivalent to `if(var != 5 && var != 10)`
+        	// equivalent to `if(! CUTIL_EQUAL_ANY(var, 5, 10))`
+        }
+        if(CUTIL_UNEQUAL_ALL(var, 2, 4, 6, 8, 10)){
+        	// equivalent to `if(var != 2 && var != 4 && var != 6 && var != 8 && var != 10)`
+        	// equivalent to `if(! CUTIL_EQUAL_ANY(var, 2, 4, 6, 8, 10))`
+        }
+        if(CUTIL_UNEQUAL_ANY(var, 2, 4, 6, 8, 10)){
+        	// equivalent to `if(var != 2 || var != 4 || var != 6 || var != 8 || var != 10)`
+        	// equivalent to `if(! CUTIL_EQUAL_ALL(var, 2, 4, 6, 8, 10))`
+        }
+        bool allUnequals = cutil::unequalAll(var, 2, 4, 6, 8, 10); // C++
+        bool anyUnequals = cutil::unequalAny(var, 2, 4, 6, 8, 10); // C++
+        
+        //* WARNING: you can't compare some return value of functions like `getchar()`
+        // if you use `if(CUTIL_UNEQUAL_ALL(getchar(), 'a', 'b'))`
+        // it will expand as `if(getchar() != 'a' && getchar() != 'b')`
         ```
     
     - get if variables in parameters **mutually different**
     
         > **WARNING**: you can't compare some return value of functions like `getchar()`, or `++` `--` operators.
+        >
+        > if params are too more, this is not efficient, pls use map or hashmap.
     
         ```c++
         if(CUTIL_UNEQUAL_ALL(a1, a2, a3, a4)){ // is `a1`, `a2`, `a3`, `a4` mutually different?
@@ -658,6 +703,28 @@ Reference of Ansi Escape Codes:
             // && ((a3) != (a4) && (a3) != (a5))
             // && ((a4) != (a5))   )
         }
+        
+        //*----------------------------------------------
+        if(CUTIL_UNEQUAL_MUTUALLY(a1, a2, a3, a4)){ // is `a1`, `a2`, `a3`, `a4` mutually different?
+        	// (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4))
+        	// && ((a2) != (a3) && (a2) != (a4))
+        	// && ((a3) != (a4))   )
+        }
+        
+        if(CUTIL_UNEQUAL_MUTUALLY(a1, a2, a3, a4, a5)){
+        	// (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4) && (a1) != (a5))
+        	// && ((a2) != (a3) && (a2) != (a4) && (a2) != (a5))
+        	// && ((a3) != (a4) && (a3) != (a5))
+        	// && ((a4) != (a5))   )
+        }
+        
+        if(CUTIL_EQUAL_MUTUALLY(a1, a2, a3, a4, a5)){
+        	// ((a1) == (a2) && (a1) == (a3) && (a1) == (a4) && (a1) == (a5))
+        	// equivalent to `if(CUTIL_EQUAL_ALL(a1, a2, a3, a4, a5))`
+        }
+        
+        bool isMutuallyDifferent = cutil::unequalMutually(a1, a2, a3, a4, a5); // C++
+        bool isMutuallyEqual     = cutil::equalMutually(a1, a2, a3, a4, a5);   // C++
         ```
     
     - Implement function overloading based on the number of parameters and the trailing digit by token concatenation.
@@ -895,25 +962,34 @@ Reference of Ansi Escape Codes:
     - **Power and Factorial for integer variables**
     
       > std::pow(base, exp) in `<cmath>` is for float/double, not for integer.
-    
+      >
+      > the second parameter `exp` must be a constexpr integer value up to 25.
+      
       ```c
       int ret = CUTIL_INTPOW(2, 3); 	// 2^3 = 8; generates `(2 * 2 * 2)`; arg `exp` must be an constexpr.
       ret = CUTIL_INTPOW(ret, 2); 	// 8^2 = 64; generates `(ret * ret)`
+      //ret = CUTIL_INTPOW(ret, ret); // ERROR: `exp` must be a constexpr value
+      
+      int ret = CUTIL_INTPOW_3(2);   // 2^3 = 8
       ```
-    
+      
       C++ versions (template functions):
-    
+      
       ```c++
       int ret;
       
-      ret = cutil::intPow(2, 3); 		// 2^3 = 8
-      ret = cutil::intPow<3>(2); 		// 2^3 = 8
+      ret = cutil::intPow(2, 3); 		// 2^3 = 8, >=C++14
+      ret = cutil::intPow<3>(2); 		// 2^3 = 8, >=C++17
+      size_t ret2 = cutil::intPow<int, size_t>(2, 3); // return as size_t
+      size_t ret3 = cutil::intPow<3, int, size_t>(2); // return as size_t
       
-      ret = cutil::factorial(3); 		// 3! = 6
-      ret = cutil::factorial<3>(); 	// 3! = 6
+      ret = cutil::factorial(3); 		// 3! = 6, >=C++14
+      ret = cutil::factorial<3>(); 	// 3! = 6, >=C++17
+      size_t ret4 = cutil::factorial<int, size_t>(3); // return as size_t
+      size_t ret5 = cutil::factorial<3, size_t>();    // return as size_t
       
       ```
-    
+      
       
 
 

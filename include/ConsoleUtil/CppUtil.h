@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		9 DEC 2024
+  Updated:		1 JAN 2025
   License:		MIT License
 * You can include this header in header files.
 */
@@ -11,12 +11,6 @@
 
 //* warning: do not use macros with name starting with underscore `_` externally.
 
-
-
-//* ==== Environment Check, `> C99/C++98` with `##__VA_ARGS__` extension (available in MSVC(>VS2015 U3)/GCC/Clang)
-#if (!defined(__cplusplus)) && (__STDC_VERSION__ < 199901L || (!defined(__STDC_VERSION__)))
-	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
-#endif
 
 
 //* get C++ language standard version
@@ -29,6 +23,24 @@
 		#define CUTIL_CPP_LANG			__cplusplus // for GCC, Clang (also MSVC with the copiler argument `/Zc:__cplusplus`)
 	#endif // _MSVC_LANG
 #endif // __cplusplus
+#if (CUTIL_CPP_LANG >= 199711L) // >=C++98
+	#define CUTIL_CPP98_SUPPORTED	1
+#endif
+#if (CUTIL_CPP_LANG >= 201103L) // >=C++11
+	#define CUTIL_CPP11_SUPPORTED	1
+#endif
+#if (CUTIL_CPP_LANG >= 201402L) // >=C++14
+	#define CUTIL_CPP14_SUPPORTED	1
+#endif
+#if (CUTIL_CPP_LANG >= 201703L) // >=C++17
+	#define CUTIL_CPP17_SUPPORTED	1
+#endif
+#if (CUTIL_CPP_LANG >= 202002L) // >=C++20
+	#define CUTIL_CPP20_SUPPORTED	1
+#endif
+#if (CUTIL_CPP_LANG >= 202302L) // >=C++23
+	#define CUTIL_CPP23_SUPPORTED	1
+#endif
 /* example:
 	#if CUTIL_CPP_LANG >= 199711L	// C++98
 	#if CUTIL_CPP_LANG >= 201103L	// C++11
@@ -47,6 +59,21 @@
 		#define CUTIL_C_LANG	198912L
 	#endif
 #endif //. ! __cplusplus
+#if (CUTIL_C_LANG >= 198912L) // >=C89
+	#define CUTIL_C89_SUPPORTED	1
+#endif
+#if (CUTIL_C_LANG >= 199901L) // >=C99
+	#define CUTIL_C99_SUPPORTED	1
+#endif
+#if (CUTIL_C_LANG >= 201112L) // >=C11
+	#define CUTIL_C11_SUPPORTED	1
+#endif
+#if (CUTIL_C_LANG >= 201710L) // >=C17
+	#define CUTIL_C17_SUPPORTED	1
+#endif
+#if (CUTIL_C_LANG >= 202311L) // >=C23
+	#define CUTIL_C23_SUPPORTED	1
+#endif
 /* example:
 	#if CUTIL_C_LANG >= 198912L	// C89
 	#if CUTIL_C_LANG >= 199901L	// C99
@@ -56,18 +83,35 @@
 */
 
 
+//* ==== Environment Check, `> C99/C++11` with `##__VA_ARGS__` extension (available in MSVC(>VS2015 U3)/GCC/Clang)
+#if (!defined(__cplusplus)) && !defined(CUTIL_C99_SUPPORTED)
+	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
+#endif
+#if defined(__cplusplus) && !defined(CUTIL_CPP11_SUPPORTED)
+	#error This Header DO NOT SUPPORTS C++98! - >=C++11 Required.
+#endif
+
+//* constexpr void function
+#ifdef CUTIL_CPP17_SUPPORTED // C++17
+	#define CUTIL_CONSTEXPR_VOID	constexpr void
+#else
+	#define CUTIL_CONSTEXPR_VOID	void
+#endif
+
+
 //* include vital C headers
 #ifdef __cplusplus
 	#include <cstdio>
 	#include <cstdlib>
 	#include <cstdint>
 	#include <cfloat>
+	#include <limits> // for epsilon of float
 #else //. !__cplusplus
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include <stdint.h>	// uint32_t
 	#include <float.h>	// floating-point limits
-	#if (CUTIL_C_LANG >= 199901L) && (CUTIL_C_LANG < 202311L)
+	#if defined(CUTIL_C99_SUPPORTED) && !defined(CUTIL_C23_SUPPORTED)
 		#include <stdbool.h> // bool support since C99, before C23 (became keyword)
 	#endif
 #endif // __cplusplus
@@ -77,13 +121,9 @@
 #define CUTIL_NAMESPACE_NAME		cutil
 // #define CUTIL_NAMESPACE_SHORTER		cu
 
-// #ifdef __cplusplus
-// 	#define CUTIL_NAMESPACE_BEGIN		namespace CUTIL_NAMESPACE_NAME {
-// 	#define CUTIL_NAMESPACE_END			}
-// #else //. !__cplusplus
-// 	#define CUTIL_NAMESPACE_BEGIN
-// 	#define CUTIL_NAMESPACE_END
-// #endif // __cplusplus
+#ifdef __cplusplus
+namespace CUTIL_NAMESPACE_NAME {
+#endif // __cplusplus
 
 
 
@@ -115,11 +155,11 @@
 
 //* get decayed type of variable, only for GNU C, C23, C++11
 #ifndef __cplusplus // C
-	#if defined(__GNUC__) || (CUTIL_C_LANG >= 202311L)
+	#if defined(__GNUC__) || defined(CUTIL_C23_SUPPORTED)
 		#define CUTIL_TYPEOF(_VAR)	typeof(_VAR)	// only for GNU C, and C23.
 	#endif
-#else //. ! __cplusplus		// C++11
-	#if CUTIL_CPP_LANG >= 201103L 	//* >= C++11
+#else // C++		// C++11
+	#ifdef CUTIL_CPP11_SUPPORTED 	//* >= C++11
 		#define CUTIL_TYPEOF(_VAR)	std::decay<decltype(_VAR)>::type
 		// int& -> int; const int -> int; const int* const -> const int*; int[] -> int*;
 	#endif
@@ -297,135 +337,282 @@ Usage Example:
 */
 
 
-//* to generate the code like `(var == 1 || var == 2 || var == 3 || ...)`, up to 25 compared params
-#define CUTIL_EQUAL_OR(_var, ...) 			(CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_EQUAL_OR_, __VA_ARGS__)(_var, __VA_ARGS__)))
-	// The following macro definitions are private, DO NOT call them EXTERNALLY.
-#define _CUTIL_EQUAL_OR_1(_var, _1) 		(_var) == (_1)
-#define _CUTIL_EQUAL_OR_2(_var, _1, _2) 	(_var) == (_1) || _CUTIL_EQUAL_OR_1(_var, _2)
-#define _CUTIL_EQUAL_OR_3(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_2(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_4(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_3(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_5(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_4(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_6(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_5(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_7(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_6(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_8(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_7(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_9(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_8(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_10(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_9(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_11(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_10(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_12(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_11(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_13(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_12(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_14(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_13(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_15(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_14(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_16(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_15(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_17(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_16(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_18(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_17(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_19(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_18(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_20(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_19(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_21(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_20(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_22(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_21(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_23(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_22(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_24(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_23(_var, __VA_ARGS__))
-#define _CUTIL_EQUAL_OR_25(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_OR_24(_var, __VA_ARGS__)) // recurse upwards
-/* Instruction:
-	int var = 10;
-	if(CUTIL_EQUAL_OR(var, 5, 10)){
-		// equivalent to `if(var == 5 || var == 10)`
-		// equivalent to `if(! CUTIL_UNEQUAL_AND(var, 5, 10))`
-	}
-	if(CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10)){
-		// equivalent to `if(var == 2 || var == 4 || var == 6 || var == 8 || var == 10)`
-		// equivalent to `if(! CUTIL_UNEQUAL_AND(var, 2, 4, 6, 8, 10))`
-	}
-	//* WARNING: you can't compare some return value of functions like `getchar()`
-	// if you use `if(CUTIL_EQUAL_OR(getchar(), 'a', 'b'))`
-	// it will expand as `if(getchar() == 'a' || getchar() == 'b')`
-*/
+//* BOOL statements
 
+//* to generate the code like `(var == 1 || var == 2 || var == 3 || ...)`, up to 25 compared params
+#define CUTIL_EQUAL_ANY(_var, ...) 			(CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_EQUAL_ANY_, __VA_ARGS__)(_var, __VA_ARGS__)))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_EQUAL_ANY_1(_var, _1) 		(_var) == (_1)
+#define _CUTIL_EQUAL_ANY_2(_var, _1, _2) 	(_var) == (_1) || _CUTIL_EQUAL_ANY_1(_var, _2)
+#define _CUTIL_EQUAL_ANY_3(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_2(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_4(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_3(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_5(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_4(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_6(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_5(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_7(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_6(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_8(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_7(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_9(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_8(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_10(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_9(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_11(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_10(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_12(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_11(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_13(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_12(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_14(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_13(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_15(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_14(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_16(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_15(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_17(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_16(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_18(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_17(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_19(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_18(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_20(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_19(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_21(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_20(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_22(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_21(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_23(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_22(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_24(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_23(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ANY_25(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) || _CUTIL_EQUAL_ANY_24(_var, __VA_ARGS__)) // recurse upwards
+
+//* to generate the code like `(var == 1 && var == 2 && var == 3 && ...)`, up to 25 compared params
+#define CUTIL_EQUAL_ALL(_var, ...) 			(CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_EQUAL_ALL_, __VA_ARGS__)(_var, __VA_ARGS__)))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_EQUAL_ALL_1(_var, _1) 		(_var) == (_1)
+#define _CUTIL_EQUAL_ALL_2(_var, _1, _2) 	(_var) == (_1) && _CUTIL_EQUAL_ALL_1(_var, _2)
+#define _CUTIL_EQUAL_ALL_3(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_2(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_4(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_3(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_5(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_4(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_6(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_5(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_7(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_6(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_8(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_7(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_9(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_8(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_10(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_9(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_11(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_10(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_12(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_11(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_13(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_12(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_14(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_13(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_15(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_14(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_16(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_15(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_17(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_16(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_18(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_17(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_19(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_18(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_20(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_19(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_21(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_20(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_22(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_21(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_23(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_22(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_24(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_23(_var, __VA_ARGS__))
+#define _CUTIL_EQUAL_ALL_25(_var, _1, ...) 	CUTIL_EXPAND((_var) == (_1) && _CUTIL_EQUAL_ALL_24(_var, __VA_ARGS__)) // recurse upwards
+
+//* to generate the code like `(var != 1 || var != 2 || var != 3 || ...)`, up to 25 compared params
+#define CUTIL_UNEQUAL_ANY(_var, ...) 		  (CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_UNEQUAL_ANY_, __VA_ARGS__)(_var, __VA_ARGS__)))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_UNEQUAL_ANY_1(_var, _1) 		  (_var) != (_1)
+#define _CUTIL_UNEQUAL_ANY_2(_var, _1, _2) 	  (_var) != (_1) || _CUTIL_UNEQUAL_ANY_1(_var, _2)
+#define _CUTIL_UNEQUAL_ANY_3(_var, _1, ...)   CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_2(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_4(_var, _1, ...)   CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_3(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_5(_var, _1, ...)   CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_4(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_6(_var, _1, ...)   CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_5(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_7(_var, _1, ...)   CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_6(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_8(_var, _1, ...)   CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_7(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_9(_var, _1, ...)   CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_8(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_10(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_9(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_11(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_10(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_12(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_11(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_13(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_12(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_14(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_13(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_15(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_14(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_16(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_15(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_17(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_16(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_18(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_17(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_19(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_18(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_20(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_19(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_21(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_20(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_22(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_21(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_23(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_22(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_24(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_23(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ANY_25(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) || _CUTIL_UNEQUAL_ANY_24(_var, __VA_ARGS__)) // recurse upwards
 
 //* to generate the code like `(var != 1 && var != 2 && var != 3 && ...)`, up to 25 compared params
-#define CUTIL_UNEQUAL_AND(_var, ...) 			(CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_UNEQUAL_AND_, __VA_ARGS__)(_var, __VA_ARGS__)))
+#define CUTIL_UNEQUAL_ALL(_var, ...) 		  (CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_UNEQUAL_ALL_, __VA_ARGS__)(_var, __VA_ARGS__)))
 	// The following macro definitions are private, DO NOT call them EXTERNALLY.
-#define _CUTIL_UNEQUAL_AND_1(_var, _1) 			(_var) != (_1)
-#define _CUTIL_UNEQUAL_AND_2(_var, _1, _2) 		(_var) != (_1) && _CUTIL_UNEQUAL_AND_1(_var, _2)
-#define _CUTIL_UNEQUAL_AND_3(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_2(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_4(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_3(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_5(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_4(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_6(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_5(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_7(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_6(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_8(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_7(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_9(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_8(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_10(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_9(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_11(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_10(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_12(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_11(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_13(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_12(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_14(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_13(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_15(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_14(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_16(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_15(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_17(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_16(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_18(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_17(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_19(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_18(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_20(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_19(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_21(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_20(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_22(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_21(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_23(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_22(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_24(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_23(_var, __VA_ARGS__))
-#define _CUTIL_UNEQUAL_AND_25(_var, _1, ...) 	CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_AND_24(_var, __VA_ARGS__)) // recurse upwards
+#define _CUTIL_UNEQUAL_ALL_1(_var, _1) 		  (_var) != (_1)
+#define _CUTIL_UNEQUAL_ALL_2(_var, _1, _2) 	  (_var) != (_1) && _CUTIL_UNEQUAL_ALL_1(_var, _2)
+#define _CUTIL_UNEQUAL_ALL_3(_var, _1, ...)	  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_2(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_4(_var, _1, ...)	  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_3(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_5(_var, _1, ...)	  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_4(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_6(_var, _1, ...)	  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_5(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_7(_var, _1, ...)	  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_6(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_8(_var, _1, ...)	  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_7(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_9(_var, _1, ...)	  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_8(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_10(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_9(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_11(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_10(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_12(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_11(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_13(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_12(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_14(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_13(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_15(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_14(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_16(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_15(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_17(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_16(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_18(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_17(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_19(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_18(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_20(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_19(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_21(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_20(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_22(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_21(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_23(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_22(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_24(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_23(_var, __VA_ARGS__))
+#define _CUTIL_UNEQUAL_ALL_25(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_24(_var, __VA_ARGS__)) // recurse upwards
+
+//* generate codes for checkingif all of the params are mutually equal, up to 25 params
+#define CUTIL_EQUAL_MUTUALLY(...)			CUTIL_EXPAND(CUTIL_EQUAL_ALL(__VA_ARGS__))
+
+//* generate codes for checking if all of the params are mutually nonequal, up to 25 params
+	// CUTIL_UNEQUAL_MUTUALLY(a1, a2, a3, a4)
+	//   -> (a1 != a2) && (a1 != a3) && (a1 != a4) && (a2 != a3) && (a2 != a4) && (a3 != a4)
+#define CUTIL_UNEQUAL_MUTUALLY(...)			CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_UNEQUAL_MUTUALLY_, CUTIL_VA_CNT(__VA_ARGS__))(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_2(a1, a2)		CUTIL_UNEQUAL_ALL(a1, a2)
+#define _CUTIL_UNEQUAL_MUTUALLY_3(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_2(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_4(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_3(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_5(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_4(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_6(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_5(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_7(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_6(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_8(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_7(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_9(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_8(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_10(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_9(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_11(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_10(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_12(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_11(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_13(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_12(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_14(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_13(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_15(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_14(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_16(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_15(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_17(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_16(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_18(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_17(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_19(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_18(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_20(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_19(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_21(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_20(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_22(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_21(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_23(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_22(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_24(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_23(__VA_ARGS__))
+#define _CUTIL_UNEQUAL_MUTUALLY_25(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_24(__VA_ARGS__)) // recurse upwards
+
+#ifdef CUTIL_CPP11_SUPPORTED
+	template<typename T, typename Arg>
+	inline bool equalAny(const T& compared, const Arg& a1) { // end of recursion
+		return (compared == a1);
+	}
+	template<typename T, typename Arg>
+	inline bool equalAll(const T& compared, const Arg& a1) { // end of recursion
+		return (compared == a1);
+	}
+	template<typename T, typename Arg>
+	inline bool unequalAny(const T& compared, const Arg& a1) { // end of recursion
+		return (compared != a1);
+	}
+	template<typename T, typename Arg>
+	inline bool unequalAll(const T& compared, const Arg& a1) { // end of recursion
+		return (compared != a1);
+	}
+	template<typename T, typename Arg>
+	inline bool unequalMutually(const T& a1, const Arg& a2) { // end of recursion
+		return (a1 != a2);
+	}
+	
+	//* bool statement: `(compared == arg1 || compared == arg2 || compared == arg3 || ...)`
+	//  if 1st param `compared` is equal to ANY of the following arguments, return `true`
+	template<typename T, typename Arg1, typename... ArgElse>
+	inline bool equalAny(const T& compared, const Arg1& a1, const ArgElse&... a) {
+		return (compared == a1) || equalAny(compared, a...);
+	}
+	
+	//* bool statement: `(compared == arg1 && compared == arg2 && compared == arg3 && ...)`
+	//  if 1st param `compared` is equal to ALL of the following arguments, return `true`
+	template<typename T, typename Arg1, typename... ArgElse>
+	inline bool equalAll(const T& compared, const Arg1& a1, const ArgElse&... a) {
+		return ((compared == a1) && equalAll(compared, a...));
+	}
+	
+	//* bool statement: `(compared != arg1 || compared != arg2 || compared != arg3 || ...)`
+	//  if 1st param `compared` is NOT equal to Any of the following arguments, return `true`
+	template<typename T, typename Arg1, typename... ArgElse>
+	inline bool unequalAny(const T& compared, const Arg1& a1, const ArgElse&... a) {
+		return ((compared != a1) || unequalAny(compared, a...));
+	}
+	
+	//* bool statement: `(compared != arg1 && compared != arg2 && compared != arg3 && ...)`
+	//  if 1st param `compared` is NOT equal to ALL of the following arguments, return `true`
+	template<typename T, typename Arg1, typename... ArgElse>
+	inline bool unequalAll(const T& compared, const Arg1& a1, const ArgElse&... a) {
+		return ((compared != a1) && unequalAll(compared, a...));
+	}
+	
+	//* check if all of the variables are mutually nonequal, not recommanded for large amount of arguments
+	// if you want to compare more arguments, pls use `std::set` or `std::unordered_set` (hashset)
+	template<typename T, typename Arg1, typename... ArgElse>
+	inline bool unequalMutually(const T& a1, const Arg1& a2, const ArgElse&... a) {
+		return (unequalAll(a1, a2, a...) && unequalAll(a2, a...));
+	}
+	
+	//* check if all of the variables are mutually equal
+	template<typename T, typename... Args>
+	inline bool equalMutually(const T& a, const Args&... args) {
+		return equalAll(a, args...);
+	}
+#endif // C++11
 /* Instruction:
 	int var = 10;
-	if(CUTIL_UNEQUAL_AND(var, 5, 10)){
-		// equivalent to `if(var != 5 && var != 10)`
-		// equivalent to `if(! CUTIL_EQUAL_OR(var, 5, 10))`
+	if(CUTIL_EQUAL_ANY(var, 5, 10)){
+		// equivalent to `if(var == 5 || var == 10)`
+		// equivalent to `if(!CUTIL_UNEQUAL_ALL(var, 5, 10))`
 	}
-	if(CUTIL_UNEQUAL_AND(var, 2, 4, 6, 8, 10)){
-		// equivalent to `if(var != 2 && var != 4 && var != 6 && var != 8 && var != 10)`
-		// equivalent to `if(! CUTIL_EQUAL_OR(var, 2, 4, 6, 8, 10))`
+	if(CUTIL_EQUAL_ANY(var, 2, 4, 6, 8, 10)){
+		// equivalent to `if(var == 2 || var == 4 || var == 6 || var == 8 || var == 10)`
+		// equivalent to `if(!CUTIL_UNEQUAL_ALL(var, 2, 4, 6, 8, 10))`
 	}
+	if(CUTIL_EQUAL_ALL(var, 2, 4, 6, 8, 10)){
+		// equivalent to `if(var == 2 && var == 4 && var == 6 && var == 8 && var == 10)`
+		// equivalent to `if(CUTIL_EQUAL_MUTUALLY(var, 2, 4, 6, 8, 10))`
+		// equivalent to `if(!CUTIL_UNEQUAL_ANY(var, 2, 4, 6, 8, 10))`
+	}
+	bool anyEquals = cutil::equalAny(var, 2, 4, 6, 8, 10); // C++
+	bool allEquals = cutil::equalAll(var, 2, 4, 6, 8, 10); // C++
+	
 	//* WARNING: you can't compare some return value of functions like `getchar()`
-	// if you use `if(CUTIL_UNEQUAL_AND(getchar(), 'a', 'b'))`
+	// if you use `if(CUTIL_EQUAL_ANY(getchar(), 'a', 'b'))`
+	// it will expand as `if(getchar() == 'a' || getchar() == 'b')`
+	
+	//*-------------------------------------------
+	if(CUTIL_UNEQUAL_ALL(var, 5, 10)){
+		// equivalent to `if(var != 5 && var != 10)`
+		// equivalent to `if(! CUTIL_EQUAL_ANY(var, 5, 10))`
+	}
+	if(CUTIL_UNEQUAL_ALL(var, 2, 4, 6, 8, 10)){
+		// equivalent to `if(var != 2 && var != 4 && var != 6 && var != 8 && var != 10)`
+		// equivalent to `if(! CUTIL_EQUAL_ANY(var, 2, 4, 6, 8, 10))`
+	}
+	if(CUTIL_UNEQUAL_ANY(var, 2, 4, 6, 8, 10)){
+		// equivalent to `if(var != 2 || var != 4 || var != 6 || var != 8 || var != 10)`
+		// equivalent to `if(! CUTIL_EQUAL_ALL(var, 2, 4, 6, 8, 10))`
+	}
+	bool allUnequals = cutil::unequalAll(var, 2, 4, 6, 8, 10); // C++
+	bool anyUnequals = cutil::unequalAny(var, 2, 4, 6, 8, 10); // C++
+	
+	//* WARNING: you can't compare some return value of functions like `getchar()`
+	// if you use `if(CUTIL_UNEQUAL_ALL(getchar(), 'a', 'b'))`
 	// it will expand as `if(getchar() != 'a' && getchar() != 'b')`
-*/
-
-
-//* generate codes for check if all of the variables are mutually nonequal, up to 25 params
-	// CUTIL_UNEQUAL_ALL(a1, a2, a3, a4)
-	//   -> (a1 != a2) && (a1 != a3) && (a1 != a4) && (a2 != a3) && (a2 != a4) && (a3 != a4)
-#define CUTIL_UNEQUAL_ALL(...)			CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_UNEQUAL_ALL_, CUTIL_VA_CNT(__VA_ARGS__))(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_2(a1, a2)	CUTIL_UNEQUAL_AND(a1, a2)
-#define _CUTIL_UNEQUAL_ALL_3(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_2(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_4(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_3(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_5(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_4(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_6(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_5(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_7(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_6(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_8(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_7(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_9(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_8(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_10(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_9(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_11(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_10(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_12(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_11(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_13(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_12(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_14(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_13(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_15(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_14(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_16(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_15(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_17(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_16(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_18(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_17(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_19(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_18(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_20(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_19(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_21(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_20(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_22(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_21(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_23(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_22(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_24(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_23(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_ALL_25(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_AND(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_ALL_24(__VA_ARGS__)) // recurse upwards
-/* Example:
-	if(CUTIL_UNEQUAL_ALL(a1, a2, a3, a4)){ // is `a1`, `a2`, `a3`, `a4` mutually different?
+	
+	//*----------------------------------------------
+	if(CUTIL_UNEQUAL_MUTUALLY(a1, a2, a3, a4)){ // is `a1`, `a2`, `a3`, `a4` mutually different?
 		// (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4))
 		// && ((a2) != (a3) && (a2) != (a4))
 		// && ((a3) != (a4))   )
 	}
 	
-	if(CUTIL_UNEQUAL_ALL(a1, a2, a3, a4, a5)){
+	if(CUTIL_UNEQUAL_MUTUALLY(a1, a2, a3, a4, a5)){
 		// (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4) && (a1) != (a5))
 		// && ((a2) != (a3) && (a2) != (a4) && (a2) != (a5))
 		// && ((a3) != (a4) && (a3) != (a5))
 		// && ((a4) != (a5))   )
 	}
+	
+	if(CUTIL_EQUAL_MUTUALLY(a1, a2, a3, a4, a5)){
+		// ((a1) == (a2) && (a1) == (a3) && (a1) == (a4) && (a1) == (a5))
+		// equivalent to `if(CUTIL_EQUAL_ALL(a1, a2, a3, a4, a5))`
+	}
+	
+	bool isMutuallyDifferent = cutil::unequalMutually(a1, a2, a3, a4, a5); // C++
+	bool isMutuallyEqual     = cutil::equalMutually(a1, a2, a3, a4, a5);   // C++
 */
 
 
@@ -594,7 +781,7 @@ Usage Example:
 #define CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_GET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// if bit of index _BIT_IDX is 1, returns (1<<_BIT_IDX), NOT 1
 #define CUTIL_BIT_SET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_SET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// must use them in separate lines, returns nothing
 #define CUTIL_BIT_CLEAR_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_CLEAR_MASK(_NUM, 	(1u << (_BIT_IDX)))
-#define CUTIL_BIT_FLIP_IDX(_NUM, _BIT_IDX) 	CUTIL_BIT_FLIP_MASK(_NUM, (1u << (_BIT_IDX)))
+#define CUTIL_BIT_FLIP_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_FLIP_MASK(_NUM, (1u << (_BIT_IDX)))
 #define CUTIL_BIT_CHECK_IDX(_NUM, _BIT_IDX)		(CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX) ? 1 : 0) 	// returns 1 if bit of _BIT_IDX is 1, != CUTIL_BIT_GET_IDX()
 
 #if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
@@ -607,47 +794,134 @@ Usage Example:
 #define CUTIL_BIT_ROTATE_LEFT_SIZE(_BIT_SIZE, _BIT, _STEP)	((_BIT) = (((_BIT) << (_STEP)) | ((_BIT) >> ((_BIT_SIZE) - (_STEP)))), (_BIT))
 #define CUTIL_BIT_ROTATE_RIGHT_SIZE(_BIT_SIZE, _BIT, _STEP)	((_BIT) = (((_BIT) >> (_STEP)) | ((_BIT) << ((_BIT_SIZE) - (_STEP)))), (_BIT))
 
-#define CUTIL_BIT_ROTATE_LEFT_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_SIZE(8u * sizeof(_TYPE), _BIT, _STEP)
-#define CUTIL_BIT_ROTATE_RIGHT_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_SIZE(8u * sizeof(_TYPE), _BIT, _STEP)
-	// uses `typeof`, GNU C, C23, C++11 only
-#define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)					CUTIL_BIT_ROTATE_LEFT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
-#define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)					CUTIL_BIT_ROTATE_RIGHT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
+#define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_SIZE(8u * sizeof(_BIT), _BIT, _STEP)
+#define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_SIZE(8u * sizeof(_BIT), _BIT, _STEP)
+
+#ifdef CUTIL_CPP11_SUPPORTED
+namespace bit{
+	//* get bits filtered by mask, (num & mask)
+	template<typename T>
+	inline constexpr T getByMask(T num, T bit_mask) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return (num & bit_mask);
+	}
+	//* set bits specified by mask, (num |= mask)
+	template<typename T>
+	inline constexpr T setByMask(T num, T bit_mask) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return (num |= bit_mask);
+	}
+	//* clear bits specified by mask, (num &= ~mask)
+	template<typename T>
+	inline constexpr T clearByMask(T num, T bit_mask) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return (num &= (~bit_mask));
+	}
+	//* flip bits specified by mask, (num ^= mask)
+	template<typename T>
+	inline constexpr T filpByMask(T num, T bit_mask) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return (num ^= bit_mask);
+	}
+	//* check if bits filtered by mask are zero or not, (bool)(num & mask)
+	template<typename T>
+	inline constexpr bool checkByMask(T num, T bit_mask) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return static_cast<bool>(getByMask(num, bit_mask));
+	}
+	
+	//* get the bit filtered by nth bit, (num & (1<<bit_idx))
+	template<typename T>
+	inline constexpr T getByIndex(T num, size_t bit_idx) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return getByMask(num, (1u << bit_idx));
+	}
+	//* set the bit specified by nth bit, (num |= (1<<bit_idx))
+	template<typename T>
+	inline constexpr T setByIndex(T num, size_t bit_idx) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return setByMask(num, (1u << bit_idx));
+	}
+	//* clear the bit specified by nth bit, (num &= ~(1<<bit_idx))
+	template<typename T>
+	inline constexpr T clearByIndex(T num, size_t bit_idx) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return bit_clear_mask(num, (1u << bit_idx));
+	}
+	//* flip the bit specified by nth bit, (num ^= (1<<bit_idx))
+	template<typename T>
+	inline constexpr T flipByIndex(T num, size_t bit_idx) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return bit_flip_mask(num, (1u << bit_idx));
+	}
+	//* check if the bit filtered by nth bit is zero or not, (bool)(num & (1<<bit_idx))
+	template<typename T>
+	inline constexpr bool checkByIndex(T num, size_t bit_idx) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return static_cast<bool>(getByIndex(num, bit_idx));
+	}
+	
+	//* rotate bit left by step, (num = ((num << step) | (num >> (sizeof(T) - step))))
+	template<typename T>
+	inline constexpr T rotateLeft(T bit, const size_t step = 1) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return bit = ((bit << step) | (bit >> (8u * sizeof(T) - step)));
+	}
+	//* rotate bit right by step, (num = ((num >> step) | (num << (sizeof(T) - step))))
+	template<typename T>
+	inline constexpr T rotateRight(T bit, const size_t step = 1) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+		return bit = ((bit >> step) | (bit << (8u * sizeof(T) - step)));
+	}
+} // namespace
+#endif // __cplusplus
 /*
 	uint16_t num {0};
 	
 	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
-	CUTIL_BIT_SET_IDX(num, 0);      // equals to {num |=  (1u << 0));}
-	CUTIL_BIT_CLEAR_IDX(num, 2);    // equals to {num &= ~(1u << 2));}
+	CUTIL_BIT_SET_IDX(num, 0);    // equals to {num |=  (1u << 0));}
+	CUTIL_BIT_CLEAR_IDX(num, 2);  // equals to {num &= ~(1u << 2));}
 	CUTIL_BIT_FLIP_IDX(num, 3);   // equals to {num ^=  (1u << 3));}
+	num = cutil::bit::setByIndex(num, 1);
+	num = cutil::bit::clearByIndex(num, 2);
+	num = cutil::bit::flipByIndex(num, 3);
 
-
-	if(CUTIL_BIT_GET_IDX(num, 0) != 0){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
+	if(CUTIL_BIT_GET_IDX(num, 0) != 0x0000){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
 		printf("%x\n", num);
 	}
-	if(CUTIL_BIT_CHECK_IDX(num, 0) == 1){ // reading bit, if bit is 1, returns `1`, `!= CUTIL_BIT_GET_IDX()`
+	if(CUTIL_BIT_CHECK_IDX(num, 0) == true){ // reading bit, if bit is 1, returns `1`, `!= CUTIL_BIT_GET_IDX()`
 		printf("%x\n", num);
 	}
+	if(cutil::bit::getByIndex(num, 0) != 0x0000){
+		printf("%x\n", num);
+	}
+	if(cutil::bit::checkByIndex(num, 0) == true){
+		printf("%x\n", num);
+	}
+	
 
 	// operate bit by mask
 	CUTIL_BIT_SET_MASK(num, 0x2B00);    // equals to {num |=  0x2B00;}
 	CUTIL_BIT_CLEAR_MASK(num, 0x2B00);  // equals to {num &= ~0x2B00;}
-	CUTIL_BIT_FLIP_MASK(num, 0x1100); // equals to {num ^=  0x1100;}
-
-	if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0){ // returns (num & 0x0022)
+	CUTIL_BIT_FLIP_MASK(num, 0x1100);   // equals to {num ^=  0x1100;}
+	num = cutil::bit::setByMask(num, 0x2B00);
+	num = cutil::bit::clearByMask(num, 0x2B00);
+	num = cutil::bit::flipByMask(num, 0x1100);
+	
+	if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0x0000){ // returns (num & 0x0022)
+		printf("%x\n", num);
+	}
+	if(cutil::bit::getByMask(num, 0x0022) == true){
 		printf("%x\n", num);
 	}
 
 	// rotate bits. use them in a seperate line, and returns nothing
 	uint16_t var{0x1234};
-
-	CUTIL_BIT_ROTATE_LEFT_SIZE(8*sizeof(uint16_t), var, 1); // rotate bits of `var` by 1 bit step
-	CUTIL_BIT_ROTATE_RIGHT_SIZE(8*sizeof(uint16_t), var, 1);
-
-	CUTIL_BIT_ROTATE_LEFT_TYPE(std::decay<decltype(var)>::type, var, 1); // equivelent, also `typeof` for GNU C or C23
-	CUTIL_BIT_ROTATE_RIGHT_TYPE(std::decay<decltype(var)>::type, var, 1);
-
-	CUTIL_BIT_ROTATE_LEFT(var, 1); // equivelent, C++, GNU C, C23 only
+	CUTIL_BIT_ROTATE_LEFT(var, 1);
 	CUTIL_BIT_ROTATE_RIGHT(var, 1);
+	
+	var = cutil::bit::rotateLeft(var, 1);
+	var = cutil::bit::rotateRight(var, 1);
 */
 
 
@@ -655,12 +929,27 @@ Usage Example:
 //  use `std::bit_cast<T>()` in C++20
 #define CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR)	memcpy(&_OUT_PTR, &_IN_PTR, sizeof(_OUT_TYPE))
 #define CUTIL_BITWISE_MEMCPY(_OUT_TYPE, _OUT_PTR, _IN_PTR)	CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR) // alias
+// reinterpret_cast
 #define CUTIL_BITWISE_CAST_UNSAFE(_OUT_TYPE, _IN_PTR)		(* (volatile _OUT_TYPE*) (volatile void*) _IN_PTR)
+#ifdef CUTIL_CPP11_SUPPORTED
+	//* assign bitwise, (memcpy(&out, &in, sizeof(T)))
+	template<typename Out, typename In>
+	inline void bitwiseAssign(Out& out, const In& in) {
+		static_assert(std::is_trivially_copyable<Out>::value, "Out and In must be a trivially copyable type");
+		static_assert(std::is_trivially_copyable<In>::value, "In must be a trivially copyable type");
+		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
+		std::memcpy(&out, &in, sizeof(Out));
+	}
+#endif // __cplusplus
 /*
 	uint32_t i = 0x12345678;
 	float f;
 	CUTIL_BITWISE_MEMCPY(float, &f, &i); // assign `i` to `f` bitwise
-	f = CUTIL_BITWISE_CAST_UNSAFE(float, &f) // UB, unrecommended
+	f = CUTIL_BITWISE_CAST_UNSAFE(float, &f) // UB, unrecommended, similar as `reinterpret_cast<float&>(f)`
+	
+	cutil::bitwiseAssign(f, i) // i -> f, bitwise memcpy
+	f = reinterpret_cast<decltype(f)>(i);   // equivelent
+	// auto f = std::bit_cast<float>(i) // C++20
 */
 
 
@@ -677,6 +966,8 @@ Usage Example:
 	CUTIL_SWAP_TYPE(uint32_t, a, b); 	// equivelent, specify the type.
 	CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivelent, in GNU C or C23
 	CUTIL_SWAP_TYPE(std::decay<decltype(var)>::type, a, b); // equivelent in C++, but prefer to use `std::swap()`
+	
+	std::swap(a, b); // C++
 */
 
 
@@ -719,98 +1010,79 @@ Usage Example:
 #define CUTIL_IN_OPEN_RANGE(_VAR, _MIN, _MAX)	((((_VAR) > (_MIN)) && ((_VAR) < (_MAX))) ? 1 : 0)   // open range
 /*
 	int a = 35, b = 26, c = 19, d = 35;
-	
+
 	CUTIL_LIMIT(a, 20, 30);		// a: 35 -> 30
 	CUTIL_LIMIT(b, 20, 30);		// b: 26
 	CUTIL_LIMIT(c, 20, 30);		// c: 19 -> 20
-	
+	cutil::limit(d, 20, 30);	// d: 30, only modify value
+
 	d = CUTIL_CLAMP(d, 20, 30);	// d: 35 -> 30, only returns value
 	d = std::clamp(d, 20, 30);  // C++17, equivalent to above
-	
+	d = cutil::number::clamp(d, 20, 30); // C++11, equivalent to above
+
 	printf("%d %d %d\n", a, b, c);
 	// output: 30 26 20
-	
+
 	printf("%d %d", CUTIL_IN_RANGE(a, 20, 40), CUTIL_IN_OPEN_RANGE(c, 20, 30));
 	// output: 1 0
+	bool ret = cutil::number::inRange(a, 20, 40);		         //  whether a is in [20, 40]
+	bool ret = cutil::number::inOpenRange(c, 20, 30);	         //  whether c is in (20, 30)
+	bool ret = cutil::number::inRange<true, true>(a, 20, 40);   //  whether a is in [20, 40], C++17
+	bool ret = cutil::number::inRnage<true, false>(a, 20, 40);  //  whether a is in [20, 40), C++17
+	bool ret = cutil::number::inRnage<false, false>(a, 20, 40); //  whether a is in [20, 40], C++17
 */
 
 
 //* increase or decrease the value of variable within the range [_min, _max]
-#define CUTIL_INCREASE_LIMIT(_var, _inc, _max)		((_var) < (_max) ? (_var) += (_inc) : (_var))
-#define CUTIL_DECREASE_LIMIT(_var, _inc, _min)		((_var) > (_min) ? (_var) -= (_inc) : (_var))
+#define CUTIL_INCREASE_UNDER_LIMIT(_var, _max, _inc)	((_var) < (_max) ? (_var) += (_inc) : (_var))
+#define CUTIL_DECREASE_ABOVE_LIMIT(_var, _min, _inc)	((_var) > (_min) ? (_var) -= (_inc) : (_var))
 
 //* increase or decrease the value, and prevent overflowing, only for GNU C, C23, C++11
-#define CUTIL_INCREASE(_var, _inc)					((_var) = (((CUTIL_TYPEOF(_var))((_var) + (_inc)) > (_var))) ? (CUTIL_TYPEOF(_var))((_var) + (_inc)) : (_var))
-#define CUTIL_DECREASE(_var, _inc)					((_var) = (((CUTIL_TYPEOF(_var))((_var) - (_inc)) < (_var))) ? (CUTIL_TYPEOF(_var))((_var) - (_inc)) : (_var))
+#define CUTIL_INCREASE_PREVENT_OVERFLOWING(_var, _inc)	((_var) = (((CUTIL_TYPEOF(_var))((_var) + (_inc)) > (_var))) ? (CUTIL_TYPEOF(_var))((_var) + (_inc)) : (_var))
+#define CUTIL_DECREASE_PREVENT_OVERFLOWING(_var, _inc)	((_var) = (((CUTIL_TYPEOF(_var))((_var) - (_inc)) < (_var))) ? (CUTIL_TYPEOF(_var))((_var) - (_inc)) : (_var))
 
 //* increase or decrease the value of variable, and rolling within the range [_min, _max]
-#define CUTIL_INCREASE_ROLL(_var, _inc, _min, _max)	((_var) < (_max) ? (_var) += (_inc) : (_var) = (_min))
-#define CUTIL_DECREASE_ROLL(_var, _inc, _min, _max)	((_var) > (_min) ? (_var) -= (_inc) : (_var) = (_max))
+#define CUTIL_INCREASE_ROLLING(_var, _min, _max, _inc)	((_var) < (_max) ? (_var) += (_inc) : (_var) = (_min))
+#define CUTIL_DECREASE_ROLLING(_var, _min, _max, _inc)	((_var) > (_min) ? (_var) -= (_inc) : (_var) = (_max))
 /*
 	int num = 0;
-	
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_INCREASE_LIMIT(num, 1, 5));     // 1 2 3 4 5 5 5 5 5 5 5 5
+		printf("%d ", CUTIL_INCREASE_UNDER_LIMIT(num, 5, 1));     // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
 	}
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_DECREASE_LIMIT(num, 1, 0));     // 5 4 3 2 1 0 0 0 0 0 0 0
+		printf("%d ", CUTIL_DECREASE_ABOVE_LIMIT(num, 0, 1));     // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
 	}
-	
+	cutil::number::increaseUnderLimit(num, 5, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::number::increaseUnderLimit(num, 5);    // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::number::decreaseAboveLimit(num, 0, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::number::decreaseAboveLimit(num, 0);    // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
+
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_INCREASE_ROLL(num, 1, 0, 5));   // 1 2 3 4 5 0 1 2 3 4 5 0
+		printf("%d ", CUTIL_INCREASE_ROLLING(num, 0, 5, 1));   // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
 	}
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_DECREASE_ROLL(num, 1, 0, 5));   // 5 4 3 2 1 0 5 4 3 2 1 0
+		printf("%d ", CUTIL_DECREASE_ROLLING(num, 0, 5, 1));   // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
 	}
-	
+	cutil::number::increaseRolling(num, 0, 5, 1);  // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+	cutil::number::increaseRolling(num, 0, 5);     // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+	cutil::number::decreaseRolling(num, 0, 5, 1);  // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+	cutil::number::decreaseRolling(num, 0, 5);     // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+
 	int8_t num = -125;
 	for(int i = 0; i < 30; i++){
-		CUTIL_DECREASE(num, 1u);
-		printf("%d ", num); // -> -126 -127 -128 -128 -128 -128
+		CUTIL_DECREASE_PREVENT_OVERFLOWING(num, 1u);
+		printf("%d ", num); // prevent overflowing: -126 -127 -128 -128 -128 -128
 	}
+	bool isOverflowed  = cutil::number::increasePreventOverflowing(num, 1); // prevent overflowing
+	bool isOverflowed2 = cutil::number::increasePreventOverflowing(num);    // equivelent
 	num = 124;
 	for(int i = 0; i < 30; i++){
-		CUTIL_INCREASE(num, 1u);
-		printf("%d ", num); // -> 125 126 127 127 127 127
+		CUTIL_INCREASE_PREVENT_OVERFLOWING(num, 1u);
+		printf("%d ", num); // prevent overflowing: 125 126 127 127 127 127
 	}
+	bool isOverflowed3 = cutil::number::decreasePreventOverflowing(num, 1); // prevent overflowing
+	bool isOverflowed4 = cutil::number::decreasePreventOverflowing(num);    // equivelent
 */
-
-
-//* get size of a C array
-// WARNING: if a C array is passed to a function, it will decay to a pointer, then this macro dose not work.
-#define CUTIL_ARRAY_SIZE(_arr)			(sizeof((_arr)) / sizeof((_arr[0])))
-
-
-//* C char conversion and assertion
-// this feature contains in `<ctype.h>`, so it's just an alternative.
-#define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
-#define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
-#define CUTIL_CHAR_IS_ALPHABET(_ch)		(CUTIL_CHAR_IS_UPPER(_ch) || CUTIL_CHAR_IS_LOWER(_ch))
-#define CUTIL_CHAR_GET_UPPER(_ch)		((char)(CUTIL_CHAR_IS_LOWER(_ch) ? ((_ch) - 0x20) : (_ch)))
-#define CUTIL_CHAR_GET_LOWER(_ch)		((char)(CUTIL_CHAR_IS_UPPER(_ch) ? ((_ch) + 0x20) : (_ch)))
-#define CUTIL_CHAR_SET_UPPER(_ch)		((_ch) = CUTIL_CHAR_GET_UPPER(_ch), (_ch))
-#define CUTIL_CHAR_SET_LOWER(_ch)		((_ch) = CUTIL_CHAR_GET_LOWER(_ch), (_ch))
-
-#define CUTIL_CHAR_IS_NUMBER(_ch)		((_ch) >= '0' && (_ch) <= '9')
-// #define CUTIL_CHAR_IS_DIGIT(_ch)		CUTIL_CHAR_IS_DEC(_ch)
-#define CUTIL_CHAR_IS_DEC(_ch)			CUTIL_CHAR_IS_NUMBER(_ch)
-#define CUTIL_CHAR_IS_HEX(_ch)			(CUTIL_CHAR_IS_NUMBER(_ch) || ((_ch) >= 'A' && (_ch) <= 'F') || ((_ch) >= 'a' && (_ch) <= 'f'))
-
-#define CUTIL_CHAR_IS_ALPHANUMERIC(_ch)	(CUTIL_CHAR_IS_ALPHABET(_ch) || CUTIL_CHAR_IS_NUMBER(_ch))
-#define CUTIL_CHAR_IS_PUNCT(_ch)		(((_ch) >= '!' && (_ch) <= '/') || ((_ch) >= ':' && (_ch) <= '@') || ((_ch) >= '[' && (_ch) <= '`') || ((_ch) >= '{' && (_ch) <= '~'))
-#define CUTIL_CHAR_IS_CONTROL(_ch)		((_ch) <= 0x1F && (_ch) >= 0x00)
-#define CUTIL_CHAR_IS_ASCII(_ch)		((_ch) >= 0x01 && (_ch) <= 0x7E)
-#define CUTIL_CHAR_IS_SYMBOL(_ch)		((_ch) >= 0x20 && (_ch) <= 0x7E)
-/*
-	#define TEST(_x)    fmt::println("{}: {}", _x, CUTIL_CHAR_IS_UPPER(_x))
-	CUTIL_SEQ_FOREACH(TEST, '`', 'a', 'b', 'z', '{', '0', '9', '@', 'A', 'B', 'Z', '[');
-	// fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
-	// fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
-	//  ...
-	// fmt::println("{}: {}", '[', CUTIL_CHAR_IS_UPPER('['));
-
-*/
-
 
 //* determine if two float/double numbers are regarded as equal (within epsilon)
 // 	<float.h> must be included
@@ -833,7 +1105,254 @@ Usage Example:
 	bool isEqual1 = CUTIL_EQUAL_F(a, b); // fabs(a-b) within (-epsilon, +epsilon), epsilon == FLT_EPSILON in <float.h>
 	bool isEqual2 = CUTIL_EQUAL_D(c, d); // epsilon == DBL_EPSILON in <float.h>
 	bool isEqual3 = CUTIL_EQUAL(c, d, 0.0001); // custom epsilon value
+	
+	bool isEqual4 = cutil::number::equal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
+	bool isEqual5 = cutil::number::isEqual(c, d, 0.0001); // equivelent
 */
+
+#ifdef CUTIL_CPP11_SUPPORTED //* >= C++11
+inline namespace number {
+	//* limit the numeric variable to the range [_MIN, _MAX], same as `std::clamp(var, min, max)` in C++17
+	template<typename T, typename R>
+	inline constexpr T clamp(T var, R min, R max) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		return (var < min) ? min : (var > max) ? max : var;
+	}
+	//* limit the numeric variable to the range [_MIN, _MAX], same as `var = std::clamp(var, min, max)` in C++17
+	template<typename T, typename R>
+	inline void limit(T& var, R min, R max) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if (var < min) var = min;
+		if (var > max) var = max;
+	}
+	
+	//* get if a numeric variable is within the range [_MIN, _MAX]
+	template<typename T, typename R>
+	inline constexpr bool inRange(T var, R min, R max) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		return (var >= min) && (var <= max);
+	}
+	//* get if a numeric variable is within the range (_MIN, _MAX)
+	template<typename T, typename R>
+	inline constexpr bool inOpenRange(T var, R min, R max) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		return (var > min) && (var < max);
+	}
+	
+#ifdef CUTIL_CPP17_SUPPORTED //* >= C++17
+	//* Comparison function to check if a value is within a specified range
+	template <bool LeftClosed, bool RightClosed, typename T>
+	inline constexpr bool inRange(T var, T min, T max) {
+		if constexpr (LeftClosed && RightClosed) {
+			return (var >= min) && (var <= max); // [min, max]
+		} else if constexpr (LeftClosed && !RightClosed) {
+			return (var >= min) && (var < max);  // [min, max)
+		} else if constexpr (!LeftClosed && RightClosed) {
+			return (var > min) && (var <= max);  // (min, max]
+		} else {
+			return (var > min) && (var < max);   // (min, max)
+		}
+	}
+#endif
+	//* increase the value of variable, but if the value exceeds the limit(>=), it will not be increased
+	template<typename T, typename L, typename I>
+	inline void increaseUnderLimit(T& var, L max, I inc) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var < max) var += inc;
+	}
+	template<typename T, typename L>
+	inline void increaseUnderLimit(T& var, L max){
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var < max) ++var;
+	}
+	
+	//* decrease the value of variable, but if the value is less than the limit(<=), it will not be decreased
+	template<typename T, typename L, typename I>
+	inline void decreaseAboveLimit(T& var, L min, I dec) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var > min) var -= dec;
+	}
+	template<typename T, typename L>
+	inline void decreaseAboveLimit(T& var, L min){
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var > min) --var;
+	}
+	
+	//* increase the value of variable, and rolling within the range [_MIN, _MAX]
+	template<typename T, typename R, typename I>
+	inline void increaseRoll(T& var, R min, R max, I inc) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var < max) var += inc;
+		else var = min;
+	}
+	template<typename T, typename R>
+	inline void increaseRoll(T& var, R min, R max) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var < max) var++;
+		else var = min;
+	}
+	
+	//* decrease the value of variable, and rolling within the range [_MIN, _MAX]
+	template<typename T, typename R, typename I>
+	inline void decreaseRoll(T& var, R min, R max, I dec) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var > min) var -= dec;
+		else var = max;
+	}
+	template<typename T, typename R>
+	inline void decreaseRoll(T& var, R min, R max) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		if(var > min) var--;
+		else var = max;
+	}
+	
+	//* increase the value of variable, and prevent overflowing,
+	// if it is near to be overflowed, it will not increased any more and return true.
+	template<typename T, typename I>
+	inline constexpr bool increasePreventOverflowing(T& var, I inc) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		return ((T)(var + inc) > var) ? (var += inc, false) : (true);
+	}
+	template<typename T>
+	inline constexpr bool increasePreventOverflowing(T& var) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		return ((T)(var + 1) > var) ? (var++, false) : (true);
+	}
+	//* decrease the value of variable, and prevent overflowing,
+	// if it is near to be overflowed, it will not decreased any more and return true.
+	template<typename T, typename I>
+	inline constexpr bool decreasePreventOverflowing(T& var, I dec) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		return ((T)(var - dec) < var) ? (var -= dec, false) : (true);
+	}
+	template<typename T>
+	inline constexpr bool decreasePreventOverflowing(T& var) {
+		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+		return ((T)(var - 1) < var) ? (var--, false) : (true);
+	}
+	
+	//* Compares two floating-point numbers for equality within a specified epsilon.
+	template<typename T>
+	inline constexpr bool isEqual(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) {
+		static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
+		return (std::abs(a - b) <= epsilon); // overloaded abs() for floating number in <cstdlib>
+	}
+	
+	
+} // namespace
+#endif // __cplusplus
+
+
+
+
+#ifdef CUTIL_CPP11_SUPPORTED //* >= C++11
+inline namespace memory {
+	inline constexpr uint8_t getWordLow(uint16_t word) {
+		return (uint8_t)(word & 0xFF);
+	}
+	inline constexpr uint8_t getWordHigh(uint16_t word) {
+		return (uint8_t)(word >> 8u);
+	}
+	inline void setWordLow(uint16_t& word, uint8_t val) {
+		word = ((word & 0xFF00) | val);
+	}
+	inline void setWordHigh(uint16_t& word, uint8_t val) {
+		word = ((word & 0x00FF) | ((uint16_t)val << 8u));
+	}
+	
+	//* get pointer (in specific type) which points to the address of specific variable
+	template<typename T, typename P = void*>
+	inline constexpr P getPtr(T& var) {
+		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
+		return static_cast<P>(&var);
+	}
+	
+	//* get value from the memory address in the specific type
+	template<typename T, typename P>
+	inline constexpr T getMem(P ptr) {
+		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
+		return *reinterpret_cast<T*>(ptr);
+	}
+	
+	//* set memory at the specific location in the specific type
+	template<typename T, typename P>
+	inline void setMem(P ptr, T val) {
+		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
+		*reinterpret_cast<T*>(ptr) = val;
+	}
+	
+	template<typename T>
+	inline T* memcpy(T* out, const T* in, size_t size) {
+		static_assert(std::is_trivially_copyable<T>::value, "T must be a trivially copyable type");
+		return std::memcpy(out, in, size);
+	}
+	template<typename T>
+	inline T* memmove(T* out, const T* in, size_t size) {
+		static_assert(std::is_trivially_copyable<T>::value, "T must be a trivially copyable type");
+		return std::memmove(out, in, size);
+	}
+	template<typename T>
+	inline T* memset(T& out, int value, size_t size) {
+		static_assert(std::is_trivially_copyable<T>::value, "T must be a trivially copyable type");
+		return std::memset(&out, value, size);
+	}
+	template <typename T>
+	inline int memcmp(const T* ptr1, const T* ptr2, size_t size) {
+		static_assert(std::is_trivially_copyable<T>::value, "T must be a trivially copyable type");
+		return std::memcmp(ptr1, ptr2, size);
+	}
+	
+	template<typename T>
+	inline T* memcpyByType(T* out, const T* in, size_t amount = 1) {
+		return memory::memcpy(out, in, sizeof(T) * amount);
+	}
+	template<typename T>
+	inline T* memmoveByType(T* out, const T* in, size_t amount = 1) {
+		return memory::memmove(out, in, sizeof(T) * amount);
+	}
+	template<typename T>
+	inline T* memsetByType(T& out, int value, size_t amount = 1) {
+		return memory::memset(&out, value, sizeof(T) * amount);
+	}
+	template<typename T>
+	inline int memcmpByType(const T* ptr1, const T* ptr2, size_t amount = 1) {
+		return memory::memcmp(ptr1, ptr2, sizeof(T) * amount);
+	}
+	
+	template<typename T>
+	inline void free(T*& ptr) {
+		if(ptr != nullptr){
+			std::free(ptr);
+			ptr = nullptr;
+		}
+	}
+	template<typename T>
+	inline void deletePtr(T*& p) {
+		if(p != nullptr){
+			delete p;
+			p = nullptr;
+		}
+	}
+	template<typename T>
+	inline void deleteArrayPtr(T*& p) {
+		if(p != nullptr){
+			delete[] p;
+			p = nullptr;
+		}
+	}
+
+	template<typename S, typename Field>
+	inline ptrdiff_t structFieldOffset(const Field& field) {
+		return reinterpret_cast<ptrdiff_t>(&(reinterpret_cast<S*>(0)->field));
+	}
+	
+} // namespace
+
+#endif // __cplusplus
+
+//* get size of a C array
+// WARNING: if a C array is passed to a function, it will decay to a pointer, then this macro dose not work.
+#define CUTIL_ARRAY_SIZE(_arr)			(sizeof((_arr)) / sizeof((_arr[0])))
 
 
 //* get high or low byte (uint8_t) of a word (uint16_t)
@@ -849,6 +1368,10 @@ Usage Example:
 	printf("%x %x \n", CUTIL_GET_WORD_HIGH(v), CUTIL_GET_WORD_LOW(v));	// -> 12 34
 	printf("%x %x \n", CUTIL_SET_WORD_HIGH(v, 0xFE), CUTIL_SET_WORD_LOW(v, 0xBA)); // -> FE BA
 	printf("%x \n", v);	// -> FEBA
+	
+	std::cout << cutil::memory::getWordHigh(0x1234); // -> 12
+	std::cout << cutil::memory::getWordLow(0x1234);  // -> 34
+	
 */
 
 
@@ -1042,6 +1565,40 @@ Usage Example:
 //* get if the expression is an ICE (integral constant expression)
 #define CUTIL_IS_ICE(_x)	(sizeof(int) == sizeof(*(1 ? ((void*)((_x) * 0l)) : (int*)1)))
 
+
+//* C char conversion and assertion
+// this feature contains in `<ctype.h>`, so it's just an alternative.
+#define CUTIL_CHAR_IS_UPPER(_ch)		((_ch) >= 'A' && (_ch) <= 'Z')
+#define CUTIL_CHAR_IS_LOWER(_ch)		((_ch) >= 'a' && (_ch) <= 'z')
+#define CUTIL_CHAR_IS_ALPHABET(_ch)		(CUTIL_CHAR_IS_UPPER(_ch) || CUTIL_CHAR_IS_LOWER(_ch))
+#define CUTIL_CHAR_GET_UPPER(_ch)		((char)(CUTIL_CHAR_IS_LOWER(_ch) ? ((_ch) - 0x20) : (_ch)))
+#define CUTIL_CHAR_GET_LOWER(_ch)		((char)(CUTIL_CHAR_IS_UPPER(_ch) ? ((_ch) + 0x20) : (_ch)))
+#define CUTIL_CHAR_SET_UPPER(_ch)		((_ch) = CUTIL_CHAR_GET_UPPER(_ch), (_ch))
+#define CUTIL_CHAR_SET_LOWER(_ch)		((_ch) = CUTIL_CHAR_GET_LOWER(_ch), (_ch))
+
+#define CUTIL_CHAR_IS_NUMBER(_ch)		((_ch) >= '0' && (_ch) <= '9')
+// #define CUTIL_CHAR_IS_DIGIT(_ch)		CUTIL_CHAR_IS_DEC(_ch)
+#define CUTIL_CHAR_IS_DEC(_ch)			CUTIL_CHAR_IS_NUMBER(_ch)
+#define CUTIL_CHAR_IS_HEX(_ch)			(CUTIL_CHAR_IS_NUMBER(_ch) || ((_ch) >= 'A' && (_ch) <= 'F') || ((_ch) >= 'a' && (_ch) <= 'f'))
+
+#define CUTIL_CHAR_IS_ALPHANUMERIC(_ch)	(CUTIL_CHAR_IS_ALPHABET(_ch) || CUTIL_CHAR_IS_NUMBER(_ch))
+#define CUTIL_CHAR_IS_PUNCT(_ch)		(((_ch) >= '!' && (_ch) <= '/') || ((_ch) >= ':' && (_ch) <= '@') || ((_ch) >= '[' && (_ch) <= '`') || ((_ch) >= '{' && (_ch) <= '~'))
+#define CUTIL_CHAR_IS_CONTROL(_ch)		((_ch) <= 0x1F && (_ch) >= 0x00)
+#define CUTIL_CHAR_IS_ASCII(_ch)		((_ch) >= 0x01 && (_ch) <= 0x7E)
+#define CUTIL_CHAR_IS_SYMBOL(_ch)		((_ch) >= 0x20 && (_ch) <= 0x7E)
+/*
+	#define TEST(_x)    fmt::println("{}: {}", _x, CUTIL_CHAR_IS_UPPER(_x))
+	CUTIL_SEQ_FOREACH(TEST, '`', 'a', 'b', 'z', '{', '0', '9', '@', 'A', 'B', 'Z', '[');
+	// fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+	// fmt::println("{}: {}", '`', CUTIL_CHAR_IS_UPPER('`'));
+	//  ...
+	// fmt::println("{}: {}", '[', CUTIL_CHAR_IS_UPPER('['));
+
+*/
+
+
+
+
 #pragma endregion C Utils
 
 
@@ -1051,16 +1608,13 @@ Usage Example:
 #ifdef __cplusplus
 
 //* delete a heap pointer, and set it nullptr. arg "p" must be a pointer inited by "new" or "new[]".
-#define CUTIL_DELETE(p)				do {delete   p; p = NULL;} while(0)
-#define CUTIL_DELETE_ARRAY(p)		do {delete[] p; p = NULL;} while(0)
+#define CUTIL_DELETE(p)				do {if(p != NULL){delete   p; p = NULL;}} while(0)
+#define CUTIL_DELETE_ARRAY(p)		do {if(p != NULL){delete[] p; p = NULL;}} while(0)
 	// keyword "nullptr" is unsupported in C++98
-namespace CUTIL_NAMESPACE_NAME{
-	template<typename T> void deletePtr(T*& p) {delete p; p = NULL;}
-	template<typename T> void deleteArrayPtr(T*& p) {delete[] p; p = NULL;}
-}
+
 
 //* set C++11 class constructor/moving/copying to disabled/default
-#if CUTIL_CPP_LANG >= 201103L 	//* >= C++11
+#ifdef CUTIL_CPP11_SUPPORTED
 	// Default Constructor(no params) and Destructor
 	#define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME) \
 		_CLASS_NAME() = default; \
@@ -1112,10 +1666,30 @@ namespace CUTIL_NAMESPACE_NAME{
 	#define CUTIL_CLASS_DEFAULT_FUNCTIONS(_CLASS_NAME)
 	
 #endif // >= C++11
-
+#ifdef CUTIL_CPP11_SUPPORTED //* >= C++11
+	class NonCopyable {
+		protected:
+			NonCopyable() = default;
+			~NonCopyable() = default;
+		private:
+			NonCopyable(const NonCopyable&) = delete;
+			NonCopyable& operator=(const NonCopyable&) = delete;
+	};
+	class NonMovable {
+		protected:
+			NonMovable() = default;
+			~NonMovable() = default;
+		private:
+			NonMovable(NonMovable&&) = delete;
+			NonMovable& operator=(NonMovable&&) = delete;
+	};
+	class NonCopyableAndMovable : public NonCopyable, public NonMovable
+	{};
+	
+#endif // >= C++11
 
 //* generate getter and setter (>= C++11)
-#if CUTIL_CPP_LANG >= 201103L
+#ifdef CUTIL_CPP11_SUPPORTED
 	// generate getter and setter with specific type (not recommended after C++11, and do not add `const` to the first parameter)
 	#define CUTIL_GETTER_TYPE(_type, _name, _getter) 	public: _type _getter() {return this->_name;}
 	#define CUTIL_SETTER_TYPE(_type, _name, _setter) 	public: void _setter(const _type& _val)	{this->_name = _val;}
@@ -1294,87 +1868,143 @@ namespace CUTIL_NAMESPACE_NAME{
 //* get power of an integer.
 // example: int ret = CUTIL_INTPOW(2, 3); 	// 2^3 = 8; generates `(2 * 2 * 2)`; arg `exp` must be an constexpr.
 //			ret = CUTIL_INTPOW(ret, 2); 	// 8^2 = 64; generates `(ret * ret)`
+//			ret = CUTIL_INTPOW_2(ret);		// 64^2 = 4096; equivalent to `CUTIL_INTPOW(ret, 2)`
+//			//ret = CUTIL_INTPOW(ret, ret);	// ERROR! 2nd param `exp` must be a constexpr integer!
 // notice:  std::pow(base, exp) in `<cmath>` is for float/double, not for integer.
-#define CUTIL_INTPOW(_base, exp)	(CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_INTPOW_, exp)(_base)))
-#define _CUTIL_INTPOW_1(_base) 		(_base)
-#define _CUTIL_INTPOW_2(_base) 		(_base) * (_base)
-#define _CUTIL_INTPOW_3(_base) 		_CUTIL_INTPOW_2(_base) * (_base)
-#define _CUTIL_INTPOW_4(_base) 		_CUTIL_INTPOW_3(_base) * (_base)
-#define _CUTIL_INTPOW_5(_base) 		_CUTIL_INTPOW_4(_base) * (_base)
-#define _CUTIL_INTPOW_6(_base) 		_CUTIL_INTPOW_5(_base) * (_base)
-#define _CUTIL_INTPOW_7(_base) 		_CUTIL_INTPOW_6(_base) * (_base)
-#define _CUTIL_INTPOW_8(_base) 		_CUTIL_INTPOW_7(_base) * (_base)
-#define _CUTIL_INTPOW_9(_base) 		_CUTIL_INTPOW_8(_base) * (_base)
-#define _CUTIL_INTPOW_10(_base) 	_CUTIL_INTPOW_9(_base) * (_base)
-#define _CUTIL_INTPOW_11(_base) 	_CUTIL_INTPOW_10(_base) * (_base)
-#define _CUTIL_INTPOW_12(_base) 	_CUTIL_INTPOW_11(_base) * (_base)
-#define _CUTIL_INTPOW_13(_base) 	_CUTIL_INTPOW_12(_base) * (_base)
-#define _CUTIL_INTPOW_14(_base) 	_CUTIL_INTPOW_13(_base) * (_base)
-#define _CUTIL_INTPOW_15(_base) 	_CUTIL_INTPOW_14(_base) * (_base)
-#define _CUTIL_INTPOW_16(_base) 	_CUTIL_INTPOW_15(_base) * (_base)
-#define _CUTIL_INTPOW_17(_base) 	_CUTIL_INTPOW_16(_base) * (_base)
-#define _CUTIL_INTPOW_18(_base) 	_CUTIL_INTPOW_17(_base) * (_base)
-#define _CUTIL_INTPOW_19(_base) 	_CUTIL_INTPOW_18(_base) * (_base)
-#define _CUTIL_INTPOW_20(_base) 	_CUTIL_INTPOW_19(_base) * (_base)
-#define _CUTIL_INTPOW_21(_base) 	_CUTIL_INTPOW_20(_base) * (_base)
-#define _CUTIL_INTPOW_22(_base) 	_CUTIL_INTPOW_21(_base) * (_base)
-#define _CUTIL_INTPOW_23(_base) 	_CUTIL_INTPOW_22(_base) * (_base)
-#define _CUTIL_INTPOW_24(_base) 	_CUTIL_INTPOW_23(_base) * (_base)
-#define _CUTIL_INTPOW_25(_base) 	_CUTIL_INTPOW_24(_base) * (_base)
+// warning: the second parameter `exp` must be a constexpr integer value, not a variable.
+#define CUTIL_INTPOW(_base, exp)	(CUTIL_OVERLOAD_IDX(CUTIL_INTPOW_, exp)(_base))
+#define CUTIL_INTPOW_1(_base) 		(_base)
+#define CUTIL_INTPOW_2(_base) 		((_base) * (_base))
+#define CUTIL_INTPOW_3(_base) 		(CUTIL_INTPOW_2(_base) * (_base))
+#define CUTIL_INTPOW_4(_base) 		(CUTIL_INTPOW_3(_base) * (_base))
+#define CUTIL_INTPOW_5(_base) 		(CUTIL_INTPOW_4(_base) * (_base))
+#define CUTIL_INTPOW_6(_base) 		(CUTIL_INTPOW_5(_base) * (_base))
+#define CUTIL_INTPOW_7(_base) 		(CUTIL_INTPOW_6(_base) * (_base))
+#define CUTIL_INTPOW_8(_base) 		(CUTIL_INTPOW_7(_base) * (_base))
+#define CUTIL_INTPOW_9(_base) 		(CUTIL_INTPOW_8(_base) * (_base))
+#define CUTIL_INTPOW_10(_base) 		(CUTIL_INTPOW_9(_base) * (_base))
+#define CUTIL_INTPOW_11(_base) 		(CUTIL_INTPOW_10(_base) * (_base))
+#define CUTIL_INTPOW_12(_base) 		(CUTIL_INTPOW_11(_base) * (_base))
+#define CUTIL_INTPOW_13(_base) 		(CUTIL_INTPOW_12(_base) * (_base))
+#define CUTIL_INTPOW_14(_base) 		(CUTIL_INTPOW_13(_base) * (_base))
+#define CUTIL_INTPOW_15(_base) 		(CUTIL_INTPOW_14(_base) * (_base))
+#define CUTIL_INTPOW_16(_base) 		(CUTIL_INTPOW_15(_base) * (_base))
+#define CUTIL_INTPOW_17(_base) 		(CUTIL_INTPOW_16(_base) * (_base))
+#define CUTIL_INTPOW_18(_base) 		(CUTIL_INTPOW_17(_base) * (_base))
+#define CUTIL_INTPOW_19(_base) 		(CUTIL_INTPOW_18(_base) * (_base))
+#define CUTIL_INTPOW_20(_base) 		(CUTIL_INTPOW_19(_base) * (_base))
+#define CUTIL_INTPOW_21(_base) 		(CUTIL_INTPOW_20(_base) * (_base))
+#define CUTIL_INTPOW_22(_base) 		(CUTIL_INTPOW_21(_base) * (_base))
+#define CUTIL_INTPOW_23(_base) 		(CUTIL_INTPOW_22(_base) * (_base))
+#define CUTIL_INTPOW_24(_base) 		(CUTIL_INTPOW_23(_base) * (_base))
+#define CUTIL_INTPOW_25(_base) 		(CUTIL_INTPOW_24(_base) * (_base))
 
 
-#ifdef __cplusplus
-namespace CUTIL_NAMESPACE_NAME {
-	//* int ret = cutil::intPow(2, 3); // 2^3 = 8
-	template <typename T>
-	constexpr T intPow(T base, const int exp) {
+#ifdef CUTIL_CPP11_SUPPORTED //* >= C++11
+inline namespace math{
+	//* int ret = cutil::intPow(2, 3); // 2^3 = 8, 需要 >=C++14
+	//  size_t ret = cutil::intPow<int, size_t>(2, 3); // return as size_t
+	template <typename T, typename R = T>
+	inline constexpr R intPow(const T base, const size_t exp) {
 		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
-		if(exp <= 0){
-			return 1;
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
+		if(exp == 0){
+			return static_cast<R>(1);
 		}
-		for(int i = 0; i < exp; ++i){
-			base *= base;
+		if(exp == 1){
+			return static_cast<R>(base);
 		}
-		return base;
+		if(exp == 2){
+			return static_cast<R>(base * base);
+		}
+		if(exp == 3){
+			return static_cast<R>(base * base * base);
+		}
+		R result = base;
+		for(size_t i = 1; i < exp; ++i){
+			result *= base;
+		}
+		return result;
 	}
 	
-	//* int ret = cutil::intPow<3>(2); // 2^3 = 8
-	template <const uint32_t exp, typename T>
-	constexpr T intPow(T base){
+#ifdef CUTIL_CPP17_SUPPORTED
+	//* int ret = cutil::intPow<3>(2); // 2^3 = 8, 需要 >=C++17
+	//  size_t ret = cutil::intPow<3, int, size_t>(2); // return as size_t
+	template <const size_t exp, typename T, typename R = T>
+	inline constexpr R intPow(const T base) {
 		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
 		if constexpr (exp == 0) {
-			return 1;
+			return static_cast<R>(1);
+		}else if constexpr (exp == 1) {
+			return static_cast<R>(base);
 		}else{
-			return base * intPow<exp - 1>(base);
+			return (static_cast<R>(base) * math::intPow<exp - 1, T, R>(base));
 		}
 	}
-	
+#else
+	template <const size_t exp, typename T, typename R = T>
+	inline constexpr R intPow(const T base) {
+		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
+		return math::intPow(base, exp);
+	}
+#endif // C++17
+
 	//* int ret = cutil::factorial(3); // 3! = 6
-	template <typename T>
-	constexpr T factorial(T base) {
+	//  size_t ret = cutil::factorial<int, size_t>(3); // return as size_t
+	template <typename T, typename R = T>
+	inline constexpr R factorial(const T base) {
 		static_assert(std::is_integral<T>::value, "factorial must be an integer value.");
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
 		if (base <= 1) {
-			return 1;
+			return static_cast<R>(1);
+		}else if(base == 2){
+			return static_cast<R>(2);
+		}else if(base == 3){
+			return static_cast<R>(6);
 		}
+		R result = base;
 		for(T i = (base - 1); i > 1; --i){
-			base *= i;
+			result *= i;
 		}
-		return base;
+		return result;
 	}
 	
+#ifdef CUTIL_CPP17_SUPPORTED
 	//* int ret = cutil::factorial<3>(); // 3! = 6
-	template <const uint32_t base>
-	constexpr uint32_t factorial() {
+	//  size_t ret = cutil::factorial<3, size_t>(); // return as size_t
+	template <const size_t base, typename R = size_t>
+	inline constexpr R factorial() {
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
 		if constexpr (base <= 1) {
-			return 1;
+			return static_cast<R>(1);
+		}else if constexpr (base == 2) {
+			return static_cast<R>(2);
+		}else if constexpr (base == 3) {
+			return static_cast<R>(6);
 		}else{
-			return base * factorial<base - 1>();
+			return static_cast<R>(base) * math::factorial<base - 1, R>();
 		}
 	}
-}
+#else
+	template <const size_t base, typename R = size_t>
+	inline constexpr R factorial() {
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
+		return math::factorial<R>(base);
+	}
+#endif // C++17
+} // namespace
 #endif // __cplusplus
+
 
 #pragma endregion Mathematical Utils
 
 
+#ifdef __cplusplus
+} // namespace
+	#ifdef CUTIL_NAMESPACE_SHORTER
+		namespace CUTIL_NAMESPACE_SHORTER = CUTIL_NAMESPACE_NAME;
+	#endif // CUTIL_NAMESPACE_SHORTER
+#endif // __cplusplus
 #endif // CONSOLEUTIL_CPP_UTIL_H__
