@@ -3,7 +3,8 @@
 This is an implementation of C++20's std::span
 http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf
 */
-
+// github: https://github.com/tcbrindle/span
+//
 //          Copyright Tristan Brindle 2018.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file ../../LICENSE_1_0.txt or copy at

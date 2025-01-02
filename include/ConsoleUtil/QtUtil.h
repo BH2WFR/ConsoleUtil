@@ -15,7 +15,7 @@
 // #include <ConsoleUtil/CppUtil.h
 // 宏 QT_CORE_LIB, 只要链接了 Qt 库, 都会定义, 不在这里使用, 因为会导致未包含 Qt 头文件时报错
 _CUTIL_NAMESPACE_BEGIN
-_CUTIL_NAMESPACE_BEGIN_NAME(qt)
+namespace qt{
 
 
 //===================== Qt Utils ==========================
@@ -93,8 +93,33 @@ _CUTIL_NAMESPACE_BEGIN_NAME(qt)
 */
 
 
+//* get all Items in the TreeModel
+template<typename TreeModel_t, typename Item_t>
+static inline auto getTreeModelItemsIter(const TreeModel_t* model) -> std::vector<Item_t>
+{
+	if(model == nullptr){
+		return {};
+	}
+	std::vector<Item_t> items;
+	items.reserve(model->rowCount());
+	std::function<void(Item_t*)> traverse = [&](Item_t* item){
+		if(item == nullptr){
+			return;
+		}
+		items.push_back(item);
+		for(int i = 0; i < item->childCount(); ++i){
+			traverse(item->childAt(i));
+		}
+	};
+	traverse(model->rootItem());
+	return items;
+} // namespace qt
 
-_CUTIL_NAMESPACE_END_NAME(qt)
+
+
+
+
+
 _CUTIL_NAMESPACE_END
 #endif // QT_VERSION
 #endif // CONSOLEUTIL_QT_UTIL_H__

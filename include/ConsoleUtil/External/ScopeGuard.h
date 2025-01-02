@@ -1,7 +1,7 @@
 /*
  *  Created on: 13/02/2018
  *      Author: ricab
- *
+ *      github: https://github.com/ricab/scope_guard
  * See README.md for documentation of this header's public interface.
  */
 

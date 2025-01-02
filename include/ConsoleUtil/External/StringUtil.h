@@ -32,6 +32,18 @@
 _CUTIL_NAMESPACE_BEGIN
 namespace str
 {
+	namespace internal{
+		template<typename T, typename Compare>
+		inline void sort(std::vector<T>& vec, Compare comp = std::less<T>()) {
+		#ifdef CUTIL_CPP17_SUPPORTED
+			std::sort(std::execution::par_unseq, vec.begin(), vec.end(), comp);
+		#else
+			std::sort(vec.begin(), vec.end(), comp);
+		#endif
+		}
+	}
+	
+	
 	/**
 	 * @brief Converts any datatype into std::string.
 	 *        Datatype must support << operator.
@@ -44,7 +56,6 @@ namespace str
 	{
 		std::stringstream ss;
 		ss << value;
-
 		return ss.str();
 	}
 
@@ -60,7 +71,6 @@ namespace str
 	{
 		T result;
 		std::istringstream(str) >> result;
-
 		return result;
 	}
 
@@ -77,7 +87,6 @@ namespace str
 		{
 			return static_cast<uint8_t>(std::tolower(c));
 		});
-
 		return result;
 	}
 
@@ -94,7 +103,6 @@ namespace str
 		{
 			return static_cast<uint8_t>(std::toupper(c));
 		});
-
 		return result;
 	}
 
@@ -111,7 +119,6 @@ namespace str
 		{
 			result.front() = static_cast<char>(std::toupper(result.front()));
 		}
-
 		return result;
 	}
 
@@ -128,7 +135,6 @@ namespace str
 		{
 			result.front() = static_cast<char>(std::toupper(result.front()));
 		}
-
 		return result;
 	}
 
@@ -209,10 +215,11 @@ namespace str
 	  * @return Copy of input str with trimmed white spaces.
 	  */
 	static inline _CUTIL_NODISCARD
-	std::string trim_left_copy(std::string str)
+	std::string trim_left_copy(const std::string& str)
 	{
-		trim_left(str);
-		return str;
+		std::string result = str;
+		trim_left(result);
+		return result;
 	}
 
 	/**
@@ -222,10 +229,11 @@ namespace str
 	  * @return Copy of input str with trimmed white spaces.
 	  */
 	static inline _CUTIL_NODISCARD
-	std::string trim_right_copy(std::string str)
+	std::string trim_right_copy(const std::string& str)
 	{
-		trim_right(str);
-		return str;
+		std::string result = str;
+		trim_right(result);
+		return result;
 	}
 
 	/**
@@ -235,10 +243,11 @@ namespace str
 	  * @return Copy of input str with trimmed white spaces.
 	  */
 	static inline _CUTIL_NODISCARD
-	std::string trim_copy(std::string str)
+	std::string trim_copy(const std::string& str)
 	{
-		trim(str);
-		return str;
+		std::string result = str;
+		trim(result);
+		return result;
 	}
 
 	/**
@@ -257,7 +266,6 @@ namespace str
 		{
 			return false;
 		}
-
 		str.replace(start_pos, target.length(), replacement);
 		return true;
 	}
@@ -278,7 +286,6 @@ namespace str
 		{
 			return false;
 		}
-
 		str.replace(start_pos, target.length(), replacement);
 		return true;
 	}
@@ -298,16 +305,13 @@ namespace str
 		{
 			return false;
 		}
-
 		size_t start_pos = 0;
 		const bool found_substring = str.find(target, start_pos) != std::string::npos;
-
 		while ((start_pos = str.find(target, start_pos)) != std::string::npos)
 		{
 			str.replace(start_pos, target.length(), replacement);
 			start_pos += replacement.length();
 		}
-
 		return found_substring;
 	}
 
@@ -372,18 +376,15 @@ namespace str
 	{
 		std::vector<std::string> tokens;
 		std::stringstream ss(str);
-
 		std::string token;
 		while(std::getline(ss, token, delim))
 		{
 			tokens.push_back(token);
 		}
-
 		// Match semantics of split(str,str)
 		if (str.empty() || ends_with(str, delim)) {
 			tokens.emplace_back();
 		}
-
 		return tokens;
 	}
 
@@ -400,14 +401,12 @@ namespace str
 		size_t pos_start = 0, pos_end, delim_len = delim.length();
 		std::string token;
 		std::vector<std::string> tokens;
-
 		while ((pos_end = str.find(delim, pos_start)) != std::string::npos)
 		{
 			token = str.substr(pos_start, pos_end - pos_start);
 			pos_start = pos_end + delim_len;
 			tokens.push_back(token);
 		}
-
 		tokens.push_back(str.substr(pos_start));
 		return tokens;
 	}
@@ -456,7 +455,6 @@ namespace str
 			++niter;
 			++viter;
 		}
-
 		return dest;
 	}
 
@@ -471,7 +469,6 @@ namespace str
 	{
 		std::string token;
 		std::vector<std::string> tokens;
-
 		size_t pos_start = 0;
 		for (size_t pos_end = 0; pos_end < str.length(); ++pos_end)
 		{
@@ -482,7 +479,6 @@ namespace str
 				pos_start = pos_end + 1;
 			}
 		}
-
 		tokens.push_back(str.substr(pos_start));
 		return tokens;
 	}
@@ -498,18 +494,16 @@ namespace str
 	template<typename Container> static inline _CUTIL_NODISCARD
 	std::string join(const Container & tokens, const std::string & delim)
 	{
-		std::ostringstream result;
+		std::string result;
 		for(auto it = tokens.begin(); it != tokens.end(); ++it)
 		{
 			if(it != tokens.begin())
 			{
-				result << delim;
+				result += delim;
 			}
-
-			result << *it;
+			result += *it;
 		}
-
-		return result.str();
+		return result;
 	}
 
 	/**
@@ -530,10 +524,11 @@ namespace str
 	 * @return container of non-empty tokens.
 	 */
 	template<template<typename, typename...> typename Container, typename... Args> _CUTIL_NODISCARD
-	static inline Container<std::string> drop_empty_copy(Container<std::string, Args...> tokens)
+	static inline Container<std::string> drop_empty_copy(const Container<std::string, Args...>& tokens)
 	{
-		drop_empty(tokens);
-		return tokens;
+		auto result = tokens;
+		drop_empty(result);
+		return result;
 	}
 
 	/**
@@ -546,7 +541,8 @@ namespace str
 	template<typename T>
 	static inline void drop_duplicate(std::vector<T> &tokens)
 	{
-		std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
+		internal::sort(tokens);
+		// std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
 		auto end_unique = std::unique(tokens.begin(), tokens.end());
 		tokens.erase(end_unique, tokens.end());
 	}
@@ -559,12 +555,14 @@ namespace str
 	 * @return vector of non-duplicate tokens.
 	 */
 	template<typename T> _CUTIL_NODISCARD
-	static inline std::vector<T> drop_duplicate_copy(std::vector<T> tokens)
+	static inline std::vector<T> drop_duplicate_copy(const std::vector<T>& tokens)
 	{
-		std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
-		auto end_unique = std::unique(tokens.begin(), tokens.end());
-		tokens.erase(end_unique, tokens.end());
-		return tokens;
+		std::vector<T> result = tokens;
+		internal::sort(result);
+		// std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
+		auto end_unique = std::unique(result.begin(), result.end());
+		result.erase(end_unique, result.end());
+		return result;
 	}
 
 	/**
@@ -577,12 +575,11 @@ namespace str
 	std::string repeat(const std::string & str, size_t n)
 	{
 		std::string result;
-
+		result.reserve(str.size() * n);
 		for(size_t i = 0; i < n; ++i)
 		{
 			result += str;
 		}
-
 		return result;
 	}
 
@@ -617,7 +614,8 @@ namespace str
 	template<typename T>
 	static inline void sorting_ascending(std::vector<T> &strs)
 	{
-		std::sort(std::execution::par_unseq, strs.begin(), strs.end());
+		// std::sort(std::execution::par_unseq, strs.begin(), strs.end());
+		internal::sort(strs, std::less<T>());
 	}
 
 	/**
@@ -627,7 +625,8 @@ namespace str
 	template<typename T>
 	static inline void sorting_descending(std::vector<T> &strs)
 	{
-		std::sort(std::execution::par_unseq, strs.begin(),strs.end(), std::greater<T>());
+		// std::sort(std::execution::par_unseq, strs.begin(),strs.end(), std::greater<T>());
+		internal::sort(strs, std::greater<T>());
 	}
 
 	/**
@@ -645,10 +644,11 @@ namespace str
 	 * @param strs - container to be checked.
 	 */
 	template<typename Container> _CUTIL_NODISCARD
-	static inline Container reverse_copy(Container strs)
+	static inline Container reverse_copy(const Container& strs)
 	{
-		std::reverse(strs.begin(), strs.end());
-		return strs;
+		Container result = strs;
+		std::reverse(result.begin(), result.end());
+		return result;
 	}
 } // namespace
 
