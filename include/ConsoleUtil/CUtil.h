@@ -652,7 +652,7 @@ Usage Example:
 #define CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR)	memcpy(&_OUT_PTR, &_IN_PTR, sizeof(_OUT_TYPE))
 #define CUTIL_BITWISE_MEMCPY(_OUT_TYPE, _OUT_PTR, _IN_PTR)	CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR) // alias
 // reinterpret_cast
-#define CUTIL_BITWISE_CAST_UNSAFE(_OUT_TYPE, _IN_PTR)		(* (volatile _OUT_TYPE*) (volatile void*) _IN_PTR)
+#define CUTIL_BITWISE_CAST_UNSAFE(_OUT_TYPE, _IN_PTR)		*( (volatile _OUT_TYPE*) (volatile void*) _IN_PTR)
 /*
 	uint32_t i = 0x12345678;
 	float f;

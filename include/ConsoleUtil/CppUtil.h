@@ -185,25 +185,25 @@ inline namespace bit { // inline
 	template<typename T> _CUTIL_NODISCARD
 	inline constexpr T get_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return get_bit_by_mask(num, (1u << bit_idx));
+		return get_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
 	}
 	//* set the bit specified by nth bit, (num |= (1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
 	inline constexpr T set_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return set_bit_by_mask(num, (1u << bit_idx));
+		return set_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
 	}
 	//* clear the bit specified by nth bit, (num &= ~(1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
 	inline constexpr T clear_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return bit_clear_mask(num, (1u << bit_idx));
+		return clear_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
 	}
 	//* flip the bit specified by nth bit, (num ^= (1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
 	inline constexpr T flip_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return bit_flip_mask(num, (1u << bit_idx));
+		return flip_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
 	}
 	//* check if the bit filtered by nth bit is zero or not, (bool)(num & (1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
@@ -241,7 +241,7 @@ inline namespace bit { // inline
 	// operate bit by mask
 	num = cutil::bit::set_bit_by_mask(num, 0x2B00);   // equals to {num |=  0x2B00;}
 	num = cutil::bit::clear_bit_by_mask(num, 0x2B00); // equals to {num &= ~0x2B00;}
-	num = cutil::bit::flipByMask(num, 0x1100);  // equals to {num ^=  0x1100;}
+	num = cutil::bit::flip_bit_by_mask(num, 0x1100);  // equals to {num ^=  0x1100;}
 	if(cutil::bit::get_bit_by_mask(num, 0x0022) != 0x0000){
 		printf("%x\n", num);
 	}
@@ -338,8 +338,8 @@ inline namespace math { // inline
 
 
 	//* increase the value of variable, but if the value exceeds the limit(>=), it will not be increased
-	template<typename T, typename L, typename I>
-	inline void increase_under_limit(T& var, L max, I inc) {
+	template<typename T, typename L>
+	inline void increase_under_limit(T& var, L max, size_t inc) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var < max) var += inc;
 	}
@@ -350,8 +350,8 @@ inline namespace math { // inline
 	}
 	
 	//* decrease the value of variable, but if the value is less than the limit(<=), it will not be decreased
-	template<typename T, typename L, typename I>
-	inline void decrease_above_limit(T& var, L min, I dec) {
+	template<typename T, typename L>
+	inline void decrease_above_limit(T& var, L min, size_t dec) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var > min) var -= dec;
 	}
@@ -362,8 +362,8 @@ inline namespace math { // inline
 	}
 	
 	//* increase the value of variable, and rolling within the range [_MIN, _MAX]
-	template<typename T, typename R, typename I>
-	inline void increase_rolling(T& var, R min, R max, I inc) {
+	template<typename T, typename R>
+	inline void increase_rolling(T& var, R min, R max, size_t inc) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var < max) var += inc;
 		else var = min;
@@ -376,8 +376,8 @@ inline namespace math { // inline
 	}
 	
 	//* decrease the value of variable, and rolling within the range [_MIN, _MAX]
-	template<typename T, typename R, typename I>
-	inline void decrease_rolling(T& var, R min, R max, I dec) {
+	template<typename T, typename R>
+	inline void decrease_rolling(T& var, R min, R max, size_t dec) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var > min) var -= dec;
 		else var = max;
@@ -391,8 +391,8 @@ inline namespace math { // inline
 	
 	//* increase the value of variable, and prevent overflowing,
 	// if it is near to be overflowed, it will not increased any more and return true.
-	template<typename T, typename I>
-	inline constexpr bool increase_no_overflow(T& var, I inc) {
+	template<typename T>
+	inline constexpr bool increase_no_overflow(T& var, size_t inc) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return ((T)(var + inc) > var) ? (var += inc, false) : (true);
 	}
@@ -403,8 +403,8 @@ inline namespace math { // inline
 	}
 	//* decrease the value of variable, and prevent overflowing,
 	// if it is near to be overflowed, it will not decreased any more and return true.
-	template<typename T, typename I>
-	inline constexpr bool decrease_no_overflow(T& var, I dec) {
+	template<typename T>
+	inline constexpr bool decrease_no_overflow(T& var, size_t dec) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return ((T)(var - dec) < var) ? (var -= dec, false) : (true);
 	}

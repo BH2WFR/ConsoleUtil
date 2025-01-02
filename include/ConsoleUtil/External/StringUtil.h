@@ -483,28 +483,30 @@ namespace str
 		return tokens;
 	}
 
-	/**
-	 * @brief Joins all elements of a container of arbitrary datatypes
-	 *        into one std::string with delimiter delim.
-	 * @tparam Container - container type.
-	 * @param tokens - container of tokens.
-	 * @param delim - the delimiter.
-	 * @return std::string with joined elements of container tokens with delimiter delim.
-	 */
-	template<typename Container> static inline _CUTIL_NODISCARD
-	std::string join(const Container & tokens, const std::string & delim)
-	{
-		std::string result;
-		for(auto it = tokens.begin(); it != tokens.end(); ++it)
-		{
-			if(it != tokens.begin())
-			{
-				result += delim;
-			}
-			result += *it;
-		}
-		return result;
-	}
+    /**
+     * @brief Joins all elements of a container of arbitrary datatypes
+     *        into one std::string with delimiter delim.
+     * @tparam Container - container type.
+     * @param tokens - container of tokens.
+     * @param delim - the delimiter.
+     * @return std::string with joined elements of container tokens with delimiter delim.
+     */
+    template<typename Container>
+    static inline std::string join(const Container & tokens, const std::string & delim)
+    {
+        std::ostringstream result;
+        for(auto it = tokens.begin(); it != tokens.end(); ++it)
+        {
+            if(it != tokens.begin())
+            {
+                result << delim;
+            }
+
+            result << *it;
+        }
+
+        return result.str();
+    }
 
 	/**
 	 * @brief Inplace removal of all empty strings in a container of strings
@@ -541,7 +543,7 @@ namespace str
 	template<typename T>
 	static inline void drop_duplicate(std::vector<T> &tokens)
 	{
-		internal::sort(tokens);
+		internal::sort(tokens, std::less<T>());
 		// std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
 		auto end_unique = std::unique(tokens.begin(), tokens.end());
 		tokens.erase(end_unique, tokens.end());
@@ -558,7 +560,7 @@ namespace str
 	static inline std::vector<T> drop_duplicate_copy(const std::vector<T>& tokens)
 	{
 		std::vector<T> result = tokens;
-		internal::sort(result);
+		internal::sort(result, std::less<T>());
 		// std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
 		auto end_unique = std::unique(result.begin(), result.end());
 		result.erase(end_unique, result.end());

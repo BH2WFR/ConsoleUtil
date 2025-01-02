@@ -5,6 +5,8 @@ project( ConsoleUtil
     HOMEPAGE_URL "https://github.com/BH2WFR/ConsoleUtil"
 )
 
+
+
 #* 查找头文件
 file(GLOB_RECURSE PROJ_HEADER_FILES "*.h" "*.hpp")
 message("HEADERS:${PROJ_HEADER_FILES}")
@@ -12,11 +14,12 @@ message("HEADERS:${PROJ_HEADER_FILES}")
 #* 就在本文件夹下安装 (其实只是在 cmake 目录中生成 ...Config.cmake 文件)
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
 
-
 #* 创建一个 header-only Target, 无需编译为库
 add_library(${PROJECT_NAME} INTERFACE
 	${PROJ_HEADER_FILES}
 )
+
+
 
 #* 添加宏定义，对外暴露
 target_compile_definitions(${PROJECT_NAME}
@@ -41,3 +44,6 @@ install(EXPORT ${PROJECT_NAME}Targets
     NAMESPACE ${PROJECT_NAME}::
     DESTINATION "cmake"
 )
+
+
+add_subdirectory(test)
