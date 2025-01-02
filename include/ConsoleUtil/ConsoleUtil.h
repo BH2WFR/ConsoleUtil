@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: 	https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		1 AUG 2024
+  Updated:		2 JAN 2025
   License:		MIT License
 * Do not include this header in header files.
 * If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
@@ -9,6 +9,8 @@
 */
 #ifndef CONSOLEUTIL_CONSOLE_UTIL_H__
 #define CONSOLEUTIL_CONSOLE_UTIL_H__
+#include <ConsoleUtil/Base.h>
+#include <ConsoleUtil/CUtil.h> // vital dependency
 
 
 //* ==== customize parameters:
@@ -18,10 +20,9 @@
 	// p.s. if these macros are not defined, `#if (MACRO == 0)` will evaluate to `true`.
 
 
-//* include dependency headers:
-#include <ConsoleUtil/CppUtil.h>
 
 
+_CUTIL_NAMESPACE_BEGIN
 
 //====================== CONSOLE FORMAT/CUSTOMIZING MACROS =========================
 //* reference:    https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -360,7 +361,7 @@
 		#define CUTIL_DEBUG_PRINT_ERR(_STR, ...)		fmt::print(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
 		#define CUTIL_DEBUG_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst), ##__VA_ARGS__)
 		// note: "##__VA_ARGS__" is supported in gnu C++, and MSVC for version >= VS2015 update 3
-	#elif CUTIL_CPP_LANG >= 202302L // C++23 std::print(), std::println()
+	#elif defined(CUTIL_CPP23_SUPPORTED) // C++23 std::print(), std::println()
 		#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 			#define CUTIL_DEBUG_PRINT(_STR, ...)		std::print(_STR, ##__VA_ARGS__)
 			#define CUTIL_DEBUG_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__)
@@ -454,7 +455,7 @@
 	#define CUTIL_PRINT_ERR(_STR, ...)			fmt::print(stderr,   CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__)
 	#define CUTIL_PRINTLN_ERR(_STR, ...)		fmt::println(stderr, CUTIL_COLOR_OPT(FLRed) _STR CUTIL_COLOR_OPT(CRst) ,##__VA_ARGS__)
 	#define CUTIL_PRINT_VAR(_VAR)				fmt::println("{}", _VAR)
-#elif CUTIL_CPP_LANG >= 202302L // C++23 std::print(), std::println()
+#elif defined(CUTIL_CPP23_SUPPORTED) // C++23 std::print(), std::println()
 	#if __has_include(<print>) // C++17 support, && (defined(_PRINT_) || defined(_GLIBCXX_PRINT)
 		#define CUTIL_PRINT(_STR, ...)			std::print(_STR,   ##__VA_ARGS__)
 		#define CUTIL_PRINTLN(_STR, ...)		std::println(_STR, ##__VA_ARGS__)
@@ -489,11 +490,5 @@
 
 
 
-//==================== CUDA/Qt Utils ==========================
-
-#include <ConsoleUtil/QtUtil.h>
-#include <ConsoleUtil/CudaUtil.h>
-
-
-
+_CUTIL_NAMESPACE_END
 #endif // CONSOLEUTIL_CONSOLE_UTIL_H__

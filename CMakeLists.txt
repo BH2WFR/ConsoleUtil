@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
 project( ConsoleUtil
-    LANGUAGES C CXX CUDA
+    LANGUAGES C CXX
     VERSION 6               # 版本号只设一段 MAJOR
     HOMEPAGE_URL "https://github.com/BH2WFR/ConsoleUtil"
 )
 
 #* 查找头文件
-file(GLOB PROJ_HEADER_FILES "include/${PROJECT_NAME}/*.h")
+file(GLOB_RECURSE PROJ_HEADER_FILES "*.h" "*.hpp")
 message("HEADERS:${PROJ_HEADER_FILES}")
 
 #* 就在本文件夹下安装 (其实只是在 cmake 目录中生成 ...Config.cmake 文件)

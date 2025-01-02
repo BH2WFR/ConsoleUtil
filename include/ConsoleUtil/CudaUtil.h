@@ -1,19 +1,24 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		28 MAY 2024
+  Updated:		2 JAN 2025
   License:		MIT License
 * You can include this header in header files.
 */
 #ifndef CONSOLEUTIL_CUDA_UTIL_H__
 #define CONSOLEUTIL_CUDA_UTIL_H__
+#include <ConsoleUtil/Base.h>
 
-#include <ConsoleUtil/CppUtil.h>
+
+
+#if defined(__CUDACC__) //* CUDA
 #include <ConsoleUtil/ConsoleUtil.h>
 
+_CUTIL_NAMESPACE_BEGIN
+_CUTIL_NAMESPACE_BEGIN_NAME(cuda)
 
 //==================== CUDA Utils ==========================
-#ifdef __CUDACC__ //* CUDA 错误检查与退出机制
+
 
 #define CUTIL_CUDA_ERROR_MESSAGE(_CUDA_ERROR, _REASON) 		\
 	fprintf(stderr, FLRed CBold	"\n==== ERROR MESSAGE for CUDA, cudaError: " FLWhite "%d" FLRed ", reason: " FLWhite _REASON CRst "\n" \
@@ -54,11 +59,7 @@
 	}} while(0)
 
 
-
+_CUTIL_NAMESPACE_END_NAME(cuda)
+_CUTIL_NAMESPACE_END
 #endif // __CUDACC__
-
-
-
-
-
 #endif // CONSOLEUTIL_CUDA_UTIL_H__
