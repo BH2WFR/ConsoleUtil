@@ -21,98 +21,98 @@ _CUTIL_NAMESPACE_BEGIN
 //===================== Bool Statements =========================
 
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool equalAny(const T& compared, const Arg& a1) { // end of recursion
+inline bool equal_any(const T& compared, const Arg& a1) { // end of recursion
 	return (compared == a1);
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool equalAll(const T& compared, const Arg& a1) { // end of recursion
+inline bool equal_all(const T& compared, const Arg& a1) { // end of recursion
 	return (compared == a1);
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool unequalAny(const T& compared, const Arg& a1) { // end of recursion
+inline bool unequal_any(const T& compared, const Arg& a1) { // end of recursion
 	return (compared != a1);
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool unequalAll(const T& compared, const Arg& a1) { // end of recursion
+inline bool unequal_all(const T& compared, const Arg& a1) { // end of recursion
 	return (compared != a1);
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool unequalMutually(const T& a1, const Arg& a2) { // end of recursion
+inline bool unequal_mutually(const T& a1, const Arg& a2) { // end of recursion
 	return (a1 != a2);
 }
 
 //* bool statement: `(compared == arg1 || compared == arg2 || compared == arg3 || ...)`
 //  if 1st param `compared` is equal to ANY of the following arguments, return `true`
 template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool equalAny(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return (compared == a1) || equalAny(compared, a...);
+inline bool equal_any(const T& compared, const Arg1& a1, const ArgElse&... a) {
+	return (compared == a1) || equal_any(compared, a...);
 }
 
 //* bool statement: `(compared == arg1 && compared == arg2 && compared == arg3 && ...)`
 //  if 1st param `compared` is equal to ALL of the following arguments, return `true`
 template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool equalAll(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return ((compared == a1) && equalAll(compared, a...));
+inline bool equal_all(const T& compared, const Arg1& a1, const ArgElse&... a) {
+	return ((compared == a1) && equal_all(compared, a...));
 }
 
 //* bool statement: `(compared != arg1 || compared != arg2 || compared != arg3 || ...)`
 //  if 1st param `compared` is NOT equal to Any of the following arguments, return `true`
 template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool unequalAny(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return ((compared != a1) || unequalAny(compared, a...));
+inline bool unequal_any(const T& compared, const Arg1& a1, const ArgElse&... a) {
+	return ((compared != a1) || unequal_any(compared, a...));
 }
 
 //* bool statement: `(compared != arg1 && compared != arg2 && compared != arg3 && ...)`
 //  if 1st param `compared` is NOT equal to ALL of the following arguments, return `true`
 template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool unequalAll(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return ((compared != a1) && unequalAll(compared, a...));
+inline bool unequal_all(const T& compared, const Arg1& a1, const ArgElse&... a) {
+	return ((compared != a1) && unequal_all(compared, a...));
 }
 
 //* check if all of the variables are mutually nonequal, not recommanded for large amount of arguments
 // if you want to compare more arguments, pls use `std::set` or `std::unordered_set` (hashset)
 template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool unequalMutually(const T& a1, const Arg1& a2, const ArgElse&... a) {
-	return (unequalAll(a1, a2, a...) && unequalAll(a2, a...));
+inline bool unequal_mutually(const T& a1, const Arg1& a2, const ArgElse&... a) {
+	return (unequal_all(a1, a2, a...) && unequal_all(a2, a...));
 }
 
 //* check if all of the variables are mutually equal
 template<typename T, typename... Args> _CUTIL_NODISCARD
-inline bool equalMutually(const T& a, const Args&... args) {
-	return equalAll(a, args...);
+inline bool equal_mutually(const T& a, const Args&... args) {
+	return equal_all(a, args...);
 }
 /* Instruction:
 	int var = 10;
-	if(cutil::equalAny(var, 2, 4, 6, 8, 10)){
+	if(cutil::equal_any(var, 2, 4, 6, 8, 10)){
 		// equivalent to `if(var == 2 || var == 4 || var == 6 || var == 8 || var == 10)`
 		// equivalent to `if(!CUTIL_UNEQUAL_ALL(var, 2, 4, 6, 8, 10))`
 	}
-	if(cutil::equalAll(var, 2, 4, 6, 8, 10)){
+	if(cutil::equal_all(var, 2, 4, 6, 8, 10)){
 		// equivalent to `if(var == 2 && var == 4 && var == 6 && var == 8 && var == 10)`
-		// equivalent to `if(cutil::equalMutually(var, 2, 4, 6, 8, 10))`
-		// equivalent to `if(!cutil::unequalAny(var, 2, 4, 6, 8, 10))`
+		// equivalent to `if(cutil::equal_mutually(var, 2, 4, 6, 8, 10))`
+		// equivalent to `if(!cutil::unequal_any(var, 2, 4, 6, 8, 10))`
 	}
 	
 	//*-------------------------------------------
-	if(cutil::unequalAll(var, 2, 4, 6, 8, 10)){
+	if(cutil::unequal_all(var, 2, 4, 6, 8, 10)){
 		// equivalent to `if(var != 2 && var != 4 && var != 6 && var != 8 && var != 10)`
-		// equivalent to `if(! cutil::equalAny(var, 2, 4, 6, 8, 10))`
+		// equivalent to `if(! cutil::equal_any(var, 2, 4, 6, 8, 10))`
 	}
-	if(cutil::unequalAny(var, 2, 4, 6, 8, 10)){
+	if(cutil::unequal_any(var, 2, 4, 6, 8, 10)){
 		// equivalent to `if(var != 2 || var != 4 || var != 6 || var != 8 || var != 10)`
-		// equivalent to `if(! cutil::equalAll(var, 2, 4, 6, 8, 10))`
+		// equivalent to `if(! cutil::equal_all(var, 2, 4, 6, 8, 10))`
 	}
 	
 	//*----------------------------------------------
-	if(cutil::unequalMutually(a1, a2, a3, a4);){ // is `a1`, `a2`, `a3`, `a4` mutually different?
+	if(cutil::unequal_mutually(a1, a2, a3, a4);){ // is `a1`, `a2`, `a3`, `a4` mutually different?
 		// (  ((a1) != (a2) && (a1) != (a3) && (a1) != (a4))
 		// && ((a2) != (a3) && (a2) != (a4))
 		// && ((a3) != (a4))   )
 	}
 	
-	if(cutil::equalMutually(a1, a2, a3, a4, a5)){
+	if(cutil::equal_mutually(a1, a2, a3, a4, a5)){
 		// ((a1) == (a2) && (a1) == (a3) && (a1) == (a4) && (a1) == (a5))
-		// equivalent to `if(CUTIL_EQUAL_ALL(a1, a2, a3, a4, a5))`
+		// equivalent to `if(cutil::equal_all(a1, a2, a3, a4, a5))`
 	}
 */
 
@@ -149,78 +149,78 @@ bool contains(const T& container, const V& value) {
 
 
 //======================= Bit Operations ============================
-namespace bit { // not inline
+inline namespace bit { // inline
 	//* get bits filtered by mask, (num & mask)
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T getByMask(T num, T bit_mask) {
+	inline constexpr T get_bit_by_mask(T num, T bit_mask) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return (num & bit_mask);
 	}
 	//* set bits specified by mask, (num |= mask)
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T setByMask(T num, T bit_mask) {
+	inline constexpr T set_bit_by_mask(T num, T bit_mask) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return (num |= bit_mask);
 	}
 	//* clear bits specified by mask, (num &= ~mask)
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T clearByMask(T num, T bit_mask) {
+	inline constexpr T clear_bit_by_mask(T num, T bit_mask) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return (num &= (~bit_mask));
 	}
 	//* flip bits specified by mask, (num ^= mask)
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T filpByMask(T num, T bit_mask) {
+	inline constexpr T flip_bit_by_mask(T num, T bit_mask) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return (num ^= bit_mask);
 	}
 	//* check if bits filtered by mask are zero or not, (bool)(num & mask)
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr bool checkByMask(T num, T bit_mask) {
+	inline constexpr bool check_bit_by_mask(T num, T bit_mask) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return static_cast<bool>(getByMask(num, bit_mask));
+		return static_cast<bool>(get_bit_by_mask(num, bit_mask));
 	}
 	
 	//* get the bit filtered by nth bit, (num & (1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T getByIndex(T num, size_t bit_idx) {
+	inline constexpr T get_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return getByMask(num, (1u << bit_idx));
+		return get_bit_by_mask(num, (1u << bit_idx));
 	}
 	//* set the bit specified by nth bit, (num |= (1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T setByIndex(T num, size_t bit_idx) {
+	inline constexpr T set_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return setByMask(num, (1u << bit_idx));
+		return set_bit_by_mask(num, (1u << bit_idx));
 	}
 	//* clear the bit specified by nth bit, (num &= ~(1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T clearByIndex(T num, size_t bit_idx) {
+	inline constexpr T clear_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return bit_clear_mask(num, (1u << bit_idx));
 	}
 	//* flip the bit specified by nth bit, (num ^= (1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T flipByIndex(T num, size_t bit_idx) {
+	inline constexpr T flip_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return bit_flip_mask(num, (1u << bit_idx));
 	}
 	//* check if the bit filtered by nth bit is zero or not, (bool)(num & (1<<bit_idx))
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr bool checkByIndex(T num, size_t bit_idx) {
+	inline constexpr bool check_bit_by_idx(T num, size_t bit_idx) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return static_cast<bool>(getByIndex(num, bit_idx));
+		return static_cast<bool>(get_bit_by_idx(num, bit_idx));
 	}
 	
 	//* rotate bit left by step, (num = ((num << step) | (num >> (sizeof(T) - step))))
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T rotateLeft(T bit, const size_t step = 1) {
+	inline constexpr T rotate_bit_left(T bit, const size_t step = 1) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return bit = ((bit << step) | (bit >> (8u * sizeof(T) - step)));
 	}
 	//* rotate bit right by step, (num = ((num >> step) | (num << (sizeof(T) - step))))
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T rotateRight(T bit, const size_t step = 1) {
+	inline constexpr T rotate_bit_right(T bit, const size_t step = 1) {
 		static_assert(std::is_integral<T>::value, "T must be an integral type");
 		return bit = ((bit >> step) | (bit << (8u * sizeof(T) - step)));
 	}
@@ -228,32 +228,32 @@ namespace bit { // not inline
 /*
 	uint16_t num {0};
 	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
-	num = cutil::bit::setByIndex(num, 1);   // equals to {num |=  (1u << 0));}
-	num = cutil::bit::clearByIndex(num, 2); // equals to {num &= ~(1u << 2));}
-	num = cutil::bit::flipByIndex(num, 3);  // equals to {num ^=  (1u << 3));}
-	if(cutil::bit::getByIndex(num, 0) != 0x0000){ // reading bit, if bit is 1, returns `(1<<bitIdx)`, NOT `1`
+	num = cutil::bit::set_bit_by_idx(num, 1);   // equals to {num |=  (1u << 0));}
+	num = cutil::bit::clear_bit_by_idx(num, 2); // equals to {num &= ~(1u << 2));}
+	num = cutil::bit::flip_bit_by_idx(num, 3);  // equals to {num ^=  (1u << 3));}
+	if(cutil::bit::get_bit_by_idx(num, 0) != 0x0000){ // reading bit, if bit is 1, returns `(1<<bitIdx)`, NOT `1`
 		printf("%x\n", num);
 	}
-	if(cutil::bit::checkByIndex(num, 0) == true){ // reading bit, if bit is 1, returns `true`
+	if(cutil::bit::check_bit_by_idx(num, 0) == true){ // reading bit, if bit is 1, returns `true`
 		printf("%x\n", num);
 	}
 	
 	// operate bit by mask
-	num = cutil::bit::setByMask(num, 0x2B00);   // equals to {num |=  0x2B00;}
-	num = cutil::bit::clearByMask(num, 0x2B00); // equals to {num &= ~0x2B00;}
+	num = cutil::bit::set_bit_by_mask(num, 0x2B00);   // equals to {num |=  0x2B00;}
+	num = cutil::bit::clear_bit_by_mask(num, 0x2B00); // equals to {num &= ~0x2B00;}
 	num = cutil::bit::flipByMask(num, 0x1100);  // equals to {num ^=  0x1100;}
-	if(cutil::bit::getByMask(num, 0x0022) != 0x0000){
+	if(cutil::bit::get_bit_by_mask(num, 0x0022) != 0x0000){
 		printf("%x\n", num);
 	}
-	if(cutil::bit::checkByMask(num, 0x0022) == true){ // reading bit, if bit is 1, returns `true`
+	if(cutil::bit::check_bit_by_mask(num, 0x0022) == true){ // reading bit, if bit is 1, returns `true`
 		printf("%x\n", num);
 	}
 	
 	// rotate bits. use them in a seperate line, and returns nothing
 	uint16_t var {0b0001'0010'0011'0100};
-	var = cutil::bit::rotateLeft(var, 1);	-> 0b0010'0100'0110'1000
-	var = cutil::bit::rotateRight(var, 1);	-> 0b0001'0010'0011'0100
-	var = cutil::bit::rotateLeft(var, 4);	-> 0b0010'0100'0110'1000
+	var = cutil::bit::rotate_bit_left(var, 1);	-> 0b0010'0100'0110'1000
+	var = cutil::bit::rotate_bit_right(var, 1);	-> 0b0001'0010'0011'0100
+	var = cutil::bit::rotate_bit_left(var, 4);	-> 0b0010'0100'0110'1000
 	fmt::println("var={:#016b}", var);
 	
 */
@@ -263,14 +263,14 @@ namespace bit { // not inline
 
 //* assign bitwise, (memcpy(&out, &in, sizeof(T)))
 template<typename Out, typename In>
-inline void bitwiseAssign(Out& out, const In& in) {
+inline void bitwise_memcpy(Out& out, const In& in) {
 	static_assert(std::is_trivially_copyable<Out>::value, "Out and In must be a trivially copyable type");
 	static_assert(std::is_trivially_copyable<In>::value, "In must be a trivially copyable type");
 	static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
 	std::memcpy(&out, &in, sizeof(Out));
 }
 /*
-	cutil::bitwiseAssign(f, i) // i -> f, bitwise memcpy
+	cutil::bitwise_memcpy(f, i) // i -> f, bitwise memcpy
 	f = reinterpret_cast<decltype(f)>(i);   // equivelent
 	// auto f = std::bit_cast<float>(i) // C++20
 */
@@ -295,13 +295,13 @@ inline namespace math { // inline
 	
 	//* get if a numeric variable is within the range [_MIN, _MAX]
 	template<typename T, typename R> _CUTIL_NODISCARD
-	inline constexpr bool inRange(T var, R min, R max) {
+	inline constexpr bool num_in_range(T var, R min, R max) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return (var >= min) && (var <= max);
 	}
 	//* get if a numeric variable is within the range (_MIN, _MAX)
 	template<typename T, typename R> _CUTIL_NODISCARD
-	inline constexpr bool inOpenRange(T var, R min, R max) {
+	inline constexpr bool num_in_open_range(T var, R min, R max) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return (var > min) && (var < max);
 	}
@@ -309,7 +309,7 @@ inline namespace math { // inline
 #ifdef CUTIL_CPP17_SUPPORTED //* >= C++17
 	//* Comparison function to check if a value is within a specified range
 	template <bool LeftClosed, bool RightClosed, typename T> _CUTIL_NODISCARD
-	inline constexpr bool inRange(T var, T min, T max) {
+	inline constexpr bool num_in_range(T var, T min, T max) {
 		if constexpr (LeftClosed && RightClosed) {
 			return (var >= min) && (var <= max); // [min, max]
 		} else if constexpr (LeftClosed && !RightClosed) {
@@ -329,47 +329,47 @@ inline namespace math { // inline
 	printf("%d %d %d\n", a, b, c); // output: 30 26 20
 	
 
-	bool ret = cutil::math::inRange(a, 20, 40);				  // whether a is in [20, 40]
-	bool ret = cutil::math::inOpenRange(c, 20, 30);			  // whether c is in (20, 30)
-	bool ret = cutil::math::inRange<true, true>(a, 20, 40);	  // whether a is in [20, 40], C++17
-	bool ret = cutil::math::inRange<true, false>(a, 20, 40);  // whether a is in [20, 40), C++17
-	bool ret = cutil::math::inRange<false, false>(a, 20, 40); // whether a is in [20, 40], C++17
+	bool ret = cutil::math::num_in_range(a, 20, 40);				  // whether a is in [20, 40]
+	bool ret = cutil::math::num_in_open_range(c, 20, 30);			  // whether c is in (20, 30)
+	bool ret = cutil::math::num_in_range<true, true>(a, 20, 40);	  // whether a is in [20, 40], C++17
+	bool ret = cutil::math::num_in_range<true, false>(a, 20, 40);  // whether a is in [20, 40), C++17
+	bool ret = cutil::math::num_in_range<false, false>(a, 20, 40); // whether a is in [20, 40], C++17
 */
 
 
 	//* increase the value of variable, but if the value exceeds the limit(>=), it will not be increased
 	template<typename T, typename L, typename I>
-	inline void increaseUnderLimit(T& var, L max, I inc) {
+	inline void increase_under_limit(T& var, L max, I inc) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var < max) var += inc;
 	}
 	template<typename T, typename L>
-	inline void increaseUnderLimit(T& var, L max){
+	inline void increase_under_limit(T& var, L max){
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var < max) ++var;
 	}
 	
 	//* decrease the value of variable, but if the value is less than the limit(<=), it will not be decreased
 	template<typename T, typename L, typename I>
-	inline void decreaseAboveLimit(T& var, L min, I dec) {
+	inline void decrease_above_limit(T& var, L min, I dec) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var > min) var -= dec;
 	}
 	template<typename T, typename L>
-	inline void decreaseAboveLimit(T& var, L min){
+	inline void decrease_above_limit(T& var, L min){
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var > min) --var;
 	}
 	
 	//* increase the value of variable, and rolling within the range [_MIN, _MAX]
 	template<typename T, typename R, typename I>
-	inline void increaseRoll(T& var, R min, R max, I inc) {
+	inline void increase_rolling(T& var, R min, R max, I inc) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var < max) var += inc;
 		else var = min;
 	}
 	template<typename T, typename R>
-	inline void increaseRoll(T& var, R min, R max) {
+	inline void increase_rolling(T& var, R min, R max) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var < max) var++;
 		else var = min;
@@ -377,13 +377,13 @@ inline namespace math { // inline
 	
 	//* decrease the value of variable, and rolling within the range [_MIN, _MAX]
 	template<typename T, typename R, typename I>
-	inline void decreaseRoll(T& var, R min, R max, I dec) {
+	inline void decrease_rolling(T& var, R min, R max, I dec) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var > min) var -= dec;
 		else var = max;
 	}
 	template<typename T, typename R>
-	inline void decreaseRoll(T& var, R min, R max) {
+	inline void decrease_rolling(T& var, R min, R max) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		if(var > min) var--;
 		else var = max;
@@ -392,45 +392,45 @@ inline namespace math { // inline
 	//* increase the value of variable, and prevent overflowing,
 	// if it is near to be overflowed, it will not increased any more and return true.
 	template<typename T, typename I>
-	inline constexpr bool increasePreventOverflowing(T& var, I inc) {
+	inline constexpr bool increase_no_overflow(T& var, I inc) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return ((T)(var + inc) > var) ? (var += inc, false) : (true);
 	}
 	template<typename T>
-	inline constexpr bool increasePreventOverflowing(T& var) {
+	inline constexpr bool increase_no_overflow(T& var) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return ((T)(var + 1) > var) ? (var++, false) : (true);
 	}
 	//* decrease the value of variable, and prevent overflowing,
 	// if it is near to be overflowed, it will not decreased any more and return true.
 	template<typename T, typename I>
-	inline constexpr bool decreasePreventOverflowing(T& var, I dec) {
+	inline constexpr bool decrease_no_overflow(T& var, I dec) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return ((T)(var - dec) < var) ? (var -= dec, false) : (true);
 	}
 	template<typename T>
-	inline constexpr bool decreasePreventOverflowing(T& var) {
+	inline constexpr bool decrease_no_overflow(T& var) {
 		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
 		return ((T)(var - 1) < var) ? (var--, false) : (true);
 	}
 /*
 	int8_t num = 0;
-	cutil::math::increaseUnderLimit(num, 5, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
-	cutil::math::increaseUnderLimit(num, 5);    // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
-	cutil::math::decreaseAboveLimit(num, 0, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
-	cutil::math::decreaseAboveLimit(num, 0);    // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
+	cutil::math::increase_under_limit(num, 5, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::math::increase_under_limit(num, 5);    // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::math::decrease_above_limit(num, 0, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::math::decrease_above_limit(num, 0);    // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
 
-	cutil::math::increaseRolling(num, 0, 5, 1);  // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
-	cutil::math::increaseRolling(num, 0, 5);     // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
-	cutil::math::decreaseRolling(num, 0, 5, 1);  // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
-	cutil::math::decreaseRolling(num, 0, 5);     // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+	cutil::math::increase_rolling(num, 0, 5, 1);  // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+	cutil::math::increase_rolling(num, 0, 5);     // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+	cutil::math::decrease_rolling(num, 0, 5, 1);  // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+	cutil::math::decrease_rolling(num, 0, 5);     // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
 	
 	num = 124;
-	bool isOverflowed  = cutil::math::increasePreventOverflowing(num, 1); // prevent overflowing, 125 126 127 127 127 127, returns true if near to overflow
-	bool isOverflowed2 = cutil::math::increasePreventOverflowing(num);    // equivelent
+	bool isOverflowed  = cutil::math::increase_no_overflow(num, 1); // prevent overflowing, 125 126 127 127 127 127, returns true if near to overflow
+	bool isOverflowed2 = cutil::math::increase_no_overflow(num);    // equivelent
 	num = -125;
-	bool isOverflowed3 = cutil::math::decreasePreventOverflowing(num, 1); // prevent overflowing, -126 -127 -128 -128 -128 -128, returns true if near to overflow
-	bool isOverflowed4 = cutil::math::decreasePreventOverflowing(num);    // equivelent
+	bool isOverflowed3 = cutil::math::decrease_no_overflow(num, 1); // prevent overflowing, -126 -127 -128 -128 -128 -128, returns true if near to overflow
+	bool isOverflowed4 = cutil::math::decrease_no_overflow(num);    // equivelent
 
 */
 	
@@ -448,10 +448,10 @@ inline namespace math { // inline
 */
 	
 	
-	//* int ret = cutil::intPow(2, 3); // 2^3 = 8, needs >=C++14
-	//  size_t ret = cutil::intPow<int, size_t>(2, 3); // return as size_t
+	//* int ret = cutil::pow_int(2, 3); // 2^3 = 8, needs >=C++14
+	//  size_t ret = cutil::pow_int<int, size_t>(2, 3); // return as size_t
 	template <typename T, typename R = T> _CUTIL_NODISCARD
-	inline _CUTIL_CONSTEXPR_CPP14 R intPow(const T base, const size_t exp) {
+	inline _CUTIL_CONSTEXPR_CPP14 R pow_int(const T base, const size_t exp) {
 		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
 		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
 		if(exp == 0){
@@ -494,10 +494,10 @@ inline namespace math { // inline
 	}
 	
 #ifdef CUTIL_CPP17_SUPPORTED
-	//* int ret = cutil::intPow<3>(2); // 2^3 = 8, 需要 >=C++17
-	//  size_t ret = cutil::intPow<3, int, size_t>(2); // return as size_t
+	//* int ret = cutil::pow_int<3>(2); // 2^3 = 8, 需要 >=C++17
+	//  size_t ret = cutil::pow_int<3, int, size_t>(2); // return as size_t
 	template <const size_t exp, typename T, typename R = T>
-	inline constexpr R intPow(const T base) {
+	inline constexpr R pow_int(const T base) {
 		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
 		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
 		if constexpr (exp == 0) {
@@ -505,7 +505,7 @@ inline namespace math { // inline
 		}else if constexpr (exp == 1) {
 			return static_cast<R>(base);
 		}else{
-			return (static_cast<R>(base) * math::intPow<exp - 1, T, R>(base));
+			return (static_cast<R>(base) * math::pow_int<exp - 1, T, R>(base));
 		}
 	}
 	
@@ -527,10 +527,10 @@ inline namespace math { // inline
 	
 #else
 	template <const size_t exp, typename T, typename R = T>
-	inline constexpr R intPow(const T base) {
+	inline constexpr R pow_int(const T base) {
 		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
 		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
-		return math::intPow(base, exp);
+		return math::pow_int(base, exp);
 	}
 	
 	template <const size_t base, typename R = size_t>
@@ -674,43 +674,43 @@ namespace numbers { // not inline
 //======================= Memory Operations =========================
 inline namespace memory {
 	inline constexpr _CUTIL_NODISCARD
-	uint8_t getWordLow(uint16_t word) {
+	uint8_t get_word_low(uint16_t word) {
 		return (uint8_t)(word & 0xFF);
 	}
 	inline constexpr _CUTIL_NODISCARD
-	uint8_t getWordHigh(uint16_t word) {
+	uint8_t get_word_high(uint16_t word) {
 		return (uint8_t)(word >> 8u);
 	}
-	inline void setWordLow(uint16_t& word, uint8_t val) {
+	inline void set_word_low(uint16_t& word, uint8_t val) {
 		word = ((word & 0xFF00) | val);
 	}
-	inline void setWordHigh(uint16_t& word, uint8_t val) {
+	inline void set_word_high(uint16_t& word, uint8_t val) {
 		word = ((word & 0x00FF) | ((uint16_t)val << 8u));
 	}
 /*
 	uint16_t v {0x1234};
-	std::cout << cutil::memory::getWordHigh(0x1234); // -> 12
-	std::cout << cutil::memory::getWordLow(0x1234);  // -> 34
-	cutil::memory::setWordHigh(v, 0x56); // -> 0x5634
+	std::cout << cutil::memory::get_word_high(0x1234); // -> 12
+	std::cout << cutil::memory::get_word_low(0x1234);  // -> 34
+	cutil::memory::set_word_high(v, 0x56); // -> 0x5634
 */
 
 	//* get pointer (in specific type) which points to the address of specific variable
 	template<typename T, typename P = void*> _CUTIL_NODISCARD
-	inline constexpr P getPtr(T& var) { // T must be a left-value reference
+	inline constexpr P get_ptr(T& var) { // T must be a left-value reference
 		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
 		return static_cast<P>(&var);
 	}
 	
 	//* get value from the memory address in the specific type
 	template<typename T, typename P> _CUTIL_NODISCARD
-	inline constexpr T getMem(P ptr) {
+	inline constexpr T read_memory(P ptr) {
 		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
 		return *reinterpret_cast<T*>(ptr);
 	}
 	
 	//* set memory at the specific location in the specific type
 	template<typename T, typename P>
-	inline void setMem(P ptr, T val) {
+	inline void write_memory(P ptr, T val) {
 		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
 		*reinterpret_cast<T*>(ptr) = val;
 	}
@@ -739,19 +739,19 @@ inline namespace memory {
 	
 	//* wrapper for C memory functions, but specify amount of elements, not bytes
 	template<typename T> _CUTIL_MAYBE_UNUSED
-	inline T* memcpyByType(T* out, const T* in, size_t amount = 1) {
+	inline T* memcpy_type(T* out, const T* in, size_t amount = 1) {
 		return memory::memcpy(out, in, sizeof(T) * amount);
 	}
 	template<typename T> _CUTIL_MAYBE_UNUSED
-	inline T* memmoveByType(T* out, const T* in, size_t amount = 1) {
+	inline T* memmove_type(T* out, const T* in, size_t amount = 1) {
 		return memory::memmove(out, in, sizeof(T) * amount);
 	}
 	template<typename T> _CUTIL_MAYBE_UNUSED
-	inline T* memsetByType(T& out, int value, size_t amount = 1) {
+	inline T* memset_type(T& out, int value, size_t amount = 1) {
 		return memory::memset(&out, value, sizeof(T) * amount);
 	}
 	template<typename T> _CUTIL_MAYBE_UNUSED
-	inline int memcmpByType(const T* ptr1, const T* ptr2, size_t amount = 1) {
+	inline int memcmp_type(const T* ptr1, const T* ptr2, size_t amount = 1) {
 		return memory::memcmp(ptr1, ptr2, sizeof(T) * amount);
 	}
 	
@@ -764,14 +764,14 @@ inline namespace memory {
 		}
 	}
 	template<typename T>
-	inline void deletePtr(T*& p) {
+	inline void delete_ptr(T*& p) {
 		if(p != nullptr){
 			delete p;
 			p = nullptr;
 		}
 	}
 	template<typename T>
-	inline void deleteArrayPtr(T*& p) {
+	inline void delete_array(T*& p) {
 		if(p != nullptr){
 			delete[] p;
 			p = nullptr;
@@ -786,48 +786,54 @@ inline namespace memory {
 
 
 //==================== C++ Class Utilities ========================
-namespace detail {
+namespace internal {
 	template <bool isDestructorVirtual>
 	class EmptyClass {};
 	
 	template<>
 	class EmptyClass<true> {
-		public:
-			virtual ~EmptyClass() = default;
+	public:
+		virtual ~EmptyClass() = default;
 	};
 	
 	template<>
 	class EmptyClass<false> {
-		public:
-			~EmptyClass() = default;
+	public:
+		~EmptyClass() = default;
 	};
-} // namespace detail
+} // namespace internal
 
 //* Non Copyable base class
 template<bool isDestructorVirtual = false>
-class NonCopyable : public detail::EmptyClass<isDestructorVirtual> {
-	protected:
-		NonCopyable() = default;
-	private:
-		NonCopyable(const NonCopyable&) = delete;
-		NonCopyable& operator=(const NonCopyable&) = delete;
+class NonCopyable : public internal::EmptyClass<isDestructorVirtual> {
+public:
+	NonCopyable() = default;
+	NonCopyable(const NonCopyable&) = delete;
+	NonCopyable& operator=(const NonCopyable&) = delete;
 };
 
 //* Non Movable base class
 template<bool isDestructorVirtual = false>
-class NonMovable : public detail::EmptyClass<isDestructorVirtual> {
-	protected:
-		NonMovable() = default;
-	private:
-		NonMovable(NonMovable&&) = delete;
-		NonMovable& operator=(NonMovable&&) = delete;
+class NonMovable : public internal::EmptyClass<isDestructorVirtual> {
+public:
+	NonMovable() = default;
+	NonMovable(NonMovable&&) = delete;
+	NonMovable& operator=(NonMovable&&) = delete;
 };
 
 //* Non Copyable And Movable base class
 template<bool isDestructorVirtual = false>
 class NonCopyableAndMovable : public NonCopyable<isDestructorVirtual>, public NonMovable<isDestructorVirtual>
 {};
+/*
+	class nocopy : cutil::NonCopyable<> {
+		~nocopy() = default;
+	};
+	class nocopy2 : cutil::NonCopyable<true> {
+		virtual ~nocopy2() = default;
+	};
 
+*/
 
 
 
