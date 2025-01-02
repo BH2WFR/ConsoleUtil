@@ -113,13 +113,13 @@ static inline auto getTreeModelItemsIter(const TreeModel_t* model) -> std::vecto
 	};
 	traverse(model->rootItem());
 	return items;
+}
+
+
+
+
+
 } // namespace qt
-
-
-
-
-
-
 _CUTIL_NAMESPACE_END
 #endif // QT_VERSION
 #endif // CONSOLEUTIL_QT_UTIL_H__
