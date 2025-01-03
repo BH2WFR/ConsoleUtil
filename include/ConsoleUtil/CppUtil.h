@@ -14,6 +14,14 @@
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
+#include <cassert>
+#include <cmath>
+#include <numeric>
+
+#ifdef CUTIL_CPP20_SUPPORTED
+	#include <bit>
+#endif
+
 _CUTIL_NAMESPACE_BEGIN
 
 
@@ -21,65 +29,70 @@ _CUTIL_NAMESPACE_BEGIN
 //===================== Bool Statements =========================
 
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool equal_any(const T& compared, const Arg& a1) { // end of recursion
-	return (compared == a1);
+inline bool equal_any(T&& compared, Arg&& a1) { // end of recursion
+	return (std::forward<T>(compared) == std::forward<Arg>(a1));
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool equal_all(const T& compared, const Arg& a1) { // end of recursion
-	return (compared == a1);
+inline bool equal_all(T&& compared, Arg&& a1) { // end of recursion
+	return (std::forward<T>(compared) == std::forward<Arg>(a1));
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool unequal_any(const T& compared, const Arg& a1) { // end of recursion
-	return (compared != a1);
+inline bool unequal_any(T&& compared, Arg&& a1) { // end of recursion
+	return (std::forward<T>(compared) != std::forward<Arg>(a1));
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool unequal_all(const T& compared, const Arg& a1) { // end of recursion
-	return (compared != a1);
+inline bool unequal_all(T&& compared, Arg&& a1) { // end of recursion
+	return (std::forward<T>(compared) != std::forward<Arg>(a1));
 }
 template<typename T, typename Arg> _CUTIL_NODISCARD
-inline bool unequal_mutually(const T& a1, const Arg& a2) { // end of recursion
-	return (a1 != a2);
+inline bool unequal_mutually(T&& a1, Arg&& a2) { // end of recursion
+	return (std::forward<T>(a1) != std::forward<Arg>(a2));
 }
 
 //* bool statement: `(compared == arg1 || compared == arg2 || compared == arg3 || ...)`
 //  if 1st param `compared` is equal to ANY of the following arguments, return `true`
-template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool equal_any(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return (compared == a1) || equal_any(compared, a...);
+template<typename T, typename U, typename... E> _CUTIL_NODISCARD
+inline bool equal_any(T&& compared, U&& a1, E&&... a) {
+	return (std::forward<T>(compared) == std::forward<U>(a1))
+			|| cutil::equal_any(std::forward<T>(compared), std::forward<E>(a)...);
 }
 
 //* bool statement: `(compared == arg1 && compared == arg2 && compared == arg3 && ...)`
 //  if 1st param `compared` is equal to ALL of the following arguments, return `true`
-template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool equal_all(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return ((compared == a1) && equal_all(compared, a...));
+template<typename T, typename U, typename... E> _CUTIL_NODISCARD
+inline bool equal_all(T&& compared, U&& a1, E&&... a) {
+	return ((std::forward<T>(compared) == std::forward<U>(a1))
+			&& cutil::equal_all(std::forward<T>(compared), std::forward<E>(a)...));
 }
 
 //* bool statement: `(compared != arg1 || compared != arg2 || compared != arg3 || ...)`
 //  if 1st param `compared` is NOT equal to Any of the following arguments, return `true`
-template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool unequal_any(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return ((compared != a1) || unequal_any(compared, a...));
+template<typename T, typename U, typename... E> _CUTIL_NODISCARD
+inline bool unequal_any(T&& compared, U&& a1, E&&... a) {
+	return ((std::forward<T>(compared) != std::forward<U>(a1))
+			|| cutil::unequal_any(std::forward<T>(compared), std::forward<E>(a)...));
 }
 
 //* bool statement: `(compared != arg1 && compared != arg2 && compared != arg3 && ...)`
 //  if 1st param `compared` is NOT equal to ALL of the following arguments, return `true`
-template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool unequal_all(const T& compared, const Arg1& a1, const ArgElse&... a) {
-	return ((compared != a1) && unequal_all(compared, a...));
+template<typename T, typename U, typename... E> _CUTIL_NODISCARD
+inline bool unequal_all(T&& compared, U&& a1, E&&... a) {
+	return ((std::forward<T>(compared) != std::forward<U>(a1))
+			&& cutil::unequal_all(std::forward<T>(compared), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually nonequal, not recommanded for large amount of arguments
 // if you want to compare more arguments, pls use `std::set` or `std::unordered_set` (hashset)
-template<typename T, typename Arg1, typename... ArgElse> _CUTIL_NODISCARD
-inline bool unequal_mutually(const T& a1, const Arg1& a2, const ArgElse&... a) {
-	return (unequal_all(a1, a2, a...) && unequal_all(a2, a...));
+template<typename T, typename U, typename... E> _CUTIL_NODISCARD
+inline bool unequal_mutually(T&& a1, U&& a2, E&&... a) {
+	return (cutil::unequal_all(std::forward<T>(a1), std::forward<U>(a2), std::forward<E>(a)...)
+			&& cutil::unequal_mutually(std::forward<T>(a2), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually equal
-template<typename T, typename... Args> _CUTIL_NODISCARD
-inline bool equal_mutually(const T& a, const Args&... args) {
-	return equal_all(a, args...);
+template<typename T, typename... E> _CUTIL_NODISCARD
+inline bool equal_mutually(T&& a, E&&... e) {
+	return cutil::equal_all(std::forward<T>(a), std::forward<E>(e)...);
 }
 /* Instruction:
 	int var = 10;
@@ -135,9 +148,15 @@ inline bool equal_mutually(const T& a, const Args&... args) {
 
 //* get if specified value is contained in the container, uses std::find() to compare as .end() iterator
 template<typename T, typename V> inline _CUTIL_NODISCARD
-bool contains(const T& container, const V& value) {
+bool contains(const T& container, const V& value) { // value in std::find is const T&, no need to use std::forward<>()
 	return (std::find(container.begin(), container.end(), value) != container.end());
 }
+#ifdef CUTIL_CPP17_SUPPORTED
+template<typename T, typename V, typename ExecutionPolicy> inline _CUTIL_NODISCARD
+bool contains(ExecutionPolicy&& policy, const T& container, const V& value) { // value in std::find is const T&, no need to use std::forward<>()
+	return (std::find(std::forward<ExecutionPolicy>(policy), container.begin(), container.end(), value) != container.end());
+}
+#endif
 /*
 	std::vector<int> vec = {1, 2, 3, 4, 5};
 	if(cutil::contains(vec, 3)){
@@ -150,87 +169,156 @@ bool contains(const T& container, const V& value) {
 
 //======================= Bit Operations ============================
 inline namespace bit { // inline
-	//* get bits filtered by mask, (num & mask)
+	//* get bits filtered by mask, `(num & mask)`
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T get_bit_by_mask(T num, T bit_mask) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
+	inline constexpr T get_bit_by_mask(T num, T bit_mask) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
 		return (num & bit_mask);
 	}
-	//* set bits specified by mask, (num |= mask)
+	//* set bits specified by mask, `(num | mask)`
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T set_bit_by_mask(T num, T bit_mask) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return (num |= bit_mask);
+	inline constexpr T set_bit_by_mask(T num, T bit_mask) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return (num | bit_mask);
 	}
-	//* clear bits specified by mask, (num &= ~mask)
+	//* clear bits specified by mask, `(num & ~mask)`
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T clear_bit_by_mask(T num, T bit_mask) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return (num &= (~bit_mask));
+	inline constexpr T clear_bit_by_mask(T num, T bit_mask) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return (num & (~bit_mask));
 	}
-	//* flip bits specified by mask, (num ^= mask)
+	//* flip bits specified by mask, `(num ^ mask)`
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T flip_bit_by_mask(T num, T bit_mask) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return (num ^= bit_mask);
+	inline constexpr T flip_bit_by_mask(T num, T bit_mask) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return (num ^ bit_mask);
 	}
-	//* check if bits filtered by mask are zero or not, (bool)(num & mask)
+	//* check if bits filtered by mask are zero or not, `(bool)(num & mask)`
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr bool check_bit_by_mask(T num, T bit_mask) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return static_cast<bool>(get_bit_by_mask(num, bit_mask));
-	}
-	
-	//* get the bit filtered by nth bit, (num & (1<<bit_idx))
-	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T get_bit_by_idx(T num, size_t bit_idx) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return get_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
-	}
-	//* set the bit specified by nth bit, (num |= (1<<bit_idx))
-	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T set_bit_by_idx(T num, size_t bit_idx) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return set_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
-	}
-	//* clear the bit specified by nth bit, (num &= ~(1<<bit_idx))
-	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T clear_bit_by_idx(T num, size_t bit_idx) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return clear_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
-	}
-	//* flip the bit specified by nth bit, (num ^= (1<<bit_idx))
-	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T flip_bit_by_idx(T num, size_t bit_idx) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return flip_bit_by_mask(num, (static_cast<T>(1u) << bit_idx));
-	}
-	//* check if the bit filtered by nth bit is zero or not, (bool)(num & (1<<bit_idx))
-	template<typename T> _CUTIL_NODISCARD
-	inline constexpr bool check_bit_by_idx(T num, size_t bit_idx) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return static_cast<bool>(get_bit_by_idx(num, bit_idx));
+	inline constexpr bool check_bit_by_mask(T num, T bit_mask) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return static_cast<bool>(cutil::bit::get_bit_by_mask(num, bit_mask));
 	}
 	
-	//* rotate bit left by step, (num = ((num << step) | (num >> (sizeof(T) - step))))
+	//* get the bit filtered by nth bit, `(num & (1<<bit_idx))`
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T rotate_bit_left(T bit, const size_t step = 1) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return bit = ((bit << step) | (bit >> (8u * sizeof(T) - step)));
+	inline constexpr T get_bit_by_idx(T num, size_t bit_idx) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		_CUTIL_CONSTEXPR_ASSERT(bit_idx < (8u * sizeof(T)));
+		return cutil::bit::get_bit_by_mask(num, (T)((T)(1u) << bit_idx));
 	}
-	//* rotate bit right by step, (num = ((num >> step) | (num << (sizeof(T) - step))))
+	//* set the bit specified by nth bit, `(num | (1<<bit_idx))`
 	template<typename T> _CUTIL_NODISCARD
-	inline constexpr T rotate_bit_right(T bit, const size_t step = 1) {
-		static_assert(std::is_integral<T>::value, "T must be an integral type");
-		return bit = ((bit >> step) | (bit << (8u * sizeof(T) - step)));
+	inline constexpr T set_bit_by_idx(T num, size_t bit_idx) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		_CUTIL_CONSTEXPR_ASSERT(bit_idx < (8u * sizeof(T)));
+		return cutil::bit::set_bit_by_mask(num, (T)((T)(1u) << bit_idx));
 	}
-} // namespace
+	//* clear the bit specified by nth bit, `(num & ~(1<<bit_idx))`
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr T clear_bit_by_idx(T num, size_t bit_idx) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		_CUTIL_CONSTEXPR_ASSERT(bit_idx < (8u * sizeof(T)));
+		return cutil::bit::clear_bit_by_mask(num, (T)((T)(1u) << bit_idx));
+	}
+	//* flip the bit specified by nth bit, `(num ^ (1<<bit_idx))`
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr T flip_bit_by_idx(T num, size_t bit_idx) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		_CUTIL_CONSTEXPR_ASSERT(bit_idx < (8u * sizeof(T)));
+		return cutil::bit::flip_bit_by_mask(num, (T)((T)(1u) << bit_idx));
+	}
+	//* check if the bit filtered by nth bit is zero or not, `(bool)(num & (1<<bit_idx))`
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr bool check_bit_by_idx(T num, size_t bit_idx) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		_CUTIL_CONSTEXPR_ASSERT(bit_idx < (8u * sizeof(T)));
+		return static_cast<bool>(cutil::bit::get_bit_by_idx(num, bit_idx));
+	}
+	
+	//* rotate bit left by step, `((num << step) | (num >> (sizeof(T) - step)))`
+	//  use std::rotl() since C++20
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T rotate_bit_left(T num, size_t step = 1) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		_CUTIL_CONSTEXPR_ASSERT(step <= 8u * sizeof(T));
+	#ifdef CUTIL_CXX20_SUPPORTED
+		return std::rotl(num, step); // x86 and ARM have CPU instructions for this
+	#else
+		return ((num << step) | (num >> (8u * sizeof(T) - step)));
+	#endif
+	}
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T rotl(T num, size_t step = 1) noexcept {
+		return cutil::bit::rotate_bit_left(num, step);
+	}
+	
+	//* rotate bit right by step, `((num >> step) | (num << (sizeof(T) - step)))`
+	//  use std::rotr() since C++20
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T rotate_bit_right(T num, size_t step = 1) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		_CUTIL_CONSTEXPR_ASSERT(step <= 8u * sizeof(T));
+	#ifdef CUTIL_CXX20_SUPPORTED
+		return std::rotr(num, step); // x86 and ARM have CPU instructions for this
+	#else
+		return ((num >> step) | (num << (8u * sizeof(T) - step)));
+	#endif
+	}
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T rotr(T num, size_t step = 1) noexcept {
+		return cutil::bit::rotate_bit_right(num, step);
+	}
+	
+	//* insert bit to the left, then shift others to right. `(bit >> 1) | (inserted << (bitSize - 1))`
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T insert_bit_left(T num, bool inserted = true) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return (num >> 1) | (static_cast<T>(inserted) << (8u * sizeof(T) - 1));
+	}
+	
+	//* insert bit to the right, then shift others to left. `(bit << 1) | inserted`
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T insert_bit_right(T num, bool inserted = true) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return (num << 1) | static_cast<T>(inserted);
+	}
+	
+	//* get lsb (least significant bit, the rightmost bit)
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T get_lsb(T num) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return (num & 1);
+	}
+	
+	//* get msb (most significant bit, the leftmost bit)
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	T get_msb(T num) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+		return (num & (1u << (8u * sizeof(T) - 1)));
+	}
+	
+	//* has_single_bit, check if the number is power of 2 ({1, 2, 4, 8...})
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	bool has_single_bit(T num) noexcept {
+		static_assert(std::is_integral<T>::value && std::is_unsigned<T>::value, "T must be an unsigned integral type");
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::has_single_bit(num);
+	#else
+		return num != 0 && (num & (num - 1)) == 0;
+	#endif
+	}
+	// check if the number is power of 2 ({1, 2, 4, 8...})
+	template<typename T> _CUTIL_NODISCARD inline constexpr
+	bool is_power_of_2(T num) noexcept {
+		return cutil::bit::has_single_bit(num);
+	}
 /*
 	uint16_t num {0};
 	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
-	num = cutil::bit::set_bit_by_idx(num, 1);   // equals to {num |=  (1u << 0));}
-	num = cutil::bit::clear_bit_by_idx(num, 2); // equals to {num &= ~(1u << 2));}
-	num = cutil::bit::flip_bit_by_idx(num, 3);  // equals to {num ^=  (1u << 3));}
+	num = cutil::bit::set_bit_by_idx(num, 1);   // equals to {num = num |  (1u << 0));}
+	num = cutil::bit::clear_bit_by_idx(num, 2); // equals to {num = num & ~(1u << 2));}
+	num = cutil::bit::flip_bit_by_idx(num, 3);  // equals to {num = num ^  (1u << 3));}
 	if(cutil::bit::get_bit_by_idx(num, 0) != 0x0000){ // reading bit, if bit is 1, returns `(1<<bitIdx)`, NOT `1`
 		printf("%x\n", num);
 	}
@@ -239,9 +327,9 @@ inline namespace bit { // inline
 	}
 	
 	// operate bit by mask
-	num = cutil::bit::set_bit_by_mask(num, 0x2B00);   // equals to {num |=  0x2B00;}
-	num = cutil::bit::clear_bit_by_mask(num, 0x2B00); // equals to {num &= ~0x2B00;}
-	num = cutil::bit::flip_bit_by_mask(num, 0x1100);  // equals to {num ^=  0x1100;}
+	num = cutil::bit::set_bit_by_mask(num, 0x2B00);   // equals to {num = num |  0x2B00;}
+	num = cutil::bit::clear_bit_by_mask(num, 0x2B00); // equals to {num = num & ~0x2B00;}
+	num = cutil::bit::flip_bit_by_mask(num, 0x1100);  // equals to {num = num ^  0x1100;}
 	if(cutil::bit::get_bit_by_mask(num, 0x0022) != 0x0000){
 		printf("%x\n", num);
 	}
@@ -256,301 +344,47 @@ inline namespace bit { // inline
 	var = cutil::bit::rotate_bit_left(var, 4);	-> 0b0010'0100'0110'1000
 	fmt::println("var={:#016b}", var);
 	
+	// insert bit.
+	uint16_t var2 {0b0001'0010'0011'0100};
+	var2 = cutil::bit::insert_bit_left(var2, true);	  -> 0b1000'1001'0001'1010
+	var2 = cutil::bit::insert_bit_right(var2, false); -> 0b0001'0010'0011'0100
+	
+	// get msb and lsb (liftmost and rightmost bit)
+	var = cutil::bit::get_msb(0xFFFF); // get msb -> 0x8000
+	var = cutil::bit::get_lsb(0xFFFF); // get lsb -> 0x0001
+	
+	// check if the number is power of 2 ({1, 2, 4, 8...})
+	bool out = cutil::bit::has_single_bit(num));
+	
 */
-
-
-
-
-//* assign bitwise, (memcpy(&out, &in, sizeof(T)))
-template<typename Out, typename In>
-inline void bitwise_memcpy(Out& out, const In& in) {
-	static_assert(std::is_trivially_copyable<Out>::value, "Out and In must be a trivially copyable type");
-	static_assert(std::is_trivially_copyable<In>::value, "In must be a trivially copyable type");
-	static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
-	std::memcpy(&out, &in, sizeof(Out));
-}
-/*
-	cutil::bitwise_memcpy(f, i) // i -> f, bitwise memcpy
-	f = reinterpret_cast<decltype(f)>(i);   // equivelent
-	// auto f = std::bit_cast<float>(i) // C++20
-*/
-
-
-
-//======================= Numeric and Math Operations =========================
-inline namespace math { // inline
-	//* limit the numeric variable to the range [_MIN, _MAX], same as `std::clamp(var, min, max)` in C++17
-	template<typename T, typename R> _CUTIL_NODISCARD
-	inline constexpr T clamp(T var, R min, R max) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		return (var < min) ? min : (var > max) ? max : var;
+	inline constexpr _CUTIL_NODISCARD
+	uint8_t get_word_low(uint16_t word) {
+		return (uint8_t)(word & 0xFF);
 	}
-	//* limit the numeric variable to the range [_MIN, _MAX], same as `var = std::clamp(var, min, max)` in C++17
-	template<typename T, typename R>
-	inline void limit(T& var, R min, R max) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if (var < min) var = min;
-		if (var > max) var = max;
+	inline constexpr _CUTIL_NODISCARD
+	uint8_t get_word_high(uint16_t word) {
+		return (uint8_t)(word >> 8u);
 	}
-	
-	//* get if a numeric variable is within the range [_MIN, _MAX]
-	template<typename T, typename R> _CUTIL_NODISCARD
-	inline constexpr bool num_in_range(T var, R min, R max) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		return (var >= min) && (var <= max);
+	inline void set_word_low(uint16_t& word, uint8_t val) {
+		word = ((word & 0xFF00) | val);
 	}
-	//* get if a numeric variable is within the range (_MIN, _MAX)
-	template<typename T, typename R> _CUTIL_NODISCARD
-	inline constexpr bool num_in_open_range(T var, R min, R max) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		return (var > min) && (var < max);
-	}
-	
-#ifdef CUTIL_CPP17_SUPPORTED //* >= C++17
-	//* Comparison function to check if a value is within a specified range
-	template <bool LeftClosed, bool RightClosed, typename T> _CUTIL_NODISCARD
-	inline constexpr bool num_in_range(T var, T min, T max) {
-		if constexpr (LeftClosed && RightClosed) {
-			return (var >= min) && (var <= max); // [min, max]
-		} else if constexpr (LeftClosed && !RightClosed) {
-			return (var >= min) && (var < max);  // [min, max)
-		} else if constexpr (!LeftClosed && RightClosed) {
-			return (var > min) && (var <= max);  // (min, max]
-		} else {
-			return (var > min) && (var < max);   // (min, max)
-		}
-	}
-#endif
-/*
-	int a = 35, b = 26, c = 19, d = 35;
-	d = std::clamp(d, 20, 30);  		// C++17, equivalent to above
-	d = cutil::math::clamp(d, 20, 30); 	// C++11, equivalent to above
-	cutil::limit(d, 20, 30);			// d: 30, only modify value
-	printf("%d %d %d\n", a, b, c); // output: 30 26 20
-	
-
-	bool ret = cutil::math::num_in_range(a, 20, 40);				  // whether a is in [20, 40]
-	bool ret = cutil::math::num_in_open_range(c, 20, 30);			  // whether c is in (20, 30)
-	bool ret = cutil::math::num_in_range<true, true>(a, 20, 40);	  // whether a is in [20, 40], C++17
-	bool ret = cutil::math::num_in_range<true, false>(a, 20, 40);  // whether a is in [20, 40), C++17
-	bool ret = cutil::math::num_in_range<false, false>(a, 20, 40); // whether a is in [20, 40], C++17
-*/
-
-
-	//* increase the value of variable, but if the value exceeds the limit(>=), it will not be increased
-	template<typename T, typename L>
-	inline void increase_under_limit(T& var, L max, size_t inc) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var < max) var += inc;
-	}
-	template<typename T, typename L>
-	inline void increase_under_limit(T& var, L max){
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var < max) ++var;
-	}
-	
-	//* decrease the value of variable, but if the value is less than the limit(<=), it will not be decreased
-	template<typename T, typename L>
-	inline void decrease_above_limit(T& var, L min, size_t dec) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var > min) var -= dec;
-	}
-	template<typename T, typename L>
-	inline void decrease_above_limit(T& var, L min){
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var > min) --var;
-	}
-	
-	//* increase the value of variable, and rolling within the range [_MIN, _MAX]
-	template<typename T, typename R>
-	inline void increase_rolling(T& var, R min, R max, size_t inc) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var < max) var += inc;
-		else var = min;
-	}
-	template<typename T, typename R>
-	inline void increase_rolling(T& var, R min, R max) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var < max) var++;
-		else var = min;
-	}
-	
-	//* decrease the value of variable, and rolling within the range [_MIN, _MAX]
-	template<typename T, typename R>
-	inline void decrease_rolling(T& var, R min, R max, size_t dec) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var > min) var -= dec;
-		else var = max;
-	}
-	template<typename T, typename R>
-	inline void decrease_rolling(T& var, R min, R max) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		if(var > min) var--;
-		else var = max;
-	}
-	
-	//* increase the value of variable, and prevent overflowing,
-	// if it is near to be overflowed, it will not increased any more and return true.
-	template<typename T>
-	inline constexpr bool increase_no_overflow(T& var, size_t inc) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		return ((T)(var + inc) > var) ? (var += inc, false) : (true);
-	}
-	template<typename T>
-	inline constexpr bool increase_no_overflow(T& var) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		return ((T)(var + 1) > var) ? (var++, false) : (true);
-	}
-	//* decrease the value of variable, and prevent overflowing,
-	// if it is near to be overflowed, it will not decreased any more and return true.
-	template<typename T>
-	inline constexpr bool decrease_no_overflow(T& var, size_t dec) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		return ((T)(var - dec) < var) ? (var -= dec, false) : (true);
-	}
-	template<typename T>
-	inline constexpr bool decrease_no_overflow(T& var) {
-		// static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
-		return ((T)(var - 1) < var) ? (var--, false) : (true);
+	inline void set_word_high(uint16_t& word, uint8_t val) {
+		word = ((word & 0x00FF) | ((uint16_t)val << 8u));
 	}
 /*
-	int8_t num = 0;
-	cutil::math::increase_under_limit(num, 5, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
-	cutil::math::increase_under_limit(num, 5);    // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
-	cutil::math::decrease_above_limit(num, 0, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
-	cutil::math::decrease_above_limit(num, 0);    // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
-
-	cutil::math::increase_rolling(num, 0, 5, 1);  // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
-	cutil::math::increase_rolling(num, 0, 5);     // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
-	cutil::math::decrease_rolling(num, 0, 5, 1);  // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
-	cutil::math::decrease_rolling(num, 0, 5);     // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
-	
-	num = 124;
-	bool isOverflowed  = cutil::math::increase_no_overflow(num, 1); // prevent overflowing, 125 126 127 127 127 127, returns true if near to overflow
-	bool isOverflowed2 = cutil::math::increase_no_overflow(num);    // equivelent
-	num = -125;
-	bool isOverflowed3 = cutil::math::decrease_no_overflow(num, 1); // prevent overflowing, -126 -127 -128 -128 -128 -128, returns true if near to overflow
-	bool isOverflowed4 = cutil::math::decrease_no_overflow(num);    // equivelent
-
+	uint16_t v {0x1234};
+	std::cout << cutil::memory::get_word_high(0x1234); // -> 12
+	std::cout << cutil::memory::get_word_low(0x1234);  // -> 34
+	cutil::memory::set_word_high(v, 0x56); // -> 0x5634
 */
-	
-	
-	
-	//* Compares two floating-point numbers for equality within a specified epsilon.
-	template<typename T> _CUTIL_NODISCARD
-	inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) {
-		static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
-		return (std::abs(a - b) <= epsilon); // overloaded abs() for floating number in <cstdlib>
-	}
-/*
-	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
-	bool isEqual5 = cutil::math::fequal(c, d, 0.0001); // equivelent
-*/
-	
-	
-	//* int ret = cutil::pow_int(2, 3); // 2^3 = 8, needs >=C++14
-	//  size_t ret = cutil::pow_int<int, size_t>(2, 3); // return as size_t
-	template <typename T, typename R = T> _CUTIL_NODISCARD
-	inline _CUTIL_CONSTEXPR_CPP14 R pow_int(const T base, const size_t exp) {
-		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
-		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
-		if(exp == 0){
-			return static_cast<R>(1);
-		}
-		if(exp == 1){
-			return static_cast<R>(base);
-		}
-		if(exp == 2){
-			return static_cast<R>(base * base);
-		}
-		if(exp == 3){
-			return static_cast<R>(base * base * base);
-		}
-		R result = base;
-		for(size_t i = 1; i < exp; ++i){
-			result *= base;
-		}
-		return result;
-	}
 
-	//* int ret = cutil::factorial(3); // 3! = 6
-	//  size_t ret = cutil::factorial<int, size_t>(3); // return as size_t
-	template <typename T, typename R = T> _CUTIL_NODISCARD
-	inline _CUTIL_CONSTEXPR_CPP14 R factorial(const T base) {
-		static_assert(std::is_integral<T>::value, "factorial must be an integer value.");
-		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
-		if (base <= 1) {
-			return static_cast<R>(1);
-		}else if(base == 2){
-			return static_cast<R>(2);
-		}else if(base == 3){
-			return static_cast<R>(6);
-		}
-		R result = base;
-		for(T i = (base - 1); i > 1; --i){
-			result *= i;
-		}
-		return result;
-	}
-	
-#ifdef CUTIL_CPP17_SUPPORTED
-	//* int ret = cutil::pow_int<3>(2); // 2^3 = 8, 需要 >=C++17
-	//  size_t ret = cutil::pow_int<3, int, size_t>(2); // return as size_t
-	template <const size_t exp, typename T, typename R = T>
-	inline constexpr R pow_int(const T base) {
-		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
-		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
-		if constexpr (exp == 0) {
-			return static_cast<R>(1);
-		}else if constexpr (exp == 1) {
-			return static_cast<R>(base);
-		}else{
-			return (static_cast<R>(base) * math::pow_int<exp - 1, T, R>(base));
-		}
-	}
-	
-	//* int ret = cutil::factorial<3>(); // 3! = 6
-	//  size_t ret = cutil::factorial<3, size_t>(); // return as size_t
-	template <const size_t base, typename R = size_t>
-	inline constexpr R factorial() {
-		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
-		if constexpr (base <= 1) {
-			return static_cast<R>(1);
-		}else if constexpr (base == 2) {
-			return static_cast<R>(2);
-		}else if constexpr (base == 3) {
-			return static_cast<R>(6);
-		}else{
-			return static_cast<R>(base) * math::factorial<base - 1, R>();
-		}
-	}
-	
-#else
-	template <const size_t exp, typename T, typename R = T>
-	inline constexpr R pow_int(const T base) {
-		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
-		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
-		return math::pow_int(base, exp);
-	}
-	
-	template <const size_t base, typename R = size_t>
-	inline constexpr R factorial() {
-		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
-		return math::factorial<R>(base);
-	}
-#endif // C++17
-	
-	
-} // namespace math
-
-
-
+} // namespace bit
 
 
 
 //======================= Math Constants =========================
 
-namespace numbers { // not inline
+inline namespace numbers { // inline
 	template <typename T>
 	struct Numbers {
 		static_assert(std::is_floating_point<T>::value, "T must be a floating-point type");
@@ -670,52 +504,546 @@ namespace numbers { // not inline
 
 
 
+//======================= Numeric and Math Operations =========================
+inline namespace math { // inline
+	//* limit the numeric variable to the range [_MIN, _MAX], same as `std::clamp(var, min, max)` in C++17
+	template<typename T, typename R = T> _CUTIL_NODISCARD
+	inline constexpr T clamp(T var, R min, R max) {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		_CUTIL_CONSTEXPR_ASSERT(min < max);
+	#ifdef CUTIL_CPP17_SUPPORTED
+		return std::clamp(var, min, max);
+	#else
+		return (var < min) ? min : (var > max) ? max : var;
+	#endif
+	}
+	//* limit the numeric variable to the range [_MIN, _MAX], same as `var = std::clamp(var, min, max)` in C++17
+	template<typename T, typename R = T>
+	inline void limit(T& var, R min, R max) {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		var = math::clamp(var, min, max);
+	}
+	
+	//* get if a numeric variable is within the interval [_MIN, _MAX]
+	template<typename T, typename R = T> _CUTIL_NODISCARD
+	inline constexpr bool num_in_interval(T var, R min, R max) {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		_CUTIL_CONSTEXPR_ASSERT(min < max);
+		return (var >= min) && (var <= max);
+	}
+	//* get if a numeric variable is within the interval (_MIN, _MAX)
+	template<typename T, typename R = T> _CUTIL_NODISCARD
+	inline constexpr bool num_in_open_interval(T var, R min, R max) {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		_CUTIL_CONSTEXPR_ASSERT(min < max);
+		return (var > min) && (var < max);
+	}
+	
+#ifdef CUTIL_CPP17_SUPPORTED //* >= C++17
+	//* Comparison function to check if a value is within a specified interval
+	template <bool LeftClosed, bool RightClosed, typename T, typename R = T> _CUTIL_NODISCARD
+	inline constexpr bool num_in_interval(T var, R min, R max) {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		_CUTIL_CONSTEXPR_ASSERT((min < max));
+		if constexpr (LeftClosed && RightClosed) {
+			return (var >= min) && (var <= max); // [min, max]
+		} else if constexpr (LeftClosed && !RightClosed) {
+			return (var >= min) && (var < max);  // [min, max)
+		} else if constexpr (!LeftClosed && RightClosed) {
+			return (var > min) && (var <= max);  // (min, max]
+		} else {
+			return (var > min) && (var < max);   // (min, max)
+		}
+	}
+#else
+	
+#endif
+/*
+	int a = 35, b = 26, c = 19, d = 35;
+	d = std::clamp(d, 20, 30);  		// C++17, equivalent to above
+	d = cutil::math::clamp(d, 20, 30); 	// C++11, equivalent to above
+	cutil::limit(d, 20, 30);			// d: 30, only modify value
+	printf("%d %d %d\n", a, b, c); // output: 30 26 20
+	
+
+	bool ret = cutil::math::num_in_interval(a, 20, 40);				  // whether a is in [20, 40]
+	bool ret = cutil::math::num_in_open_interval(c, 20, 30);		  // whether c is in (20, 30)
+	bool ret = cutil::math::num_in_interval<true, true>(a, 20, 40);	  // whether a is in [20, 40], C++17
+	bool ret = cutil::math::num_in_interval<true, false>(a, 20, 40);  // whether a is in [20, 40), C++17
+	bool ret = cutil::math::num_in_interval<false, false>(a, 20, 40); // whether a is in [20, 40], C++17
+*/
+
+
+	//* increase the value of variable, but if the result exceeds the limit(>=), it will not be increased
+	//  if exceeded, returns true.
+	template<typename T, typename L = T>
+	inline bool increase_under_limit(T& var, L max, int inc) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<L>::value, "T and L must be an arithmetic type");
+		assert(var <= max); assert(inc > 0);
+		if((var + inc) <= max) {
+			var += inc;
+			return false;
+		}
+		return true;
+	}
+	template<typename T, typename L = T>
+	inline bool increase_under_limit(T& var, L max) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<L>::value, "T and L must be an arithmetic type");
+		assert(var <= max);
+		if(var < max) {
+			++var;
+			return false;
+		}
+		return true;
+	}
+	// increase the value of variable, but if the result exceeds the limit(>=), it will be clamped to the limit
+	// if clamped, returns true.
+	template<typename T, typename L = T>
+	inline bool increase_under_limit_clamp(T& var, L max, int inc) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<L>::value, "T and L must be an arithmetic type");
+		assert(var <= max);
+		assert(inc > 0);
+		if((var + inc) <= max) {
+			var += inc;
+			return false;
+		}
+		var = max;
+		return true;
+	}
+	
+	//* decrease the value of variable, but if the result is less than the limit(<=), it will not be decreased
+	//  if exceeded, returns true.
+	template<typename T, typename L = T>
+	inline bool decrease_above_limit(T& var, L min, int dec) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<L>::value, "T and L must be an arithmetic type");
+		assert(var >= min); assert(dec > 0);
+		if((var - dec) >= min){
+			var -= dec;
+			return false;
+		}
+		return true;
+	}
+	template<typename T, typename L = T>
+	inline bool decrease_above_limit(T& var, L min) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<L>::value, "T and L must be an arithmetic type");
+		assert(var >= min);
+		if(var > min){
+			--var;
+			return false;
+		}
+		return true;
+	}
+	// decrease the value of variable, but if the result is less than the limit(<=), it will be clamped to the limit
+	// if clamped, returns true.
+	template<typename T, typename L = T>
+	inline bool decrease_above_limit_clamp(T& var, L min, int dec) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<L>::value, "T and L must be an arithmetic type");
+		assert(var >= min); assert(dec > 0);
+		if((var - dec) >= min){
+			var -= dec;
+			return false;
+		}
+		var = min;
+		return true;
+	}
+	
+	//* increase the value of variable, and rolling within the range [_MIN, _MAX]
+	//  if rolled, returns true.
+	template<typename T, typename R = T>
+	inline bool increase_rolling(T& var, R min, R max, int inc) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		assert(min < max); assert(var >= min); assert(var <= max); assert(inc > 0);
+		if((var + inc) <= max){
+			var += inc;
+			return false;
+		}
+		var = min;
+		return true;
+	}
+	template<typename T, typename R = T>
+	inline bool increase_rolling(T& var, R min, R max) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		assert(min < max); assert(var >= min); assert(var <= max);
+		if(var < max){
+			var++;
+			return false;
+		}
+		var = min;
+		return true;
+	}
+	
+	//* decrease the value of variable, and rolling within the range [_MIN, _MAX]
+	//  if rolled, returns true.
+	template<typename T, typename R = T>
+	inline bool decrease_rolling(T& var, R min, R max, int dec) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		assert(min < max); assert(var >= min); assert(var <= max); assert(dec > 0);
+		if((var - dec) >= min){
+			var -= dec;
+			return false;
+		}
+		var = max;
+		return true;
+	}
+	template<typename T, typename R = T>
+	inline bool decrease_rolling(T& var, R min, R max) noexcept {
+		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<R>::value, "T and R must be an arithmetic type");
+		assert(min < max); assert(var >= min); assert(var <= max);
+		if(var > min){
+			var--;
+			return false;
+		}
+		var = max;
+		return true;
+	}
+	
+	//* increase the value of variable, and prevent overflowing,
+	// if it is near to be overflowed, it will not increased any more and return true.
+	template<typename T>
+	inline bool increase_no_overflow(T& var, int inc = 1) noexcept {
+		static_assert(std::is_integral<T>::value, "T must be an arithmetic type");
+		assert(inc > 0);
+		return (static_cast<T>(var + inc) > var) ? (var += inc, false) : (true);
+	}
+	//* decrease the value of variable, and prevent underflowing,
+	// if it is near to be underflowed, it will not decreased any more and return true.
+	template<typename T>
+	inline bool decrease_no_underflow(T& var, int dec = 1) noexcept {
+		static_assert(std::is_integral<T>::value, "T must be an arithmetic type");
+		assert(dec > 0);
+		return (static_cast<T>(var - dec) < var) ? (var -= dec, false) : (true);
+	}
+/*
+	int8_t num = 0;
+	cutil::math::increase_under_limit(num, 5, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::math::increase_under_limit(num, 5);    // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::math::decrease_above_limit(num, 0, 1); // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+	cutil::math::decrease_above_limit(num, 0);    // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
+
+	cutil::math::increase_rolling(num, 0, 5, 1);  // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+	cutil::math::increase_rolling(num, 0, 5);     // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+	cutil::math::decrease_rolling(num, 0, 5, 1);  // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+	cutil::math::decrease_rolling(num, 0, 5);     // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+	
+	num = 124;
+	bool isOverflowed  = cutil::math::increase_no_overflow(num, 1); // prevent overflowing, 125 126 127 127 127 127, returns true if near to overflow
+	bool isOverflowed2 = cutil::math::increase_no_overflow(num);    // equivelent
+	num = -125;
+	bool isOverflowed3 = cutil::math::decrease_no_underflow(num, 1); // prevent underflowing, -126 -127 -128 -128 -128 -128, returns true if near to overflow
+	bool isOverflowed4 = cutil::math::decrease_no_underflow(num);    // equivelent
+
+*/
+	//* abs of an integer, overloaded for unsigned integer types, and it's constexpr.
+	template<typename T> _CUTIL_NODISCARD constexpr
+	inline T abs(T num) noexcept {
+		static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+	#ifdef CUTIL_CPP23_SUPPORTED
+		return std::abs(num);	// std::abs() is constexpr since C++23
+	#else
+		return (num < 0) ? -num : num;
+	#endif
+	}
+	template<> _CUTIL_NODISCARD constexpr
+	inline uint8_t abs(uint8_t num) noexcept {
+		return num;
+	}
+	template<> _CUTIL_NODISCARD constexpr
+	inline uint16_t abs(uint16_t num) noexcept {
+		return num;
+	}
+	template<> _CUTIL_NODISCARD constexpr
+	inline uint32_t abs(uint32_t num) noexcept {
+		return num;
+	}
+	template<> _CUTIL_NODISCARD constexpr
+	inline uint64_t abs(uint64_t num) noexcept {
+		return num;
+	}
+	
+	
+	//* get gcd (greatest common divisor)
+	template<typename T> _CUTIL_NODISCARD _CUTIL_CONSTEXPR_CPP14
+	inline T gcd(T a, T b) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+	#ifdef CUTIL_CPP17_SUPPORTED
+		return std::gcd(a, b);
+	#else
+		if(b == 0) return cutil::math::abs(a);
+		if(a == 0) return cutil::math::abs(b);
+		return cutil::math::gcd(b, a % b);
+	#endif
+	}
+	
+	//* get lcm (least common multiple)
+	template<typename T> _CUTIL_NODISCARD _CUTIL_CONSTEXPR_CPP14
+	inline T lcm(T a, T b) {
+		static_assert(std::is_integral<T>::value, "T must be an integral type");
+	#ifdef CUTIL_CPP17_SUPPORTED
+		return std::lcm(a, b);
+	#else
+		return cutil::math::abs(a * b / cutil::math::gcd(a, b));
+	#endif
+	}
+	
+	
+	//* Compares two floating-point numbers for equality within a specified epsilon.
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
+		static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
+		_CUTIL_CONSTEXPR_ASSERT(epsilon >= 0);
+		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(a) && std::isfinite(b) && std::isfinite(epsilon));
+		return (std::abs(a - b) <= epsilon); // overloaded abs() for floating number in <cstdlib>
+	}
+/*
+	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
+	bool isEqual5 = cutil::math::fequal(c, d, 0.0001); // equivelent
+*/
+	
+	
+	//* convert degrees to radians, (degree * M_PI / 180.0)
+	// `cutil::fequal(cutil::numbers::pi_3, cutil::math::deg2rad(60.0)) == true`
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr T deg2rad(T degree) noexcept {
+		static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
+		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(degree));
+		return (degree * cutil::numbers::Numbers<T>::pi / (T)(180.0));
+	}
+	
+	//* convert radians to degrees, (radian * 180.0 / M_PI)
+	// `cutil::fequal(60.0, cutil::math::rad2deg(cutil::numbers::pi_3)) == true`
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr T rad2deg(T radian) noexcept {
+		static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
+		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(radian));
+		return (radian * (T)(180.0) / cutil::numbers::Numbers<T>::pi);
+	}
+	
+	//* linear interpolation, (a + (b - a) * t)
+	//  t should be in the range [0, 1]. if t = 0, returns a; if t == 1, returns b.
+	//  use std::lerp() since C++20
+	template<typename A, typename T> _CUTIL_NODISCARD
+	inline constexpr T lerp(A a, A b, T t) noexcept {
+		static_assert(std::is_floating_point<T>::value, "T must be a floating point type");
+		// _CUTIL_CONSTEXPR_ASSERT(t >= 0 && t <= 1);
+		_CUTIL_CONSTEXPR_ASSERT(a <= b);
+		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(t));
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::lerp((T)a, (T)b, t);
+	#else
+		return ((T)a + t * ((T)b - (T)a));
+	#endif
+	}
+	
+	//* get midpoint of two numbers
+	// if a and b are integers, the result is also truncated to an integer.
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr T midpoint(T a, T b) noexcept {
+		static_assert(std::is_arithmetic<T>::value, "T must be an arithmetic type");
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::midpoint(a, b);
+	#else
+		return (a + b) / 2;
+	#endif
+	}
+	
+	//* int ret = cutil::pow_int(2, 3); // 2^3 = 8
+	//  size_t ret = cutil::pow_int<int, size_t>(2, 3); // return as size_t
+	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
+	template <typename T, typename R = T> _CUTIL_NODISCARD
+	inline _CUTIL_CONSTEXPR_CPP14 R pow_int(const T base, const size_t exp) {
+		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
+		assert(exp >= 0);
+		if(exp == 0){
+			return static_cast<R>(1);
+		}
+		if(exp == 1){
+			return static_cast<R>(base);
+		}
+		if(exp == 2){
+			return static_cast<R>(base * base);
+		}
+		if(exp == 3){
+			return static_cast<R>(base * base * base);
+		}
+		// R result = base;
+		// for(size_t i = 1; i < exp; ++i){
+		// 	result *= base;
+		// }
+		// return result;
+		int tmp = cutil::math::pow_int(base, exp/2);
+		if (exp % 2 == 0){
+			return static_cast<R>(tmp * tmp);
+		}else{
+			return static_cast<R>(base * tmp * tmp);
+		}
+	}
+
+	//* int ret = cutil::factorial(3); // 3! = 6
+	//  size_t ret = cutil::factorial<int, size_t>(3); // return as size_t
+	template <typename T, typename R = T> _CUTIL_NODISCARD
+	inline _CUTIL_CONSTEXPR_CPP14 R factorial(const T base) {
+		static_assert(std::is_arithmetic<T>::value, "factorial must be an number.");
+		static_assert(std::is_arithmetic<R>::value, "Return type must be an number.");
+		assert(base >= 0);
+		assert(base <= 40);
+		if (base <= 1) {
+			return static_cast<R>(1);
+		}else if(base == 2){
+			return static_cast<R>(2);
+		}else if(base == 3){
+			return static_cast<R>(6);
+		}
+		R result = base;
+		for(T i = (base - 1); i > 1; --i){
+			result *= i;
+		}
+		return result;
+	}
+	
+#ifdef CUTIL_CPP17_SUPPORTED
+	//* int ret = cutil::pow_int<3>(2); // 2^3 = 8, 需要 >=C++17
+	//  size_t ret = cutil::pow_int<3, int, size_t>(2); // return as size_t
+	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
+	template <const size_t exp, typename T, typename R = T> _CUTIL_NODISCARD
+	inline constexpr R pow_int(const T base) {
+		static_assert(std::is_integral<T>::value, "Exponent must be an integer value.");
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
+		static_assert(exp >= 0);
+		if constexpr (exp == 0) {
+			return static_cast<R>(1);
+		}else if constexpr (exp == 1) {
+			return static_cast<R>(base);
+		}else if constexpr (exp == 2) {
+			return static_cast<R>(base * base);
+		}else if constexpr (exp == 3) {
+			return static_cast<R>(base * base * base);
+		}
+		// else{
+		// 	return (static_cast<R>(base) * math::pow_int<exp - 1, T, R>(base));
+		// }
+		R tmp = cutil::math::pow_int<exp / 2, T, R>(base);
+		if (exp % 2 == 0){
+			return static_cast<R>(tmp * tmp);
+		}else{
+			return static_cast<R>(base * tmp * tmp);
+		}
+	}
+	
+	//* int ret = cutil::factorial<3>(); // 3! = 6
+	//  size_t ret = cutil::factorial<3, size_t>(); // return as size_t
+	template <const size_t base, typename R = size_t> _CUTIL_NODISCARD
+	inline constexpr R factorial() {
+		static_assert(std::is_integral<R>::value, "Return type must be an integer value.");
+		static_assert(base >= 0);
+		if constexpr (base <= 1) {
+			return static_cast<R>(1);
+		}else if constexpr (base == 2) {
+			return static_cast<R>(2);
+		}else if constexpr (base == 3) {
+			return static_cast<R>(6);
+		}else{
+			return static_cast<R>(base) * cutil::math::factorial<base - 1, R>();
+		}
+	}
+	
+#else
+	template <const size_t exp, typename T, typename R = T> _CUTIL_NODISCARD
+	inline constexpr R pow_int(const T base) {
+		return cutil::math::pow_int(base, exp);
+	}
+	
+	template <const size_t base, typename R = size_t> _CUTIL_NODISCARD
+	inline constexpr R factorial() {
+		return cutil::math::factorial<R>(base);
+	}
+#endif // C++17
+	
+	
+} // namespace math
+
+
+
+
+
+
 
 //======================= Memory Operations =========================
 inline namespace memory {
-	inline constexpr _CUTIL_NODISCARD
-	uint8_t get_word_low(uint16_t word) {
-		return (uint8_t)(word & 0xFF);
-	}
-	inline constexpr _CUTIL_NODISCARD
-	uint8_t get_word_high(uint16_t word) {
-		return (uint8_t)(word >> 8u);
-	}
-	inline void set_word_low(uint16_t& word, uint8_t val) {
-		word = ((word & 0xFF00) | val);
-	}
-	inline void set_word_high(uint16_t& word, uint8_t val) {
-		word = ((word & 0x00FF) | ((uint16_t)val << 8u));
-	}
-/*
-	uint16_t v {0x1234};
-	std::cout << cutil::memory::get_word_high(0x1234); // -> 12
-	std::cout << cutil::memory::get_word_low(0x1234);  // -> 34
-	cutil::memory::set_word_high(v, 0x56); // -> 0x5634
-*/
-
-	//* get pointer (in specific type) which points to the address of specific variable
-	template<typename T, typename P = void*> _CUTIL_NODISCARD
-	inline constexpr P get_ptr(T& var) { // T must be a left-value reference
-		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
-		return static_cast<P>(&var);
+	
+	//* assign bitwise, `(memcpy(&out, &in, sizeof(T)))`
+	template<typename Out, typename In>
+	inline void bitwise_memcpy(Out& out, In&& in) {
+		// static_assert(std::is_trivially_copyable<Out>::value, "Out and In must be a trivially copyable type");
+		// static_assert(std::is_trivially_copyable<std::decay<In>::type>::value, "In must be a trivially copyable type");
+		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
+		std::memcpy(&out, &in, sizeof(Out));
 	}
 	
-	//* get value from the memory address in the specific type
-	template<typename T, typename P> _CUTIL_NODISCARD
-	inline constexpr T read_memory(P ptr) {
+	//* cast bitwise, `(reinterpret_cast<volatile Out*>(&in))`
+	template<typename Out, typename In> _CUTIL_NODISCARD
+	inline constexpr Out bit_cast(In&& in) noexcept {
+		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::bit_cast<Out>(in);
+	#else
+		return *reinterpret_cast<volatile Out*>(&in);
+	#endif
+	}
+/*
+	cutil::bitwise_memcpy(f, i) // i -> f, bitwise memcpy
+	f = bit_cast<float>(i);   				// equivelent
+	f = *reinterpret_cast<volatile float*>(&i); // equivelent
+	std::memcpy(&f, &i, sizeof(f)); 			// equivelent
+	f = std::bit_cast<float>(i) 				// C++20
+*/
+
+
+
+	
+	
+	//* get offset of two pointers in bytes
+	template <typename T, typename U> _CUTIL_NODISCARD
+	inline ptrdiff_t get_ptr_offset(T* higher, U* lower){
+		return reinterpret_cast<uintptr_t>(higher) - reinterpret_cast<uintptr_t>(lower);
+	}
+	
+	// get offset of the struct member to the struct base address
+	template <typename U, typename T> _CUTIL_NODISCARD
+	inline ptrdiff_t get_member_offset(T U::* member){
+		return static_cast<ptrdiff_t>(reinterpret_cast<uintptr_t>(&(reinterpret_cast<U*>(0)->*member)));
+	}
+/*
+	struct S { int a; int b; };
+	ptrdiff_t offset = cutil::memory::get_member_offset(&A::b); // offset of b in struct S
+	
+	S s;
+	ptrdiff_t offset = cutil::memory::get_ptr_offset(&s.a, &s.b); // offset of two pointers
+	
+*/
+
+	// (UB) get value from the memory address in the specific type
+	template<typename T, typename P> _CUTIL_NODISCARD _CUTIL_DEPRECATED _CUTIL_MAYBE_UNUSED
+	inline T& read_memory(P ptr) {
 		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
 		return *reinterpret_cast<T*>(ptr);
 	}
 	
-	//* set memory at the specific location in the specific type
-	template<typename T, typename P>
-	inline void write_memory(P ptr, T val) {
+	// (UB) set memory at the specific location in the specific type
+	template<typename T, typename P> _CUTIL_DEPRECATED _CUTIL_MAYBE_UNUSED
+	inline void write_memory(P ptr, T&& val) {
 		static_assert(std::is_pointer<P>::value, "P must be a pointer type");
+		static_assert(sizeof(T) == sizeof(*ptr), "Size of T must be equal to the size of the memory at ptr");
 		*reinterpret_cast<T*>(ptr) = val;
 	}
-	
-	// wrapper for C memory functions
+/*
+	uint16_t num = 0x1234;
+	// uint16_t num2 = cutil::read_memory<uint16_t>(&num); // 0x1234
+	// cutil::write_memory<uint16_t>(&num, 0x5678); // num: 0x5678
+*/
+
+
+	//* wrapper for C memory functions
 	template<typename T> _CUTIL_MAYBE_UNUSED
 	inline T* memcpy(T* out, const T* in, size_t size) {
 		static_assert(std::is_trivially_copyable<T>::value, "T must be a trivially copyable type");
@@ -740,19 +1068,19 @@ inline namespace memory {
 	//* wrapper for C memory functions, but specify amount of elements, not bytes
 	template<typename T> _CUTIL_MAYBE_UNUSED
 	inline T* memcpy_type(T* out, const T* in, size_t amount = 1) {
-		return memory::memcpy(out, in, sizeof(T) * amount);
+		return cutil::memory::memcpy(out, in, sizeof(T) * amount);
 	}
 	template<typename T> _CUTIL_MAYBE_UNUSED
 	inline T* memmove_type(T* out, const T* in, size_t amount = 1) {
-		return memory::memmove(out, in, sizeof(T) * amount);
+		return cutil::memory::memmove(out, in, sizeof(T) * amount);
 	}
 	template<typename T> _CUTIL_MAYBE_UNUSED
 	inline T* memset_type(T& out, int value, size_t amount = 1) {
-		return memory::memset(&out, value, sizeof(T) * amount);
+		return cutil::memory::memset(&out, value, sizeof(T) * amount);
 	}
 	template<typename T> _CUTIL_MAYBE_UNUSED
 	inline int memcmp_type(const T* ptr1, const T* ptr2, size_t amount = 1) {
-		return memory::memcmp(ptr1, ptr2, sizeof(T) * amount);
+		return cutil::memory::memcmp(ptr1, ptr2, sizeof(T) * amount);
 	}
 	
 	//* delete heap pointer and set it to nullptr

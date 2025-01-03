@@ -35,7 +35,7 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf
 
 // Various feature test macros
 
-namespace _CUTIL_NAMESPACE_NAME {
+namespace cutil {
 
 // Establish default contract checking behavior
 #if !defined(CUTIL_SPAN_THROW_ON_CONTRACT_VIOLATION) &&                          \
@@ -128,11 +128,6 @@ using byte = std::byte;
 using byte = unsigned char;
 #endif
 
-#if defined(CUTIL_CPP17_SUPPORTED)
-#define CUTIL_SPAN_NODISCARD [[nodiscard]]
-#else
-#define CUTIL_SPAN_NODISCARD
-#endif
 
 CUTIL_SPAN_INLINE_VAR constexpr std::size_t dynamic_extent = SIZE_MAX;
 
@@ -453,7 +448,8 @@ public:
 		return size() * sizeof(element_type);
 	}
 
-	CUTIL_SPAN_NODISCARD constexpr bool empty() const noexcept
+	_CUTIL_NODISCARD
+	constexpr bool empty() const noexcept
 	{
 		return size() == 0;
 	}
@@ -584,22 +580,22 @@ constexpr auto get(span<E, S> s) -> decltype(s[N])
 	return s[N];
 }
 
-} // namespace _CUTIL_NAMESPACE_NAME
+} // namespace cutil
 
 namespace std {
 
 template <typename ElementType, size_t Extent>
-class tuple_size<_CUTIL_NAMESPACE_NAME::span<ElementType, Extent>>
+class tuple_size<cutil::span<ElementType, Extent>>
 	: public integral_constant<size_t, Extent> {};
 
 template <typename ElementType>
-class tuple_size<_CUTIL_NAMESPACE_NAME::span<
-	ElementType, _CUTIL_NAMESPACE_NAME::dynamic_extent>>; // not defined
+class tuple_size<cutil::span<
+	ElementType, cutil::dynamic_extent>>; // not defined
 
 template <size_t I, typename ElementType, size_t Extent>
-class tuple_element<I, _CUTIL_NAMESPACE_NAME::span<ElementType, Extent>> {
+class tuple_element<I, cutil::span<ElementType, Extent>> {
 public:
-	static_assert(Extent != _CUTIL_NAMESPACE_NAME::dynamic_extent &&
+	static_assert(Extent != cutil::dynamic_extent &&
 					  I < Extent,
 				  "");
 	using type = ElementType;

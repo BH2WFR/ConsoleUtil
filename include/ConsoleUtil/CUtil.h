@@ -336,7 +336,7 @@ Usage Example:
 	// CUTIL_UNEQUAL_MUTUALLY(a1, a2, a3, a4)
 	//   -> (a1 != a2) && (a1 != a3) && (a1 != a4) && (a2 != a3) && (a2 != a4) && (a3 != a4)
 #define CUTIL_UNEQUAL_MUTUALLY(...)			CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_UNEQUAL_MUTUALLY_, CUTIL_VA_CNT(__VA_ARGS__))(__VA_ARGS__))
-#define _CUTIL_UNEQUAL_MUTUALLY_2(a1, a2)		CUTIL_UNEQUAL_ALL(a1, a2)
+#define _CUTIL_UNEQUAL_MUTUALLY_2(a1, a2)	CUTIL_UNEQUAL_ALL(a1, a2)
 #define _CUTIL_UNEQUAL_MUTUALLY_3(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_2(__VA_ARGS__))
 #define _CUTIL_UNEQUAL_MUTUALLY_4(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_3(__VA_ARGS__))
 #define _CUTIL_UNEQUAL_MUTUALLY_5(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_4(__VA_ARGS__))
@@ -598,31 +598,45 @@ Usage Example:
 
 //======================= Bit Operations ============================
 //* bit calculating macros, not recommended in C++ (std::bitset<>)
-#define CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK)		((_NUM) &   (_BIT_MASK)        )
-#define CUTIL_BIT_SET_MASK(_NUM, _BIT_MASK)		((_NUM) |=  (_BIT_MASK), (_NUM))
-#define CUTIL_BIT_CLEAR_MASK(_NUM, _BIT_MASK)	((_NUM) &= ~(_BIT_MASK), (_NUM))
-#define CUTIL_BIT_FLIP_MASK(_NUM, _BIT_MASK)	((_NUM) ^=  (_BIT_MASK), (_NUM))
+#define CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK)		((_NUM) &  (_BIT_MASK))
+#define CUTIL_BIT_SET_MASK(_NUM, _BIT_MASK)		((_NUM) |  (_BIT_MASK))
+#define CUTIL_BIT_CLEAR_MASK(_NUM, _BIT_MASK)	((_NUM) & ~(_BIT_MASK))
+#define CUTIL_BIT_FLIP_MASK(_NUM, _BIT_MASK)	((_NUM) ^  (_BIT_MASK))
 #define CUTIL_BIT_CHECK_MASK(_NUM, _BIT_MASK)	(CUTIL_BIT_GET_MASK(_NUM, _BIT_MASK) ? 1 : 0)
 
 #define CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_GET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// if bit of index _BIT_IDX is 1, returns (1<<_BIT_IDX), NOT 1
 #define CUTIL_BIT_SET_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_SET_MASK(_NUM, 	(1u << (_BIT_IDX)))	// must use them in separate lines, returns nothing
 #define CUTIL_BIT_CLEAR_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_CLEAR_MASK(_NUM, 	(1u << (_BIT_IDX)))
-#define CUTIL_BIT_FLIP_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_FLIP_MASK(_NUM, (1u << (_BIT_IDX)))
+#define CUTIL_BIT_FLIP_IDX(_NUM, _BIT_IDX)		CUTIL_BIT_FLIP_MASK(_NUM,   (1u << (_BIT_IDX)))
 #define CUTIL_BIT_CHECK_IDX(_NUM, _BIT_IDX)		(CUTIL_BIT_GET_IDX(_NUM, _BIT_IDX) ? 1 : 0) 	// returns 1 if bit of _BIT_IDX is 1, != CUTIL_BIT_GET_IDX()
 
 // rotate bits, use them in a separate line
-#define CUTIL_BIT_ROTATE_LEFT_SIZE(_BIT_SIZE, _BIT, _STEP)	((_BIT) = (((_BIT) << (_STEP)) | ((_BIT) >> ((_BIT_SIZE) - (_STEP)))), (_BIT))
-#define CUTIL_BIT_ROTATE_RIGHT_SIZE(_BIT_SIZE, _BIT, _STEP)	((_BIT) = (((_BIT) >> (_STEP)) | ((_BIT) << ((_BIT_SIZE) - (_STEP)))), (_BIT))
+#define CUTIL_BIT_ROTATE_LEFT_TYPE(_TYPE, _BIT, _STEP)	\
+			((_TYPE)((_STEP == 0) ? (_BIT) : ((_BIT) << (_STEP)) | ((_BIT) >> ((8 * sizeof(_TYPE)) - (_STEP)))))
+#define CUTIL_BIT_ROTATE_RIGHT_TYPE(_TYPE, _BIT, _STEP)	\
+			((_TYPE)((_STEP == 0) ? (_BIT) : ((_BIT) >> (_STEP)) | ((_BIT) << ((8 * sizeof(_TYPE)) - (_STEP)))))
 
-#define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_SIZE(8u * sizeof(_BIT), _BIT, _STEP)
-#define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_SIZE(8u * sizeof(_BIT), _BIT, _STEP)
+#define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
+#define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
+
+//* insert bit to one side, then shift others to the another side.
+#define CUTIL_BIT_INSERT_LEFT(_NUM, _BIT_VALUE)		((_NUM) >> 1 | (_BIT_VALUE) << (8 * sizeof(_NUM) - 1))
+#define CUTIL_BIT_INSERT_RIGHT(_NUM, _BIT_VALUE)	((_NUM) << 1 | (_BIT_VALUE))
+
+// get msb and lsb
+#define CUTIL_BIT_GET_MSB(_NUM)				((_NUM) & (1u << (sizeof(_NUM) * 8 - 1)))
+#define CUTIL_BIT_GET_LSB(_NUM)				((_NUM) & 1u)
+
+// check if the number is power of 2 ({1, 2, 4, 8 ...})
+#define CUTIL_HAS_SINGLE_BIT(_NUM)			((_NUM) && !((_NUM) & ((_NUM) - 1)))
+#define CUTIL_IS_POWER_OF_2(_NUM)			(CUTIL_HAS_SINGLE_BIT(_NUM))
 /*
 	uint16_t num {0};
 	
 	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
-	CUTIL_BIT_SET_IDX(num, 0);    // equals to {num |=  (1u << 0));}
-	CUTIL_BIT_CLEAR_IDX(num, 2);  // equals to {num &= ~(1u << 2));}
-	CUTIL_BIT_FLIP_IDX(num, 3);   // equals to {num ^=  (1u << 3));}
+	num = CUTIL_BIT_SET_IDX(num, 0);    // equals to {num = num |  (1u << 0));}
+	num = CUTIL_BIT_CLEAR_IDX(num, 2);  // equals to {num = num & ~(1u << 2));}
+	num = CUTIL_BIT_FLIP_IDX(num, 3);   // equals to {num = num ^  (1u << 3));}
 	if(CUTIL_BIT_GET_IDX(num, 0) != 0x0000){ // reading bit, if bit is 1, returns `(1<<BIT_IDX)`, NOT 1
 		printf("%x\n", num);
 	}
@@ -631,9 +645,9 @@ Usage Example:
 	}
 
 	// operate bit by mask
-	CUTIL_BIT_SET_MASK(num, 0x2B00);    // equals to {num |=  0x2B00;}
-	CUTIL_BIT_CLEAR_MASK(num, 0x2B00);  // equals to {num &= ~0x2B00;}
-	CUTIL_BIT_FLIP_MASK(num, 0x1100);   // equals to {num ^=  0x1100;}
+	num = CUTIL_BIT_SET_MASK(num, 0x2B00);    // equals to {num = num |  0x2B00;}
+	num = CUTIL_BIT_CLEAR_MASK(num, 0x2B00);  // equals to {num = num & ~0x2B00;}
+	num = CUTIL_BIT_FLIP_MASK(num, 0x1100);   // equals to {num = num ^  0x1100;}
 	if(CUTIL_BIT_GET_MASK(num, 0x0022) != 0x0000){ // returns (num & 0x0022)
 		printf("%x\n", num);
 	}
@@ -643,22 +657,95 @@ Usage Example:
 
 	// rotate bits. use them in a seperate line, and returns nothing
 	uint16_t var{0x1234};           // 0b0001'0010'0011'0100
-	CUTIL_BIT_ROTATE_LEFT(var, 1);  -> 0b0010'0100'0110'1000
-	CUTIL_BIT_ROTATE_RIGHT(var, 1); -> 0b0001'0010'0011'0100
+	var = CUTIL_BIT_ROTATE_LEFT(var, 1);  -> 0b0010'0100'0110'1000
+	var = CUTIL_BIT_ROTATE_RIGHT(var, 1); -> 0b0001'0010'0011'0100
+	var = CUTIL_BIT_ROTATE_LEFT_TYPE(uint16_t, var, 1); // equivalent to above
+	var = CUTIL_BIT_ROTATE_RIGHT_TYPE(uint16_t, var, 1); // equivalent to above
+	
+	// insert bit.
+	uint16_t var2 {0b0001'0010'0011'0100};
+	var2 = CUTIL_BIT_INSERT_LEFT(var2, 1);	-> 0b1000'1001'0001'1010
+	var2 = CUTIL_BIT_INSERT_RIGHT(var2, 0);	-> 0b0001'0010'0011'0100
 */
 
-//* assign or cast bitwise
-//  use `std::bit_cast<T>()` in C++20
-#define CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR)	memcpy(&_OUT_PTR, &_IN_PTR, sizeof(_OUT_TYPE))
-#define CUTIL_BITWISE_MEMCPY(_OUT_TYPE, _OUT_PTR, _IN_PTR)	CUTIL_BITWISE_ASSIGN(_OUT_TYPE, _OUT_PTR, _IN_PTR) // alias
-// reinterpret_cast
-#define CUTIL_BITWISE_CAST_UNSAFE(_OUT_TYPE, _IN_PTR)		*( (volatile _OUT_TYPE*) (volatile void*) _IN_PTR)
+//* get high or low byte (uint8_t) of a word (uint16_t)
+#define CUTIL_GET_WORD_LOW(_W)			((uint8_t) ((uint16_t)(_W) & 0xFF))
+#define CUTIL_GET_WORD_HIGH(_W)			((uint8_t) ((uint16_t)(_W) >> 8u))
+
+#define CUTIL_SET_WORD_LOW(_W, _val)	((_W) = (((uint16_t)(_W) & 0xFF00) | (uint8_t)(_val)), (_W))
+#define CUTIL_SET_WORD_HIGH(_W, _val)	((_W) = (((uint16_t)(_W) & 0x00FF) | (uint16_t)(_val) << 8u), (_W))
 /*
-	uint32_t i = 0x12345678;
-	float f;
-	CUTIL_BITWISE_MEMCPY(float, &f, &i); // assign `i` to `f` bitwise
-	f = CUTIL_BITWISE_CAST_UNSAFE(float, &f) // UB, unrecommended, similar as `reinterpret_cast<float&>(f)`
+	uint16_t v {0x1234};
+	printf("%x \n", v); // -> 1234
+	printf("%x %x \n", CUTIL_GET_WORD_HIGH(v), CUTIL_GET_WORD_LOW(v));	// -> 12 34
+	printf("%x %x \n", CUTIL_SET_WORD_HIGH(v, 0xFE), CUTIL_SET_WORD_LOW(v, 0xBA)); // -> FE BA
+	printf("%x \n", v);	// -> FEBA
 */
+
+
+
+
+
+
+//======================= Math Constants =========================
+
+//* Mathematical Constants:
+#define CUTIL_E				2.71828182845904523536	// e
+#define CUTIL_LOG2E			1.44269504088896340736	// log2(e)
+#define CUTIL_LOG10E		0.43429448190325182765	// log10(e)
+#define CUTIL_LN2			0.69314718055994530942	// ln(2)
+#define CUTIL_LN10			2.30258509299404568402	// ln(10)
+
+#define CUTIL_PI			3.14159265358979323846	// pi
+#define CUTIL_2_PI			6.28318530717958647692	// 2*pi
+#define CUTIL_3_PI			9.42477796076937971538	// 3*pi
+#define CUTIL_PI_2			1.57079632679489661923	// pi/2
+#define CUTIL_PI_3			1.04719755119659774615	// pi/3
+#define CUTIL_PI_4			0.78539816339744830962	// pi/4
+#define CUTIL_INV_PI		0.31830988618379067154	// 1/pi
+#define CUTIL_INV_SQRT_PI	0.56418958354775628694	// 1/sqrt(pi)
+#define CUTIL_2_INV_PI		0.63661977236758134308	// 2/pi
+#define CUTIL_2_SQRT_PI		1.12837916709551257390	// 2/sqrt(pi)
+
+#define CUTIL_SQRT_2		1.41421356237309504880	// sqrt(2)
+#define CUTIL_INV_SQRT_2	0.70710678118654752440	// 1/sqrt(2)
+#define CUTIL_SQRT_3		1.73205080756887729353	// sqrt(3)
+#define CUTIL_INV_SQRT_3	0.57735026918962576451	// 1/sqrt(3)
+
+#define CUTIL_PHI			1.61803398874989484820	// (1 + sqrt(5)) / 2, golden ratio
+#define CUTIL_INV_PHI		0.61803398874989484820	// 2 / (1 + sqrt(5)), inversed golden ratio
+
+#define CUTIL_EGAMMA		0.57721566490153286060	// Euler-Mascheroni constant
+
+// float versions of mathematical constants:
+#define CUTIL_E_F			2.71828182845904523536f	// e
+#define CUTIL_LOG2E_F		1.44269504088896340736f	// log2(e)
+#define CUTIL_LOG10E_F		0.43429448190325182765f	// log10(e)
+#define CUTIL_LN2_F			0.69314718055994530942f	// ln(2)
+#define CUTIL_LN10_F		2.30258509299404568402f	// ln(10)
+
+#define CUTIL_PI_F			3.14159265358979323846f	// pi
+#define CUTIL_2_PI_F		6.28318530717958647692f	// 2*pi
+#define CUTIL_3_PI_F		9.42477796076937971538f	// 3*pi
+#define CUTIL_PI_2_F		1.57079632679489661923f	// pi/2
+#define CUTIL_PI_3_F		1.04719755119659774615f	// pi/3
+#define CUTIL_PI_4_F		0.78539816339744830962f	// pi/4
+#define CUTIL_INV_PI_F		0.31830988618379067154f	// 1/pi
+#define CUTIL_INV_SQRT_PI_F	0.56418958354775628694f	// 1/sqrt(pi)
+#define CUTIL_2_INV_PI_F	0.63661977236758134308f	// 2/pi
+#define CUTIL_2_SQRT_PI_F	1.12837916709551257390f	// 2/sqrt(pi)
+
+#define CUTIL_SQRT_2_F		1.41421356237309504880f	// sqrt(2)
+#define CUTIL_INV_SQRT_2_F	0.70710678118654752440f	// 1/sqrt(2)
+#define CUTIL_SQRT_3_F		1.73205080756887729353f	// sqrt(3)
+#define CUTIL_INV_SQRT_3_F	0.57735026918962576451f	// 1/sqrt(3)
+
+#define CUTIL_PHI_F			1.61803398874989484820f	// (1 + sqrt(5)) / 2, golden ratio
+#define CUTIL_INV_PHI_F		0.61803398874989484820f	// 2 / (1 + sqrt(5)), inversed golden ratio
+
+#define CUTIL_EGAMMA_F		0.57721566490153286060f	// Euler-Mascheroni constant
+
+
 
 
 
@@ -684,24 +771,22 @@ Usage Example:
 #define CUTIL_ABS(_VAR)						(((_VAR) >= 0) ? (_VAR) : (-1)*(_VAR) )
 
 
-#if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
-	#define CU_MAX(_VAR1, _VAR2) 			CUTIL_MAX(_VAR1, _VAR2)
-	#define CU_MIN(_VAR1, _VAR2) 			CUTIL_MIN(_VAR1, _VAR2)
-	#define CU_ABS(_VAR)					CUTIL_ABS(_VAR)
-#endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
-
 //*	高效地计算一个值 val 除以一个以 2 为幂的数 mod_by 的余数
 #define CUTIL_MOD_BY_POWER_OF_2(_var, _mod_2)	 ((size_t)(_var) & (dword)((_mod_2)-1))
 
 
 //* limit the numeric variable to the range [_MIN, _MAX]
 	// recommended to use `std::clamp` after C++17.
-#define CUTIL_LIMIT(_VAR, _MIN, _MAX)		(((_VAR) < (_MIN) ? (_VAR) = (_MIN) : (_VAR)), ((_VAR) > (_MAX) ? (_VAR) = (_MAX) : (_VAR)), (_VAR))
-#define CUTIL_CLAMP(_VAR, _MIN, _MAX)		((_VAR) < (_MIN) ? (_MIN) : ((_VAR) > (_MAX) ? (_MAX) : (_VAR)))
+#define CUTIL_LIMIT(_VAR, _MIN, _MAX)		\
+			(((_VAR) < (_MIN) ? (_VAR) = (_MIN) : (_VAR)), ((_VAR) > (_MAX) ? (_VAR) = (_MAX) : (_VAR)), (_VAR))
+#define CUTIL_CLAMP(_VAR, _MIN, _MAX)		\
+			((_VAR) < (_MIN) ? (_MIN) : ((_VAR) > (_MAX) ? (_MAX) : (_VAR)))
 
-//* get if a numeric variable is within the range [_MIN, _MAX] or (_MIN, _MAX)
-#define CUTIL_IN_RANGE(_VAR, _MIN, _MAX)		((((_VAR) >= (_MIN)) && ((_VAR) <= (_MAX))) ? 1 : 0) // inclusive range
-#define CUTIL_IN_OPEN_RANGE(_VAR, _MIN, _MAX)	((((_VAR) > (_MIN)) && ((_VAR) < (_MAX))) ? 1 : 0)   // open range
+//* get if a numeric variable is within the interval [_MIN, _MAX] or (_MIN, _MAX)
+#define CUTIL_NUM_IN_INTERVAL(_VAR, _MIN, _MAX)			\
+			((((_VAR) >= (_MIN)) && ((_VAR) <= (_MAX))) ? 1 : 0) // closed INTERVAL
+#define CUTIL_NUM_IN_OPEN_INTERVAL(_VAR, _MIN, _MAX)	\
+			((((_VAR) > (_MIN)) && ((_VAR) < (_MAX))) ? 1 : 0)   // open INTERVAL
 /*
 	int a = 35, b = 26, c = 19, d = 35;
 	CUTIL_LIMIT(a, 20, 30);		// a: 35 -> 30
@@ -714,46 +799,65 @@ Usage Example:
 	printf("%d %d %d\n", a, b, c);
 	// output: 30 26 20
 
-	printf("%d %d", CUTIL_IN_RANGE(a, 20, 40), CUTIL_IN_OPEN_RANGE(c, 20, 30));
+	printf("%d %d", CUTIL_NUM_IN_INTERVAL(a, 20, 40), CUTIL_NUM_IN_OPEN_INTERVAL(c, 20, 30));
 	// output: 1 0
 */
 
 
-//* increase or decrease the value of variable within the range [_min, _max]
-#define CUTIL_INCREASE_UNDER_LIMIT(_var, _max, _inc)	((_var) < (_max) ? (_var) += (_inc) : (_var))
-#define CUTIL_DECREASE_ABOVE_LIMIT(_var, _min, _inc)	((_var) > (_min) ? (_var) -= (_inc) : (_var))
-
-//* increase or decrease the value, and prevent overflowing, only for GNU C, C23, C++11
-#define CUTIL_INCREASE_PREVENT_OVERFLOWING(_var, _inc)	((_var) = (((CUTIL_TYPEOF(_var))((_var) + (_inc)) > (_var))) ? (CUTIL_TYPEOF(_var))((_var) + (_inc)) : (_var))
-#define CUTIL_DECREASE_PREVENT_OVERFLOWING(_var, _inc)	((_var) = (((CUTIL_TYPEOF(_var))((_var) - (_inc)) < (_var))) ? (CUTIL_TYPEOF(_var))((_var) - (_inc)) : (_var))
+//* increase the value of variable, but if the result exceeds the limit(>=), it will not be increased
+#define CUTIL_INCREASE_UNDER_LIMIT(_var, _max, _inc)		((((_var) + (_inc)) <= (_max)) ? ((_var) += (_inc)) : (_var))
+// decrease the value of variable, but if the result is less than the limit(<=), it will not be decreased
+#define CUTIL_DECREASE_ABOVE_LIMIT(_var, _min, _inc)		((((_var) - (_inc)) >= (_min)) ? ((_var) -= (_inc)) : (_var))
+// increase the value of variable, but if the result exceeds the limit(>=), it will be clamped to the limit
+#define CUTIL_INCREASE_UNDER_LIMIT_CLAMP(_var, _max, _inc)	((((_var) + (_inc)) <= (_max)) ? ((_var) += (_inc)) : ((_var) = (_max)))
+// decrease the value of variable, but if the result is less than the limit(<=), it will be clamped to the limit
+#define CUTIL_DECREASE_ABOVE_LIMIT_CLAMP(_var, _min, _inc)	((((_var) - (_inc)) >= (_min)) ? ((_var) -= (_inc)) : ((_var) = (_min)))
 
 //* increase or decrease the value of variable, and rolling within the range [_min, _max]
-#define CUTIL_INCREASE_ROLLING(_var, _min, _max, _inc)	((_var) < (_max) ? (_var) += (_inc) : (_var) = (_min))
-#define CUTIL_DECREASE_ROLLING(_var, _min, _max, _inc)	((_var) > (_min) ? (_var) -= (_inc) : (_var) = (_max))
+#define CUTIL_INCREASE_ROLLING(_var, _min, _max, _inc)		\
+			((((_var) + (_inc)) <= (_max)) ? ((_var) += (_inc)) : ((_var) = (_min)))
+#define CUTIL_DECREASE_ROLLING(_var, _min, _max, _inc)		\
+			((((_var) - (_inc)) >= (_min)) ? ((_var) -= (_inc)) : ((_var) = (_max)))
+
+//* increase or decrease the value, and prevent overflowing, only for GNU C, C23, C++11
+#define CUTIL_INCREASE_NO_OVERFLOW(_var, _inc)		\
+			((_var) = (((CUTIL_TYPEOF(_var))((_var) + (_inc)) > (_var))) ? (CUTIL_TYPEOF(_var))((_var) + (_inc)) : (_var))
+#define CUTIL_DECREASE_NO_UNDERFLOW(_var, _inc)	\
+			((_var) = (((CUTIL_TYPEOF(_var))((_var) - (_inc)) < (_var))) ? (CUTIL_TYPEOF(_var))((_var) - (_inc)) : (_var))
 /*
 	int num = 0;
+	int num2 = 0;
+	int num3 = 0;
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_INCREASE_UNDER_LIMIT(num, 5, 1));     // step:1, result: 1 2 3 4 5 5 5 5 5 5 5 5
+		CUTIL_INCREASE_UNDER_LIMIT(num, 5, 1);    	  // step:1, result: 1 2 3 4 5 5 5
+		CUTIL_INCREASE_UNDER_LIMIT(num2, 5, 3);   	  // step:2, result: 2 4 4 4 4 4 4
+		CUTIL_INCREASE_UNDER_LIMIT_CLAMP(num3, 5, 2); // step:2, result: 2 4 5 5 5 5 5
 	}
+	num2 = 5;
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_DECREASE_ABOVE_LIMIT(num, 0, 1));     // step:1, result: 5 4 3 2 1 0 0 0 0 0 0 0
+		CUTIL_DECREASE_ABOVE_LIMIT(num, 0, 1);    	  // step:1, result: 4 3 2 1 0 0 0
+		CUTIL_DECREASE_UNDER_LIMIT(num2, 0, 3);   	  // step:2, result: 3 1 1 1 1 1 1
+		CUTIL_DECREASE_UNDER_LIMIT_CLAMP(num3, 0, 2); // step:2, result: 3 1 0 0 0 0 0
 	}
-
+	num = num2 = num3 = 0;
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_INCREASE_ROLLING(num, 0, 5, 1));   // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+		CUTIL_INCREASE_ROLLING(num, 0, 5, 1); // step:1, result: 1 2 3 4 5 0 1 2 3 4 5 0
+		CUTIL_INCREASE_ROLLING(num, 0, 5, 2); // step:2, result: 2 4 0 2 4 0 2 4 3 4 5 0
 	}
+	num = num2 = num3 = 5;
 	for(int i = 0; i < 50; i++){
-		printf("%d ", CUTIL_DECREASE_ROLLING(num, 0, 5, 1));   // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+		CUTIL_DECREASE_ROLLING(num, 0, 5, 1); // step:1, result: 5 4 3 2 1 0 5 4 3 2 1 0
+		CUTIL_DECREASE_ROLLING(num, 0, 5, 2); // step:2, result: 5 3 1 5 3 1 5 3 1 5 3 1
 	}
 
 	int8_t num = -125;
 	for(int i = 0; i < 30; i++){
-		CUTIL_DECREASE_PREVENT_OVERFLOWING(num, 1u);
+		CUTIL_DECREASE_NO_UNDERFLOW(num, 1u);
 		printf("%d ", num); // prevent overflowing: -126 -127 -128 -128 -128 -128
 	}
 	num = 124;
 	for(int i = 0; i < 30; i++){
-		CUTIL_INCREASE_PREVENT_OVERFLOWING(num, 1u);
+		CUTIL_INCREASE_NO_OVERFLOW(num, 1u);
 		printf("%d ", num); // prevent overflowing: 125 126 127 127 127 127
 	}
 */
@@ -764,13 +868,6 @@ Usage Example:
 #define CUTIL_EQUAL_F(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, FLT_EPSILON)	// float, using epsilon values defined in <float.h>
 #define CUTIL_EQUAL_D(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, DBL_EPSILON)	// double
 #define CUTIL_EQUAL_LD(_F1, _F2)			CUTIL_EQUAL(_F1, _F2, LDBL_EPSILON) // long double
-
-#if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
-	#define CU_EQU(_F1, _F2, _EPSILON)		CUTIL_EQUAL(_F1, _F2, _EPSILON)
-	#define CU_EQU_F(_F1, _F2)				CUTIL_EQUAL_F(_F1, _F2)
-	#define CU_EQU_D(_F1, _F2)				CUTIL_EQUAL_D(_F1, _F2)
-	#define CU_EQU_LD(_F1, _F2)				CUTIL_EQUAL_LD(_F1, _F2)
-#endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
 /*
 	// include <float.h> first
 	float a = -1.00000f, b = -0.99999f; // they can regarded as equal
@@ -783,6 +880,22 @@ Usage Example:
 	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
 	bool isEqual5 = cutil::math::fequal(c, d, 0.0001); // equivelent
 */
+
+
+//* convert degrees to radians, (degree * M_PI / 180.0)
+#define CUTIL_DEG_TO_RAD(_DEG)				((_DEG) * CUTIL_PI / 180.0)
+
+//* convert radians to degrees, (radian * 180.0 / M_PI)
+#define CUTIL_RAD_TO_DEG(_RAD)				((_RAD) * 180.0 / CUTIL_PI)
+
+
+//* linear interpolation, (a + (b - a) * t)
+//  t should be in the range [0, 1]. if t = 0, returns a; if t == 1, returns b.
+#define CUTIL_LERP(_A, _B, _T)				((_A) + ((_B) - (_A)) * (_T))
+
+//* mid-point of two numeric variables
+// if a and b are integers, the result is also truncated to an integer.
+#define CUTIL_MIDPOINT(_A, _B)				(((_A) + (_B)) / 2)
 
 //* get power of an integer.
 // example: int ret = CUTIL_INTPOW(2, 3); 	// 2^3 = 8; generates `(2 * 2 * 2)`; arg `exp` must be an constexpr.
@@ -850,65 +963,6 @@ Usage Example:
 */
 
 
-//======================= Math Constants =========================
-
-//* Mathematical Constants:
-#define CUTIL_E				2.71828182845904523536	// e
-#define CUTIL_LOG2E			1.44269504088896340736	// log2(e)
-#define CUTIL_LOG10E		0.43429448190325182765	// log10(e)
-#define CUTIL_LN2			0.69314718055994530942	// ln(2)
-#define CUTIL_LN10			2.30258509299404568402	// ln(10)
-
-#define CUTIL_PI			3.14159265358979323846	// pi
-#define CUTIL_2_PI			6.28318530717958647692	// 2*pi
-#define CUTIL_3_PI			9.42477796076937971538	// 3*pi
-#define CUTIL_PI_2			1.57079632679489661923	// pi/2
-#define CUTIL_PI_3			1.04719755119659774615	// pi/3
-#define CUTIL_PI_4			0.78539816339744830962	// pi/4
-#define CUTIL_INV_PI		0.31830988618379067154	// 1/pi
-#define CUTIL_INV_SQRT_PI	0.56418958354775628694	// 1/sqrt(pi)
-#define CUTIL_2_INV_PI		0.63661977236758134308	// 2/pi
-#define CUTIL_2_SQRT_PI		1.12837916709551257390	// 2/sqrt(pi)
-
-#define CUTIL_SQRT_2		1.41421356237309504880	// sqrt(2)
-#define CUTIL_INV_SQRT_2	0.70710678118654752440	// 1/sqrt(2)
-#define CUTIL_SQRT_3		1.73205080756887729353	// sqrt(3)
-#define CUTIL_INV_SQRT_3	0.57735026918962576451	// 1/sqrt(3)
-
-#define CUTIL_PHI			1.61803398874989484820	// (1 + sqrt(5)) / 2, golden ratio
-#define CUTIL_INV_PHI		0.61803398874989484820	// 2 / (1 + sqrt(5)), inversed golden ratio
-
-#define CUTIL_EGAMMA		0.57721566490153286060	// Euler-Mascheroni constant
-
-// float versions of mathematical constants:
-#define CUTIL_E_F			2.71828182845904523536f	// e
-#define CUTIL_LOG2E_F		1.44269504088896340736f	// log2(e)
-#define CUTIL_LOG10E_F		0.43429448190325182765f	// log10(e)
-#define CUTIL_LN2_F			0.69314718055994530942f	// ln(2)
-#define CUTIL_LN10_F		2.30258509299404568402f	// ln(10)
-
-#define CUTIL_PI_F			3.14159265358979323846f	// pi
-#define CUTIL_2_PI_F		6.28318530717958647692f	// 2*pi
-#define CUTIL_3_PI_F		9.42477796076937971538f	// 3*pi
-#define CUTIL_PI_2_F		1.57079632679489661923f	// pi/2
-#define CUTIL_PI_3_F		1.04719755119659774615f	// pi/3
-#define CUTIL_PI_4_F		0.78539816339744830962f	// pi/4
-#define CUTIL_INV_PI_F		0.31830988618379067154f	// 1/pi
-#define CUTIL_INV_SQRT_PI_F	0.56418958354775628694f	// 1/sqrt(pi)
-#define CUTIL_2_INV_PI_F	0.63661977236758134308f	// 2/pi
-#define CUTIL_2_SQRT_PI_F	1.12837916709551257390f	// 2/sqrt(pi)
-
-#define CUTIL_SQRT_2_F		1.41421356237309504880f	// sqrt(2)
-#define CUTIL_INV_SQRT_2_F	0.70710678118654752440f	// 1/sqrt(2)
-#define CUTIL_SQRT_3_F		1.73205080756887729353f	// sqrt(3)
-#define CUTIL_INV_SQRT_3_F	0.57735026918962576451f	// 1/sqrt(3)
-
-#define CUTIL_PHI_F			1.61803398874989484820f	// (1 + sqrt(5)) / 2, golden ratio
-#define CUTIL_INV_PHI_F		0.61803398874989484820f	// 2 / (1 + sqrt(5)), inversed golden ratio
-
-#define CUTIL_EGAMMA_F		0.57721566490153286060f	// Euler-Mascheroni constant
-
-
 
 
 //======================= Memory Operations =========================
@@ -934,19 +988,101 @@ Usage Example:
 #define CUTIL_ARRAY_SIZE(_arr)			(sizeof((_arr)) / sizeof((_arr[0])))
 
 
-//* get high or low byte (uint8_t) of a word (uint16_t)
-#define CUTIL_GET_WORD_LOW(_W)			((uint8_t) ((uint16_t)(_W) & 0xFF))
-#define CUTIL_GET_WORD_HIGH(_W)			((uint8_t) ((uint16_t)(_W) >> 8u))
-
-#define CUTIL_SET_WORD_LOW(_W, _val)	((_W) = (((uint16_t)(_W) & 0xFF00) | (uint8_t)(_val)), (_W))
-#define CUTIL_SET_WORD_HIGH(_W, _val)	((_W) = (((uint16_t)(_W) & 0x00FF) | (uint16_t)(_val) << 8u), (_W))
+//* assign or cast bitwise
+//  use `std::bit_cast<T>()` in C++20
+#define CUTIL_BITWISE_ASSIGN_TYPE(_OUT_TYPE, _OUT, _IN)	        (memcpy(&_OUT, &_IN, sizeof(_OUT_TYPE)), _IN)
+#define CUTIL_BITWISE_MEMCPY_TYPE(_OUT_TYPE, _OUT_PTR, _IN_PTR)	(memcpy(_OUT_PTR, _IN_PTR, sizeof(_OUT_TYPE)), *_IN_PTR)
+// warning: sizeof(out) and sizeof(in) must be equal, or UB
+#define CUTIL_BITWISE_ASSIGN(_OUT, _IN)	       		CUTIL_BITWISE_ASSIGN_TYPE(CUTIL_TYPEOF(_OUT), _OUT, _IN)
+#define CUTIL_BITWISE_MEMCPY(_OUT_PTR, _IN_PTR)		CUTIL_BITWISE_MEMCPY_TYPE(CUTIL_TYPEOF(*_OUT_PTR), _OUT_PTR, _IN_PTR)
+// reinterpret_cast
+#define CUTIL_BITWISE_CAST(_OUT_TYPE, _IN)		*( (volatile _OUT_TYPE*) (volatile void*) &(_IN))
 /*
-	uint16_t v {0x1234};
-	printf("%x \n", v); // -> 1234
-	printf("%x %x \n", CUTIL_GET_WORD_HIGH(v), CUTIL_GET_WORD_LOW(v));	// -> 12 34
-	printf("%x %x \n", CUTIL_SET_WORD_HIGH(v, 0xFE), CUTIL_SET_WORD_LOW(v, 0xBA)); // -> FE BA
-	printf("%x \n", v);	// -> FEBA
+	uint32_t i = 0x12345678;
+	float f;
+	CUTIL_BITWISE_MEMCPY_TYPE(float, &f, &i); 	// assign `i` to `f` bitwise
+	CUTIL_BITWISE_MEMCPY(&f, &i); 				// equivalent to above, but make sure `sizeof(f) == sizeof(i)`
+	CUTIL_BITWISE_ASSIGN(float, f, i); 			// equivalent to above
+	CUTIL_BITWISE_ASSIGN(f, i); 				// equivalent to above, but make sure `sizeof(f) == sizeof(i)`
+	f = CUTIL_BITWISE_CAST(float, f) 			// UB, unrecommended, similar as `reinterpret_cast<float&>(f)`
 */
+
+
+//* get offset of two pointers
+#define CUTIL_PTR_OFFSET(_PTR1, _PTR2)		((size_t)((char*)(_PTR1) - (char*)(_PTR2)))
+
+//* features with C struct and memory offset/address
+// calculate the struct address from the member's address, within the type `size_t`
+#define CUTIL_STRUCT_FIELD_OFFSET(_type, _field) 		((size_t) &((_type*) 0)->_field)
+
+// get the size of a struct member
+#define CUTIL_STRUCT_FIELD_SIZE(_type, _field)			sizeof(((_type*)0)->_field)
+
+// use the address of a struct member, to calculate the address of the containing struct object, within the type `_type*`
+#define CUTIL_STRUCT_FIELD_CONTAINER(_type, _field, _fieldAddr)	\
+			((_type*)((char*)(_fieldAddr) - (char*) &((_type*)0)->_field)) // must use `char*`
+/*
+	//* define a struct type `struct MyStruct`(C) or `MyStruct`(C++)
+	struct MyStruct {
+		uint8_t 	a;	// 0    (+0)
+		uint8_t 	b;	// 1      |--(+1)
+		uint32_t 	c;	// 4    (+4)
+		uint8_t 	d;	// 8    (+4)
+		uint8_t 	e;	// 9      |--(+1)
+		uint8_t 	f;	// 10     |--(+1)
+		uint64_t 	g;	// 16   (+8)
+		uint32_t 	h;	// 24   (+8)
+	};
+	struct MyStruct myStruct; //* create a struct object `myStruct`
+	
+	//* get the memory offset of a struct member
+	printf("offset: a-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a));	// output: `offset: a-0`
+	printf("offset: b-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b));	// output: `offset: b-1`
+	printf("offset: c-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, c));	// output: `offset: c-4`
+	//...
+	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
+	
+	// you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
+	#define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, _x)
+	printf("offset: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+			, CUTIL_SEQ_ENUM(MYSTRUCT_OFFSET_OF_ELEMENT, a, b, c, d, e, f, g, h)
+				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a)
+				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b)
+				//  ...
+				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, h)
+	);	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
+	
+	
+	//* get the size of a struct member
+	printf("size: a-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a));	// output: `size: a-1`
+	printf("size: b-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b));	// output: `size: b-1`
+	printf("size: g-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, g));	// output: `size: g-8`
+	// ...
+	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
+	
+	// you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
+	#define MYSTRUCT_SIZE_OF_ELEMENT(_x)  CUTIL_FIELD_SIZE(struct MyStruct, _x)
+	printf("size: a:%zu, b:%zu, c:%zu, d:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
+			, CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
+				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a)
+				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b)
+				//  ...
+				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, h)
+	);	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
+	
+	
+	//* use the address of a struct member, to calculate the address of the containing struct object
+	printf("loc of myStruct: %p %p \n",
+		&myStruct,
+		CUTIL_STRUCT_FIELD_CONTAINER(struct MyStruct, b, &myStruct.b) // [b, &myStruct.b] => &myStruct
+	);
+	// output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
+*/
+
+//* get if the expression is an ICE (integral constant expression)
+#define CUTIL_IS_ICE(_x)	(sizeof(int) == sizeof(*(1 ? ((void*)((_x) * 0l)) : (int*)1)))
+
+
 
 
 //* operate value of specific memory location
@@ -1014,16 +1150,16 @@ Usage Example:
 	// use `std::uninitialized_copy` `std::uninitialized_fill` `std::uninitialized_move`  in  C++
 // memcpy by type and amount. returns dest pointer.
 #define CUTIL_TYPE_MEMCPY(_TYPE, _DESTPTR, _SRCPTR, _AMOUNT)	\
-		(_TYPE*)memcpy((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
+			(_TYPE*)memcpy((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
 // memmove by type and amount. supports overlapped memory blocks.
 #define CUTIL_TYPE_MEMMOVE(_TYPE, _DESTPTR, _SRCPTR, _AMOUNT)	\
-		(_TYPE*)memmove((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
+			(_TYPE*)memmove((_DESTPTR), (_SRCPTR), (_AMOUNT)*sizeof(_TYPE))
 // set a range of memory by type and amount with BYTE data.
 #define CUTIL_TYPE_MEMSET(_TYPE, _DESTPTR, _BYTE, _AMOUNT) 		\
-		(_TYPE*)memset((_DESTPTR), (_BYTE), (_AMOUNT)*sizeof(_TYPE))
+			(_TYPE*)memset((_DESTPTR), (_BYTE), (_AMOUNT)*sizeof(_TYPE))
 // compare a range of memory blocks data, returns integer values <0, >0 or =0(equal).
 #define CUTIL_TYPE_MEMCMP(_TYPE, _PTR1, _PTR2, _AMOUNT)			\
-		memcmp((_PTR1), (_PTR2), (_AMOUNT)*sizeof(_TYPE))
+			memcmp((_PTR1), (_PTR2), (_AMOUNT)*sizeof(_TYPE))
 /*
 * Examples:
 	const size_t amount = 20; // amount of variables (!= length in bytes! )
@@ -1041,86 +1177,6 @@ Usage Example:
 	CUTIL_TYPE_FREE(aD2);
 	// you need't add `aD1 = NULL`.
 */
-
-
-//* features with C struct and memory offset/address
-// calculate the struct address from the member's address, within the type `size_t`
-#define CUTIL_STRUCT_FIELD_OFFSET(_type, _field) 		((size_t) &((_type*) 0)->_field)
-
-// get the size of a struct member
-#define CUTIL_STRUCT_FIELD_SIZE(_type, _field)			sizeof(((_type*)0)->_field)
-
-// use the address of a struct member, to calculate the address of the containing struct object, within the type `_type*`
-#define CUTIL_STRUCT_FIELD_CONTAINER(_type, _field, _fieldAddr)	\
-			((_type*)((char*)(_fieldAddr) - (char*) &((_type*)0)->_field)) // must use `char*`
-
-#if (CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS == 0) //* shorter aliases
-	#define CU_FIELD_OFFSET(_type, _field)					CUTIL_STRUCT_FIELD_OFFSET(_type, _field)
-	#define CU_FIELD_SIZE(_type, _field)					CUTIL_STRUCT_FIELD_SIZE(_type, _field)
-	#define CU_FIELD_CONTAINER(_type, _field, _fieldAddr)	CUTIL_STRUCT_FIELD_CONTAINER(_type, _field, _fieldAddr)
-#endif // CONSOLE_UTIL_DO_NOT_USE_SHORTER_ALIAS
-/*
-	//* define a struct type `struct MyStruct`(C) or `MyStruct`(C++)
-	struct MyStruct {
-		uint8_t 	a;	// 0    (+0)
-		uint8_t 	b;	// 1      |--(+1)
-		uint32_t 	c;	// 4    (+4)
-		uint8_t 	d;	// 8    (+4)
-		uint8_t 	e;	// 9      |--(+1)
-		uint8_t 	f;	// 10     |--(+1)
-		uint64_t 	g;	// 16   (+8)
-		uint32_t 	h;	// 24   (+8)
-	};
-	struct MyStruct myStruct; //* create a struct object `myStruct`
-	
-	//* get the memory offset of a struct member
-	printf("offset: a-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a));	// output: `offset: a-0`
-	printf("offset: b-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b));	// output: `offset: b-1`
-	printf("offset: c-%zu", CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, c));	// output: `offset: c-4`
-	//...
-	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
-	
-	// you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
-	#define MYSTRUCT_OFFSET_OF_ELEMENT(_x)  CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, _x)
-	printf("offset: a:%zu, b:%zu, c:%zu, zu:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
-			, CUTIL_SEQ_ENUM(MYSTRUCT_OFFSET_OF_ELEMENT, a, b, c, d, e, f, g, h)
-				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, a)
-				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, b)
-				//  ...
-				// , CUTIL_STRUCT_FIELD_OFFSET(struct MyStruct, h)
-	);	// output: `offset: a:0, b:1, c:4, d:8, e:9, f:10, g:16, h:24`
-	
-	
-	//* get the size of a struct member
-	printf("size: a-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a));	// output: `size: a-1`
-	printf("size: b-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b));	// output: `size: b-1`
-	printf("size: g-%zu", CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, g));	// output: `size: g-8`
-	// ...
-	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
-	
-	// you can simplify the code above with `CUTIL_SEQ_ENUM`, like this:
-	#define MYSTRUCT_SIZE_OF_ELEMENT(_x)  CUTIL_FIELD_SIZE(struct MyStruct, _x)
-	printf("size: a:%zu, b:%zu, c:%zu, d:%zu, e:%zu, f:%zu, g:%zu, h:%zu \n"
-			, CUTIL_SEQ_ENUM(MYSTRUCT_SIZE_OF_ELEMENT, a, b, c, d, e, f, g, h)
-				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, a)
-				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, b)
-				//  ...
-				// , CUTIL_STRUCT_FIELD_SIZE(struct MyStruct, h)
-	);	// output: `size: a:1, b:1, c:4, d:1, e:1, f:1, g:8, h:4`
-	
-	
-	//* use the address of a struct member, to calculate the address of the containing struct object
-	printf("loc of myStruct: %p %p \n",
-		&myStruct,
-		CUTIL_STRUCT_FIELD_CONTAINER(struct MyStruct, b, &myStruct.b) // [b, &myStruct.b] => &myStruct
-	);
-	// output: `loc of myStruct: 0000006CE9EFF9D8 0000006CE9EFF9D8`
-*/
-
-//* get if the expression is an ICE (integral constant expression)
-#define CUTIL_IS_ICE(_x)	(sizeof(int) == sizeof(*(1 ? ((void*)((_x) * 0l)) : (int*)1)))
-
-
 
 
 #endif /* CONSOLEUTIL_C_UTIL_H__ */

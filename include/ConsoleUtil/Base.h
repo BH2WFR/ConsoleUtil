@@ -84,7 +84,7 @@
 #if (!defined(__cplusplus)) && !defined(CUTIL_C99_SUPPORTED)
 	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
 #elif defined(__cplusplus) && !defined(CUTIL_CPP11_SUPPORTED)
-	#error This Header DO NOT SUPPORTS C++98! - >=C++11 Required.
+	#error This Header DO NOT SUPPORTS C++98! - >=C++14 Required.
 #else
 	// available
 #endif
@@ -109,18 +109,16 @@
 
 
 //* C++ namespace
-#define _CUTIL_NAMESPACE_NAME		cutil
-#define _CUTIL_NAMESPACE_SHORTEN	cu
 #ifndef CUTIL_PARAM_USE_SHORTEN_NAMESPACE
 	#define CUTIL_PARAM_USE_SHORTEN_NAMESPACE 1	//* use shorter namespace `cu::` instead of `cutil::`
 #endif // CUTIL_PARAM_USE_SHORTEN_NAMESPACE
 #ifdef __cplusplus
-	#ifdef CUTIL_PARAM_USE_SHORTEN_NAMESPACE
-		#define _CUTIL_REDIFINE_SHORTER_NAMESPACE	namespace _CUTIL_NAMESPACE_SHORTEN = _CUTIL_NAMESPACE_NAME;
+	#if (CUTIL_PARAM_USE_SHORTEN_NAMESPACE)
+		#define _CUTIL_REDIFINE_SHORTER_NAMESPACE	namespace cu = cutil;
 	#else
 		#define _CUTIL_REDIFINE_SHORTER_NAMESPACE
 	#endif
-	#define _CUTIL_NAMESPACE_BEGIN					namespace _CUTIL_NAMESPACE_NAME {
+	#define _CUTIL_NAMESPACE_BEGIN					namespace cutil {
 	#define _CUTIL_NAMESPACE_END					} _CUTIL_REDIFINE_SHORTER_NAMESPACE
 	#define _CUTIL_NAMESPACE_BEGIN_NAME(_NAME)		namespace _NAME {
 	#define _CUTIL_NAMESPACE_END_NAME(_NAME)		}
@@ -139,7 +137,7 @@
 #else
 	#define _CUTIL_CONSTEXPR_CPP17
 #endif
-#ifdef CUTIL_CPP14_SUPPORTED // C++14
+#if defined(CUTIL_CPP14_SUPPORTED) || (defined(__cpp_constexpr) && __cpp_constexpr >= 201304) // C++14
 	#define _CUTIL_CONSTEXPR_CPP14	constexpr
 #else
 	#define _CUTIL_CONSTEXPR_CPP14
@@ -159,6 +157,15 @@
 #else
 	#define _CUTIL_DEPRECATED
 #endif
+
+
+//* assert in constexpr function
+#ifdef CUTIL_CPP14_SUPPORTED // C++14
+	#define _CUTIL_CONSTEXPR_ASSERT(_EXPR)	assert(_EXPR)
+#else
+	#define _CUTIL_CONSTEXPR_ASSERT(_EXPR)
+#endif
+
 
 //* get decayed type of variable, only for GNU C, C23, C++11
 #ifndef __cplusplus // C

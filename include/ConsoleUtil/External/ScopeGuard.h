@@ -107,7 +107,7 @@ _CUTIL_NAMESPACE_BEGIN
 	detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
 	noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
 	we need this in the inner namespace due to MSVC bugs preventing
-	_CUTIL_NAMESPACE_NAME::detail::scope_guard from befriending a _CUTIL_NAMESPACE_NAME::make_scope_guard
+	cutil::detail::scope_guard from befriending a cutil::make_scope_guard
 	template instance in the parent namespace (see https://is.gd/xFfFhE). */
 
 
@@ -159,7 +159,7 @@ _CUTIL_NAMESPACE_END
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-_CUTIL_NAMESPACE_NAME::detail::scope_guard<Callback>::scope_guard(Callback&& callback)
+cutil::detail::scope_guard<Callback>::scope_guard(Callback&& callback)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 	: m_callback(std::forward<Callback>(callback)) /* use () instead of {} because
 	of DR 1467 (https://is.gd/WHmWuo), which still impacts older compilers
@@ -170,7 +170,7 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-_CUTIL_NAMESPACE_NAME::detail::scope_guard<Callback>::scope_guard::~scope_guard() noexcept  /*
+cutil::detail::scope_guard<Callback>::scope_guard::~scope_guard() noexcept  /*
 need the extra injected-class-name here to make different compilers happy */
 {
 	if(m_active)
@@ -179,7 +179,7 @@ need the extra injected-class-name here to make different compilers happy */
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-_CUTIL_NAMESPACE_NAME::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
+cutil::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 	: m_callback(std::forward<Callback>(other.m_callback)) // idem
 	, m_active{std::move(other.m_active)}
@@ -191,7 +191,7 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 ////////////////////////////////////////////////////////////////////////////////
 //* Dismisses the scope guard, then it will not executed on destruction.
 template<typename Callback>
-inline void _CUTIL_NAMESPACE_NAME::detail::scope_guard<Callback>::dismiss() noexcept
+inline void cutil::detail::scope_guard<Callback>::dismiss() noexcept
 {
 	m_active = false;
 }
@@ -203,7 +203,7 @@ inline void _CUTIL_NAMESPACE_NAME::detail::scope_guard<Callback>::dismiss() noex
 //  @param callback - the callable object to be invoked when the scope guard is destructed.
 //  note: do not forget to save the returned object.
 template<typename Callback> _CUTIL_NODISCARD
-inline auto _CUTIL_NAMESPACE_NAME::detail::make_scope_guard(Callback&& callback)
+inline auto cutil::detail::make_scope_guard(Callback&& callback)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 -> detail::scope_guard<Callback>
 {
