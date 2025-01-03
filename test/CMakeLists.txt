@@ -1,15 +1,16 @@
 cmake_minimum_required(VERSION 3.20)
 project(Test LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options("/utf-8")
 add_compile_options("/MP")
 add_compile_options("/sdl-")
 add_compile_options("/diagnostics:caret")
 add_compile_options("/Zc:preprocessor")
+add_compile_options("/fsanitize=address")
 
-set(GTest_DIR "D:/Projects/123/vcpkg_installed/test-triplet/share/gtest")
+set(GTest_DIR "D:/Projects/123/vcpkg_installed/test-triplet-asan/share/gtest")
 find_package(GTest REQUIRED)
 
 

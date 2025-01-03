@@ -20,13 +20,23 @@
 #include <cstdint>
 #include <algorithm>
 #include <cctype>
-#include <execution>
 #include <map>
 #include <regex>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#ifdef CUTIL_CPP17_SUPPORTED
+	#include <execution>
+#endif
+
+// #define CUTIL_STRINGUTIL_USE_STATIC_INLINE
+#ifdef CUTIL_STRINGUTIL_USE_STATIC_INLINE
+	#define _CUTIL_STRINGUTIL_STATIC static
+#else
+	#define _CUTIL_STRINGUTIL_STATIC
+#endif
 
 
 _CUTIL_NAMESPACE_BEGIN
@@ -51,8 +61,8 @@ namespace str
 	 * @param value - will be converted into std::string.
 	 * @return Converted value as std::string.
 	 */
-	template<typename T> _CUTIL_DEPRECATED
-	static inline std::string to_string(T value)
+	template<typename T> _CUTIL_DEPRECATED _CUTIL_STRINGUTIL_STATIC
+	inline std::string to_string(T value)
 	{
 		std::stringstream ss;
 		ss << value;
@@ -66,8 +76,8 @@ namespace str
 	 * @param str - std::string that will be converted into datatype T.
 	 * @return Variable of datatype T.
 	 */
-	template<typename T> _CUTIL_DEPRECATED
-	static inline T parse_string(const std::string & str)
+	template<typename T> _CUTIL_DEPRECATED _CUTIL_STRINGUTIL_STATIC
+	inline T parse_string(const std::string & str)
 	{
 		T result;
 		std::istringstream(str) >> result;
@@ -79,7 +89,7 @@ namespace str
 	 * @param str - std::string that needs to be converted.
 	 * @return Lower case input std::string.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string to_lower(const std::string & str)
 	{
 		auto result = str;
@@ -95,7 +105,7 @@ namespace str
 	 * @param str - std::string that needs to be converted.
 	 * @return Upper case input std::string.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string to_upper(const std::string & str)
 	{
 		auto result = str;
@@ -111,7 +121,7 @@ namespace str
 	 * @param str - input string to be capitalized.
 	 * @return A string with the first letter capitalized and all other characters lowercased. It doesn't modify the input string.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string capitalize(const std::string & str)
 	{
 		auto result = str;
@@ -127,7 +137,7 @@ namespace str
 	 * @param str - input string to be modified.
 	 * @return A string with the first letter capitalized. All other characters stay unchanged. It doesn't modify the input string.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string capitalize_first_char(const std::string & str)
 	{
 		auto result = to_lower(str);
@@ -144,7 +154,7 @@ namespace str
 	 * @param substring - searched substring.
 	 * @return True if substring was found in str, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool contains(const std::string & str, const std::string & substring)
 	{
 		return str.find(substring) != std::string::npos;
@@ -156,7 +166,7 @@ namespace str
 	 * @param character - searched character.
 	 * @return True if character was found in str, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool contains(const std::string & str, const char character)
 	{
 		return contains(str, std::string(1, character));
@@ -168,7 +178,7 @@ namespace str
 	 * @param str2 - std::string to compare
 	 * @return True if str1 and str2 are equal, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool compare_ignore_case(const std::string & str1, const std::string & str2)
 	{
 		return to_lower(str1) == to_lower(str2);
@@ -179,7 +189,7 @@ namespace str
 	 *        Taken from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring.
 	 * @param str - input std::string to remove white spaces from.
 	 */
-	static inline
+	_CUTIL_STRINGUTIL_STATIC inline
 	void trim_left(std::string & str)
 	{
 		str.erase(str.begin(), std::find_if(str.begin(), str.end(), [](int ch) { return !std::isspace(ch); }));
@@ -190,7 +200,7 @@ namespace str
 	 *        Taken from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring.
 	 * @param str - input std::string to remove white spaces from.
 	 */
-	static inline
+	_CUTIL_STRINGUTIL_STATIC inline
 	void trim_right(std::string & str)
 	{
 		str.erase(std::find_if(str.rbegin(), str.rend(), [](int ch) { return !std::isspace(ch); }).base(), str.end());
@@ -201,7 +211,7 @@ namespace str
 	 *        Taken from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring.
 	 * @param str - input std::string to remove white spaces from.
 	 */
-	static inline
+	_CUTIL_STRINGUTIL_STATIC inline
 	void trim(std::string & str)
 	{
 		trim_left(str);
@@ -214,7 +224,7 @@ namespace str
 	  * @param str - input std::string to remove white spaces from.
 	  * @return Copy of input str with trimmed white spaces.
 	  */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string trim_left_copy(const std::string& str)
 	{
 		std::string result = str;
@@ -228,7 +238,7 @@ namespace str
 	  * @param str - input std::string to remove white spaces from.
 	  * @return Copy of input str with trimmed white spaces.
 	  */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string trim_right_copy(const std::string& str)
 	{
 		std::string result = str;
@@ -242,7 +252,7 @@ namespace str
 	  * @param str - input std::string to remove white spaces from.
 	  * @return Copy of input str with trimmed white spaces.
 	  */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string trim_copy(const std::string& str)
 	{
 		std::string result = str;
@@ -258,7 +268,7 @@ namespace str
 	 * @param replacement - substring that will replace target.
 	 * @return True if replacement was successfull, false otherwise.
 	 */
-	static inline
+	_CUTIL_STRINGUTIL_STATIC inline
 	bool replace_first(std::string & str, const std::string & target, const std::string & replacement)
 	{
 		const size_t start_pos = str.find(target);
@@ -278,7 +288,7 @@ namespace str
 	 * @param replacement - substring that will replace target.
 	 * @return True if replacement was successfull, false otherwise.
 	 */
-	static inline
+	_CUTIL_STRINGUTIL_STATIC inline
 	bool replace_last(std::string & str, const std::string & target, const std::string & replacement)
 	{
 		size_t start_pos = str.rfind(target);
@@ -298,7 +308,7 @@ namespace str
 	 * @param replacement - substring that will replace target.
 	 * @return True if replacement was successfull, false otherwise.
 	 */
-	static inline
+	_CUTIL_STRINGUTIL_STATIC inline
 	bool replace_all(std::string & str, const std::string & target, const std::string & replacement)
 	{
 		if (target.empty())
@@ -321,7 +331,7 @@ namespace str
 	 * @param suffix - searched suffix in str.
 	 * @return True if suffix was found, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool ends_with(const std::string & str, const std::string & suffix)
 	{
 		const auto suffix_start = str.size() - suffix.size();
@@ -335,7 +345,7 @@ namespace str
 	 * @param suffix - searched character in str.
 	 * @return True if ends with character, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool ends_with(const std::string & str, const char suffix)
 	{
 		return !str.empty() && (str.back() == suffix);
@@ -347,7 +357,7 @@ namespace str
 	 * @param prefix - searched prefix in str.
 	 * @return True if prefix was found, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool starts_with(const std::string & str, const std::string & prefix)
 	{
 		return str.rfind(prefix, 0) == 0;
@@ -359,7 +369,7 @@ namespace str
 	 * @param prefix - searched character in str.
 	 * @return True if starts with character, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool starts_with(const std::string & str, const char prefix)
 	{
 		return !str.empty() && (str.front() == prefix);
@@ -371,7 +381,7 @@ namespace str
 	 * @param delim - the delimiter.
 	 * @return std::vector<std::string> that contains all splitted tokens.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::vector<std::string> split(const std::string & str, const char delim)
 	{
 		std::vector<std::string> tokens;
@@ -395,7 +405,7 @@ namespace str
 	 * @param delim - the delimiter.
 	 * @return std::vector<std::string> that contains all splitted tokens.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::vector<std::string> split(const std::string & str, const std::string & delim)
 	{
 		size_t pos_start = 0, pos_end, delim_len = delim.length();
@@ -417,7 +427,7 @@ namespace str
 	 * @param rgx_str - the set of delimiter characters.
 	 * @return vector of resulting tokens.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::vector<std::string> regex_split(const std::string& src, const std::string& rgx_str)
 	{
 		std::vector<std::string> elems;
@@ -439,7 +449,7 @@ namespace str
 	 * @param rgx_str - the set of delimiter characters.
 	 * @return True if the parsing is successfully done.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::map<std::string, std::string> regex_split_map(const std::string& src, const std::string& rgx_str)
 	{
 		std::map<std::string, std::string> dest;
@@ -464,7 +474,7 @@ namespace str
 	 * @param delims - the set of delimiter characters.
 	 * @return vector of resulting tokens.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::vector<std::string> split_any(const std::string & str, const std::string & delims)
 	{
 		std::string token;
@@ -491,8 +501,8 @@ namespace str
      * @param delim - the delimiter.
      * @return std::string with joined elements of container tokens with delimiter delim.
      */
-    template<typename Container>
-    static inline std::string join(const Container & tokens, const std::string & delim)
+    template<typename Container> _CUTIL_STRINGUTIL_STATIC
+    inline std::string join(const Container & tokens, const std::string & delim)
     {
         std::ostringstream result;
         for(auto it = tokens.begin(); it != tokens.end(); ++it)
@@ -513,20 +523,39 @@ namespace str
 	 * @tparam Container - container type.
 	 * @param tokens - container of strings.
 	 */
-	template<template<typename, typename...> typename Container, typename... Args>
-	static inline void drop_empty(Container<std::string, Args...> & tokens)
+	template<template<typename, typename...> typename Container, typename... E> _CUTIL_STRINGUTIL_STATIC
+	inline void drop_empty(Container<std::string, E...> & tokens)
 	{
+	#ifdef CUTIL_CPP20_SUPPORTED
 		auto last = std::erase_if(tokens, [](auto& s){ return s.empty(); });
+	#else
+		auto it = std::remove_if(tokens.begin(), tokens.end(), [](const std::string& s){return s.empty();});
+		tokens.erase(it, tokens.end());
+	#endif
 	}
 
+#ifndef CUTIL_CPP20_SUPPORTED
+	_CUTIL_STRINGUTIL_STATIC
+	inline void drop_empty(std::set<std::string>& tokens)
+	{
+		for(auto it = tokens.begin(); it != tokens.end(); ){
+			if(it->empty()){
+				it = tokens.erase(it);
+			}else{
+				++it;
+			}
+		}
+	}
+#endif
+	
 	/**
 	 * @brief Inplace removal of all empty strings in a container of strings
 	 * @tparam container - container type.
 	 * @param tokens - container of strings.
 	 * @return container of non-empty tokens.
 	 */
-	template<template<typename, typename...> typename Container, typename... Args> _CUTIL_NODISCARD
-	static inline Container<std::string> drop_empty_copy(const Container<std::string, Args...>& tokens)
+	template<template<typename, typename...> typename Container, typename... E> _CUTIL_NODISCARD _CUTIL_STRINGUTIL_STATIC
+	inline Container<std::string> drop_empty_copy(const Container<std::string, E...>& tokens)
 	{
 		auto result = tokens;
 		drop_empty(result);
@@ -540,8 +569,8 @@ namespace str
 	 * @param tokens - vector of strings.
 	 * @return vector of non-duplicate tokens.
 	 */
-	template<typename T>
-	static inline void drop_duplicate(std::vector<T> &tokens)
+	template<typename T> _CUTIL_STRINGUTIL_STATIC
+	inline void drop_duplicate(std::vector<T> &tokens)
 	{
 		internal::sort(tokens, std::less<T>());
 		// std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
@@ -556,8 +585,8 @@ namespace str
 	 * @param tokens - vector of strings.
 	 * @return vector of non-duplicate tokens.
 	 */
-	template<typename T> _CUTIL_NODISCARD
-	static inline std::vector<T> drop_duplicate_copy(const std::vector<T>& tokens)
+	template<typename T> _CUTIL_NODISCARD _CUTIL_STRINGUTIL_STATIC
+	inline std::vector<T> drop_duplicate_copy(const std::vector<T>& tokens)
 	{
 		std::vector<T> result = tokens;
 		internal::sort(result, std::less<T>());
@@ -573,7 +602,7 @@ namespace str
 	 * @param n - number of iterations.
 	 * @return std::string with repeated substring str.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string repeat(const std::string & str, size_t n)
 	{
 		std::string result;
@@ -591,7 +620,7 @@ namespace str
 	 * @param n - number of iterations.
 	 * @return std::string with repeated char c.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	std::string repeat(char c, size_t n)
 	{
 		return std::string(n, c);
@@ -603,7 +632,7 @@ namespace str
 	 * @param regex - the std::regex regular expression.
 	 * @return True if regex matches str, false otherwise.
 	 */
-	static inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
 	bool matches(const std::string & str, const std::regex & regex)
 	{
 		return std::regex_match(str, regex);
@@ -613,8 +642,8 @@ namespace str
 	 * @brief Sort input std::vector<std::string> strs in ascending order.
 	 * @param strs - std::vector<std::string> to be checked.
 	 */
-	template<typename T>
-	static inline void sorting_ascending(std::vector<T> &strs)
+	template<typename T> _CUTIL_STRINGUTIL_STATIC
+	inline void sorting_ascending(std::vector<T> &strs)
 	{
 		// std::sort(std::execution::par_unseq, strs.begin(), strs.end());
 		internal::sort(strs, std::less<T>());
@@ -624,8 +653,8 @@ namespace str
 	 * @brief Sorted input std::vector<std::string> strs in descending order.
 	 * @param strs - std::vector<std::string> to be checked.
 	 */
-	template<typename T>
-	static inline void sorting_descending(std::vector<T> &strs)
+	template<typename T> _CUTIL_STRINGUTIL_STATIC
+	inline void sorting_descending(std::vector<T> &strs)
 	{
 		// std::sort(std::execution::par_unseq, strs.begin(),strs.end(), std::greater<T>());
 		internal::sort(strs, std::greater<T>());
@@ -635,8 +664,8 @@ namespace str
 	 * @brief Reverse input container strs.
 	 * @param strs - container to be checked.
 	 */
-	template<typename Container>
-	static inline void reverse_inplace(Container &strs)
+	template<typename Container> _CUTIL_STRINGUTIL_STATIC
+	inline void reverse_inplace(Container &strs)
 	{
 		std::reverse(strs.begin(), strs.end());
 	}
@@ -645,8 +674,8 @@ namespace str
 	 * @brief Reverse input container strs.
 	 * @param strs - container to be checked.
 	 */
-	template<typename Container> _CUTIL_NODISCARD
-	static inline Container reverse_copy(const Container& strs)
+	template<typename Container> _CUTIL_NODISCARD _CUTIL_STRINGUTIL_STATIC
+	inline Container reverse_copy(const Container& strs)
 	{
 		Container result = strs;
 		std::reverse(result.begin(), result.end());
