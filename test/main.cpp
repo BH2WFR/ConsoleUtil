@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 	return RUN_ALL_TESTS();
 }
 
+
 TEST(BoolStatement, equal_any)
 {
 	EXPECT_EQ(true,  cutil::equal_any(1, 1));
@@ -176,10 +177,11 @@ TEST(Range, contains)
 	std::deque<int> d1 = {1, 2, 3, 4, 5};
 	std::list<int> l1 = {1, 2, 3, 4, 5};
 	std::forward_list<int> fl1 = {1, 2, 3, 4, 5};
-	std::stack<int> st1;
-	st1.push(1); st1.push(2); st1.push(3); st1.push(4); st1.push(5);
-	std::queue<int> q1;
-	q1.push(1); q1.push(2); q1.push(3); q1.push(4); q1.push(5);
+	// std::stack<int> st1;
+	// st1.push(1); st1.push(2); st1.push(3); st1.push(4); st1.push(5);
+	// std::queue<int> q1;
+	// std::priority_queue<int> pq1;
+	// q1.push(1); q1.push(2); q1.push(3); q1.push(4); q1.push(5);
 	
 	EXPECT_EQ(true, cutil::contains(v1, 2));
 	EXPECT_EQ(false, cutil::contains(v1, 0));
@@ -205,11 +207,32 @@ TEST(Range, contains)
 	EXPECT_EQ(false, cutil::contains(std::execution::seq, v1, 0));
 #endif
 	
+	
+	std::vector<int> e1 = {1, 2, 2, 4, 2, 5, 4};
+	EXPECT_EQ(3, cutil::erase_vector(e1, 2));
+	EXPECT_EQ(std::vector<int>({1, 4, 5, 4}), e1);
+	EXPECT_EQ(2, cutil::erase_vector(e1, 4));
+	EXPECT_EQ(std::vector<int>({1, 5}), e1);
+	EXPECT_EQ(0, cutil::erase_vector(e1, 6));
+	EXPECT_EQ(std::vector<int>({1, 5}), e1);
+	e1.clear();
+	EXPECT_EQ(0, cutil::erase_vector(e1, 6));
+	EXPECT_EQ(std::vector<int>(), e1);
 	// EXPECT_EQ(true, cutil::contains(st1, 2));
 	// EXPECT_EQ(false, cutil::contains(st1, 0));
 	// EXPECT_EQ(true, cutil::contains(q1, 2));
 	// EXPECT_EQ(false, cutil::contains(q1, 0));
 	
+	std::deque<int> e2 = {1, 2, 2, 4, 2, 5, 4};
+	EXPECT_EQ(3, cutil::erase_vector(e2, 2));
+	EXPECT_EQ(std::deque<int>({1, 4, 5, 4}), e2);
+	EXPECT_EQ(2, cutil::erase_vector(e2, 4));
+	EXPECT_EQ(std::deque<int>({1, 5}), e2);
+	EXPECT_EQ(0, cutil::erase_vector(e2, 6));
+	EXPECT_EQ(std::deque<int>({1, 5}), e2);
+	e2.clear();
+	EXPECT_EQ(0, cutil::erase_vector(e2, 6));
+	EXPECT_EQ(std::deque<int>(), e2);
 }
 
 TEST(Bit, simple)
@@ -462,13 +485,25 @@ TEST(Math, range)
 	EXPECT_EQ(true,  (cutil::num_in_interval<true, true>(10.0, 10.0, 20.0)));
 	EXPECT_EQ(true,  (cutil::num_in_interval<true, true>(20.0, 10.0, 20.0)));
 #endif
+
+	constexpr auto abs1 = cutil::abs((int)-1);
+	constexpr auto abs2 = cutil::abs((uint32_t)-1);
+	constexpr auto abs3 = cutil::abs((int8_t)-1);
+	constexpr auto abs4 = cutil::abs((uint8_t)-1);
+	constexpr auto abs5 = cutil::abs((int64_t)-1);
+	constexpr auto abs6 = cutil::abs((int16_t)-1);
+	constexpr auto abs7 = cutil::abs((double)-1);
+	constexpr auto abs8 = cutil::abs((float)-1);
+	constexpr auto abs9 = cutil::abs((size_t)-1);
 }
 
 
 TEST(Math, increase)
 {
 	using numType_t = int16_t;
+	using floatType_t = float;
 	std::vector<numType_t> aNums;
+	std::vector<floatType_t> aFloats;
 	aNums.reserve(10);
 	auto test = [&](numType_t initial, size_t times, std::function<void(numType_t&)> f){
 		numType_t num = initial;
@@ -476,6 +511,14 @@ TEST(Math, increase)
 		for(size_t i = 0; i < times; i++){
 			f(num);
 			aNums.push_back(num);
+		}
+	};
+	auto testf = [&](numType_t initial, size_t times, std::function<void(floatType_t&)> f){
+		floatType_t num = initial;
+		aFloats.clear();
+		for(size_t i = 0; i < times; i++){
+			f(num);
+			aFloats.push_back(num);
 		}
 	};
 	
@@ -491,6 +534,19 @@ TEST(Math, increase)
 	EXPECT_EQ(aNums, (std::vector<numType_t>{102, 104, 106, 106, 106, 106, 106, 106, 106, 106}));
 	test(100, 10, [](numType_t& num){cutil::increase_under_limit_clamp(num, 106, 2);});
 	EXPECT_EQ(aNums, (std::vector<numType_t>{102, 104, 106, 106, 106, 106, 106, 106, 106, 106}));
+	
+	testf(100, 10, [](floatType_t& num){cutil::increase_under_limit(num, 105, 1);});
+	EXPECT_EQ(aFloats, (std::vector<floatType_t>{101, 102, 103, 104, 105, 105, 105, 105, 105, 105}));
+	testf(100, 10, [](floatType_t& num){cutil::increase_under_limit(num, 105);});
+	EXPECT_EQ(aFloats, (std::vector<floatType_t>{101, 102, 103, 104, 105, 105, 105, 105, 105, 105}));
+	testf(100, 10, [](floatType_t& num){cutil::increase_under_limit(num, 105, 2);});
+	EXPECT_EQ(aFloats, (std::vector<floatType_t>{102, 104, 104, 104, 104, 104, 104, 104, 104, 104}));
+	testf(100, 10, [](floatType_t& num){cutil::increase_under_limit_clamp(num, 105, 2);});
+	EXPECT_EQ(aFloats, (std::vector<floatType_t>{102, 104, 105, 105, 105, 105, 105, 105, 105, 105}));
+	testf(100, 10, [](floatType_t& num){cutil::increase_under_limit(num, 106, 2);});
+	EXPECT_EQ(aFloats, (std::vector<floatType_t>{102, 104, 106, 106, 106, 106, 106, 106, 106, 106}));
+	testf(100, 10, [](floatType_t& num){cutil::increase_under_limit_clamp(num, 106, 2);});
+	EXPECT_EQ(aFloats, (std::vector<floatType_t>{102, 104, 106, 106, 106, 106, 106, 106, 106, 106}));
 	
 	test(100, 10, [](numType_t& num){CUTIL_INCREASE_UNDER_LIMIT(num, 105, 1);});
 	EXPECT_EQ(aNums, (std::vector<numType_t>{101, 102, 103, 104, 105, 105, 105, 105, 105, 105}));
@@ -804,4 +860,30 @@ TEST(Span, Span)
 	EXPECT_EQ(0, s.front());
 	EXPECT_EQ(9, s.back());
 	
+}
+TEST(Others, Others)
+{
+	int* p = new int[10];
+	int* q = new int(13);
+	int* r = cutil::malloc_type<int>(15);
+	int modified = 10;
+	int modified1 = 20;
+	
+	auto release2 = cutil::make_scope_guard([&](){
+		EXPECT_EQ(11, modified);
+		EXPECT_EQ(20, modified1);
+	}); // execute finally
+	
+	auto release3 = cutil::make_scope_guard([&](){
+		modified1 = 21;
+	});
+	release3.dismiss(); // dismissed, not be executed
+	
+	auto release = cutil::make_scope_guard([&](){
+		cutil::free_ptr(r);
+    	cutil::delete_array(p);
+		cutil::delete_ptr(q);
+		modified = 11;
+	}); // execute first
+
 }

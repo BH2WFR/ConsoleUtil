@@ -201,7 +201,9 @@ inline void cutil::detail::scope_guard<Callback>::dismiss() noexcept
 //*-----------------------------------------------------------------------------
 //* Invoke it to make a scope guard object.
 //  @param callback - the callable object to be invoked when the scope guard is destructed.
-//  note: do not forget to save the returned object.
+//  note: do not forget to save the returned object, otherwise the callback will not be invoked.
+//  if there are multiple scope objects, the callback will be invoked in reverse order. (down to up, LIFO)
+//  call `.dismiss()` to dismiss the scope guard, then the callback will not be invoked.
 template<typename Callback> _CUTIL_NODISCARD
 inline auto cutil::detail::make_scope_guard(Callback&& callback)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)

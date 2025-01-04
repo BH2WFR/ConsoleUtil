@@ -526,17 +526,17 @@ namespace str
 	template<template<typename, typename...> typename Container, typename... E> _CUTIL_STRINGUTIL_STATIC
 	inline void drop_empty(Container<std::string, E...> & tokens)
 	{
-	#ifdef CUTIL_CPP20_SUPPORTED
+	#ifdef CUTIL_CPP20_SUPPORTED // C++20, use erase_if
 		auto last = std::erase_if(tokens, [](auto& s){ return s.empty(); });
-	#else
+	#else // C++11
 		auto it = std::remove_if(tokens.begin(), tokens.end(), [](const std::string& s){return s.empty();});
 		tokens.erase(it, tokens.end());
 	#endif
 	}
 
-#ifndef CUTIL_CPP20_SUPPORTED
+#ifndef CUTIL_CPP20_SUPPORTED // under C++20
 	_CUTIL_STRINGUTIL_STATIC
-	inline void drop_empty(std::set<std::string>& tokens)
+	inline void drop_empty(std::set<std::string>& tokens) // versions for std::set<std::string>
 	{
 		for(auto it = tokens.begin(); it != tokens.end(); ){
 			if(it->empty()){

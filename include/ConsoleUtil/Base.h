@@ -108,6 +108,14 @@
 #endif // __cplusplus
 
 
+//* detect whether build mode is in Debug or Release
+#if (!defined(NDEBUG)) || defined(_DEBUG)
+	#define CUTIL_DEBUG_BUILD 	 1 	// Debug
+#else
+	#define CUTIL_DEBUG_BUILD 	 0 	// Release RelWithDebInfo MinSizeRel
+#endif
+
+
 //* C++ namespace
 #ifndef CUTIL_PARAM_USE_SHORTEN_NAMESPACE
 	#define CUTIL_PARAM_USE_SHORTEN_NAMESPACE 1	//* use shorter namespace `cu::` instead of `cutil::`
@@ -160,12 +168,16 @@
 
 
 //* assert in constexpr function
-#ifdef CUTIL_CPP14_SUPPORTED // C++14
+#if defined(CUTIL_CPP14_SUPPORTED) && defined(CUTIL_DEBUG_BUILD) // C++14
 	#define _CUTIL_CONSTEXPR_ASSERT(_EXPR)	assert(_EXPR)
 #else
 	#define _CUTIL_CONSTEXPR_ASSERT(_EXPR)
 #endif
-
+#ifdef CUTIL_DEBUG_BUILD
+	#define _CUTIL_ASSERT(_EXPR)	assert(_EXPR)
+#else
+	#define _CUTIL_ASSERT(_EXPR)
+#endif
 
 //* get decayed type of variable, only for GNU C, C23, C++11
 #ifndef __cplusplus // C

@@ -48,27 +48,6 @@
 #define CUTIL_U32STR(_1)			CUTIL_CAT_RAW(U, #_1) 	// C++11, char32_t
 
 
-
-//* detect whether build mode is in Debug or Release
-#if (!defined(NDEBUG)) || defined(_DEBUG)
-	#define CUTIL_DEBUG_BUILD 	 1 	// Debug
-#else
-	#define CUTIL_DEBUG_BUILD 	 0 	// Release RelWithDebInfo MinSizeRel
-#endif
-/*
-	in MSVC, macro `_DEBUG` is defined under debug build;
-	in GCC, macro `NDEBUG` is defined under release build, also for projects configured by CMake.
-	you can add `add_compile_definitions("$<IF:$<CONFIG:Debug>,_DEBUG,NDEBUG>")` in CMake.
-	
-Usage Example:
-	#if CUTIL_DEBUG_BUILD // Debug
-		//...
-	#else // Release RelWithDebInfo MinSizeRel
-		//...
-	#endif
-*/
-
-
 //* BOOL statement
 #define CUTIL_NOT(_x)				_CUTIL_CHK_2ND_ARG(CUTIL_CAT_TOKENS(_CUTIL_NOT_, _x))
 #define _CUTIL_NOT_0				~, 1
