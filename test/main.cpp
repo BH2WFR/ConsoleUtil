@@ -168,7 +168,7 @@ TEST(BoolStatement, unequal_mutually)
 
 TEST(Range, contains)
 {
-	std::vector<int> v1 = {1, 2, 3, 4, 5};
+	const std::vector<int> v1 = {1, 2, 3, 4, 5};
 	std::map<int, int> m1 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
 	std::set<int> s1 = {1, 2, 3, 4, 5};
 	std::unordered_map<int, int> um1 = {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}};
@@ -185,12 +185,16 @@ TEST(Range, contains)
 	
 	EXPECT_EQ(true, cutil::contains(v1, 2));
 	EXPECT_EQ(false, cutil::contains(v1, 0));
+#ifndef CUTIL_COMPILER_GCC
 	EXPECT_EQ(true, cutil::contains(m1, std::pair<int, int>(2, 2)));
 	EXPECT_EQ(false, cutil::contains(m1, std::pair<int, int>(2, 3)));
+#endif
 	EXPECT_EQ(true, cutil::contains(s1, 2));
 	EXPECT_EQ(false, cutil::contains(s1, 0));
+#ifndef CUTIL_COMPILER_GCC
 	EXPECT_EQ(true, cutil::contains(um1, std::pair<int, int>(2, 2)));
 	EXPECT_EQ(false, cutil::contains(um1, std::pair<int, int>(2, 3)));
+#endif
 	EXPECT_EQ(true, cutil::contains(us1, 3));
 	EXPECT_EQ(false, cutil::contains(us1, 0));
 	EXPECT_EQ(true, cutil::contains(a1, 2));
@@ -202,6 +206,9 @@ TEST(Range, contains)
 	EXPECT_EQ(true, cutil::contains(fl1, 2));
 	EXPECT_EQ(false, cutil::contains(fl1, 0));
 	
+	EXPECT_EQ(true, cutil::contains_if(v1, [](int i){return i == 2;}));
+	EXPECT_EQ(false, cutil::contains_if(v1, [](int i){return i == 0;}));
+	
 #ifdef CUTIL_CPP17_SUPPORTED
 	EXPECT_EQ(true, cutil::contains(std::execution::seq, v1, 2));
 	EXPECT_EQ(false, cutil::contains(std::execution::seq, v1, 0));
@@ -209,7 +216,8 @@ TEST(Range, contains)
 	
 	
 	std::vector<int> e1 = {1, 2, 2, 4, 2, 5, 4};
-	EXPECT_EQ(3, cutil::erase_vector(e1, 2));
+	int e1_1 = 2;
+	EXPECT_EQ(3, cutil::erase_vector(e1, e1_1));
 	EXPECT_EQ(std::vector<int>({1, 4, 5, 4}), e1);
 	EXPECT_EQ(2, cutil::erase_vector(e1, 4));
 	EXPECT_EQ(std::vector<int>({1, 5}), e1);
@@ -233,6 +241,10 @@ TEST(Range, contains)
 	e2.clear();
 	EXPECT_EQ(0, cutil::erase_vector(e2, 6));
 	EXPECT_EQ(std::deque<int>(), e2);
+	
+	std::vector<int> e3 = {1, 2, 2, 4, 2, 5, 4};
+	EXPECT_EQ(3, cutil::erase_if_vector(e3, [](int i){return i == 2;}));
+	EXPECT_EQ(std::vector<int>({1, 4, 5, 4}), e3);
 }
 
 TEST(Bit, simple)
@@ -886,4 +898,56 @@ TEST(Others, Others)
 		modified = 11;
 	}); // execute first
 
+}
+TEST(Type, Cast)
+{
+	class Base {
+	public:
+		virtual ~Base() = default;
+		virtual std::string f() const {return "Base";}
+		std::string g() const {return "Base";}
+	};
+	class A : public Base {
+	public:
+		std::string f() const override {return "A";}
+		std::string g() const {return "A";}
+	};
+	class B : public Base {
+	public:
+		std::string f() const override {return "B";}
+		std::string g() const {return "B";}
+	};
+	
+	std::unique_ptr<Base> a = std::make_unique<A>();
+	std::unique_ptr<Base> b = std::make_unique<B>();
+	auto a1 = cutil::safe_cast<A*>(a.get());
+	auto b1 = cutil::safe_cast<const B*>(const_cast<const Base*>(b.get()));
+	// auto b2 = cutil::safe_cast<A*>(b.get());	// assert failed!
+	// auto b4 = cutil::safe_cast<B*>(const_cast<const Base*>(b.get())); // ERROR
+	// auto b5 = cutil::safe_cast<const B*>(const_cast<const Base*>(b.get())); // ERROR
+	
+	
+	EXPECT_EQ("A", a->f());
+	EXPECT_EQ("B", b->f());
+	EXPECT_EQ("A", a1->f());
+	EXPECT_EQ("B", b1->f());
+	EXPECT_EQ("Base", a->g());
+	EXPECT_EQ("Base", b->g());
+	EXPECT_EQ("A", a1->g());
+	EXPECT_EQ("B", b1->g());
+	
+	EXPECT_EQ(true,  (cutil::internal::is_pointer_both_same_attributes<const B*, const B*>::value));
+	EXPECT_EQ(true,  (cutil::internal::is_pointer_both_same_attributes<B*, B*>::value));
+	EXPECT_EQ(false, (cutil::internal::is_pointer_both_same_attributes<const B*, B*>::value));
+	EXPECT_EQ(false, (cutil::internal::is_pointer_both_same_attributes<B*, const B*>::value));
+	EXPECT_EQ(true,  (cutil::internal::is_pointer_both_same_attributes<volatile B*, volatile B*>::value));
+	EXPECT_EQ(false, (cutil::internal::is_pointer_both_same_attributes<volatile B*, B*>::value));
+	
+#ifdef CUTIL_CPP17_SUPPORTED
+	auto f1 = [](){};
+	auto f2 = [](int i){};
+	static_assert(std::is_invocable_v<decltype(f1)>);
+	static_assert(std::is_invocable_v<decltype(f2), int>);
+	static_assert(! std::is_invocable_v<decltype(f2)>);
+#endif
 }

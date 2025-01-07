@@ -36,6 +36,35 @@
 			"cacheVariables": {
 				"CMAKE_BUILD_TYPE": "Release"
 			}
+		},
+		{
+			"name": "MinGW-x64-D",
+			"displayName": "MinGW-x64-D",
+			"generator": "Ninja",
+			"binaryDir": "${sourceDir}/build/${presetName}",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Debug",
+				"CMAKE_C_COMPILER": "gcc",
+				"CMAKE_CXX_COMPILER": "g++",
+				"CMAKE_INSTALL_PREFIX": "${sourceDir}/INSTALL",
+				"CMAKE_EXPORT_COMPILE_COMMANDS": "True"
+			},
+			"architecture": {
+				"value": "x64",
+				"strategy": "external"
+			},
+			"toolset": {
+				"value": "host=x64",
+				"strategy": "external"
+			}
+		},
+		{
+			"name": "MinGW-x64-R",
+			"displayName": "MinGW-x64-R",
+			"inherits": "MinGW-x64-D",
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release"
+			}
 		}
 	],
 	"buildPresets": [
@@ -53,6 +82,18 @@
 			"description": "Ninja MSVC Windows x64 Release",
 			
 			"configurePreset": "Ninja-MS-R",
+			"configuration": "Release"
+		},
+		{
+			"name": "MinGW-x64-D",
+			"displayName": "MinGW-x64-D",
+			"configurePreset": "MinGW-x64-D",
+			"configuration": "Debug"
+		},
+		{
+			"name": "MinGW-x64-R",
+			"displayName": "MinGW-x64-R",
+			"configurePreset": "MinGW-x64-R",
 			"configuration": "Release"
 		}
 	]

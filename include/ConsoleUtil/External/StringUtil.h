@@ -89,7 +89,7 @@ namespace str
 	 * @param str - std::string that needs to be converted.
 	 * @return Lower case input std::string.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string to_lower(const std::string & str)
 	{
 		auto result = str;
@@ -105,7 +105,7 @@ namespace str
 	 * @param str - std::string that needs to be converted.
 	 * @return Upper case input std::string.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string to_upper(const std::string & str)
 	{
 		auto result = str;
@@ -121,7 +121,7 @@ namespace str
 	 * @param str - input string to be capitalized.
 	 * @return A string with the first letter capitalized and all other characters lowercased. It doesn't modify the input string.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string capitalize(const std::string & str)
 	{
 		auto result = str;
@@ -137,7 +137,7 @@ namespace str
 	 * @param str - input string to be modified.
 	 * @return A string with the first letter capitalized. All other characters stay unchanged. It doesn't modify the input string.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string capitalize_first_char(const std::string & str)
 	{
 		auto result = to_lower(str);
@@ -154,7 +154,7 @@ namespace str
 	 * @param substring - searched substring.
 	 * @return True if substring was found in str, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool contains(const std::string & str, const std::string & substring)
 	{
 		return str.find(substring) != std::string::npos;
@@ -166,7 +166,7 @@ namespace str
 	 * @param character - searched character.
 	 * @return True if character was found in str, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool contains(const std::string & str, const char character)
 	{
 		return contains(str, std::string(1, character));
@@ -178,7 +178,7 @@ namespace str
 	 * @param str2 - std::string to compare
 	 * @return True if str1 and str2 are equal, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool compare_ignore_case(const std::string & str1, const std::string & str2)
 	{
 		return to_lower(str1) == to_lower(str2);
@@ -224,7 +224,7 @@ namespace str
 	  * @param str - input std::string to remove white spaces from.
 	  * @return Copy of input str with trimmed white spaces.
 	  */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string trim_left_copy(const std::string& str)
 	{
 		std::string result = str;
@@ -238,7 +238,7 @@ namespace str
 	  * @param str - input std::string to remove white spaces from.
 	  * @return Copy of input str with trimmed white spaces.
 	  */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string trim_right_copy(const std::string& str)
 	{
 		std::string result = str;
@@ -252,7 +252,7 @@ namespace str
 	  * @param str - input std::string to remove white spaces from.
 	  * @return Copy of input str with trimmed white spaces.
 	  */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string trim_copy(const std::string& str)
 	{
 		std::string result = str;
@@ -331,7 +331,7 @@ namespace str
 	 * @param suffix - searched suffix in str.
 	 * @return True if suffix was found, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool ends_with(const std::string & str, const std::string & suffix)
 	{
 		const auto suffix_start = str.size() - suffix.size();
@@ -345,7 +345,7 @@ namespace str
 	 * @param suffix - searched character in str.
 	 * @return True if ends with character, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool ends_with(const std::string & str, const char suffix)
 	{
 		return !str.empty() && (str.back() == suffix);
@@ -357,7 +357,7 @@ namespace str
 	 * @param prefix - searched prefix in str.
 	 * @return True if prefix was found, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool starts_with(const std::string & str, const std::string & prefix)
 	{
 		return str.rfind(prefix, 0) == 0;
@@ -369,7 +369,7 @@ namespace str
 	 * @param prefix - searched character in str.
 	 * @return True if starts with character, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool starts_with(const std::string & str, const char prefix)
 	{
 		return !str.empty() && (str.front() == prefix);
@@ -381,7 +381,7 @@ namespace str
 	 * @param delim - the delimiter.
 	 * @return std::vector<std::string> that contains all splitted tokens.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::vector<std::string> split(const std::string & str, const char delim)
 	{
 		std::vector<std::string> tokens;
@@ -405,7 +405,7 @@ namespace str
 	 * @param delim - the delimiter.
 	 * @return std::vector<std::string> that contains all splitted tokens.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::vector<std::string> split(const std::string & str, const std::string & delim)
 	{
 		size_t pos_start = 0, pos_end, delim_len = delim.length();
@@ -427,7 +427,7 @@ namespace str
 	 * @param rgx_str - the set of delimiter characters.
 	 * @return vector of resulting tokens.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::vector<std::string> regex_split(const std::string& src, const std::string& rgx_str)
 	{
 		std::vector<std::string> elems;
@@ -449,7 +449,7 @@ namespace str
 	 * @param rgx_str - the set of delimiter characters.
 	 * @return True if the parsing is successfully done.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::map<std::string, std::string> regex_split_map(const std::string& src, const std::string& rgx_str)
 	{
 		std::map<std::string, std::string> dest;
@@ -474,7 +474,7 @@ namespace str
 	 * @param delims - the set of delimiter characters.
 	 * @return vector of resulting tokens.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::vector<std::string> split_any(const std::string & str, const std::string & delims)
 	{
 		std::string token;
@@ -602,7 +602,7 @@ namespace str
 	 * @param n - number of iterations.
 	 * @return std::string with repeated substring str.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string repeat(const std::string & str, size_t n)
 	{
 		std::string result;
@@ -620,7 +620,7 @@ namespace str
 	 * @param n - number of iterations.
 	 * @return std::string with repeated char c.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::string repeat(char c, size_t n)
 	{
 		return std::string(n, c);
@@ -632,7 +632,7 @@ namespace str
 	 * @param regex - the std::regex regular expression.
 	 * @return True if regex matches str, false otherwise.
 	 */
-	_CUTIL_STRINGUTIL_STATIC inline _CUTIL_NODISCARD
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	bool matches(const std::string & str, const std::regex & regex)
 	{
 		return std::regex_match(str, regex);

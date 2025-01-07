@@ -9,6 +9,15 @@
 #define CONSOLEUTIL_BASE_H__
 
 
+//* get compiler type
+#if defined(__clang__)
+	#define CUTIL_COMPILER_CLANG	1
+#elif defined(__GNUC__) || defined(__GNUG__)
+	#define CUTIL_COMPILER_GCC		1
+#elif defined(_MSC_VER)
+	#define CUTIL_COMPILER_MSVC		1
+#endif
+
 
 //* get C++ language standard version
 // in MSVC compiler, `__cplusplus` always equals to `199711L` without compiler argument `/Zc:__cplusplus`,
@@ -78,6 +87,7 @@
 	#if CUTIL_C_LANG >= 201710L	// C17
 	#if CUTIL_C_LANG >= 202311L	// C23
 */
+
 
 
 //* ==== Environment Check, `> C99/C++11` with `##__VA_ARGS__` extension (available in MSVC(>VS2015 U3)/GCC/Clang)

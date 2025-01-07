@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(Test LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -11,35 +11,25 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options("/diagnostics:caret")
 	add_compile_options("/Zc:preprocessor")
 	add_compile_options("/fsanitize=address")
+	add_compile_options("/permissive-")
 else()
 	# add_compile_options("-std=c++2b")
 	add_compile_options("-fno-omit-frame-pointer")
-	# add_compile_options("-fsanitize=address")
-	# add_compile_options("-fsanitize=leak")
-	# add_compile_options("-fsanitize=undefined")
-	# add_compile_options("-fsanitize=pointer-compare")
-	# add_compile_options("-fsanitize=pointer-subtract")
-	# add_compile_options("-fsanitize=shift")
-	# add_compile_options("-fsanitize=integer-divide-by-zero")
-	# add_compile_options("-fsanitize=unreachable")
-	# add_compile_options("-fsanitize=vla-bound")
-	# add_compile_options("-fsanitize=null")
-	# add_compile_options("-fsanitize=return")
-	# add_compile_options("-fsanitize=bounds")
-	# add_compile_options("-fsanitize=bounds-strict")
-	# add_compile_options("-fsanitize=alignment")
-	# add_compile_options("-fsanitize=object-size")
-	# add_compile_options("-fsanitize=float-divide-by-zero")
-	# add_compile_options("-fsanitize=float-cast-overflow")
-	# add_compile_options("-fsanitize=nonnull-attribute")
-	# add_compile_options("-fsanitize=returns-nonnull-attribute")
-	# add_compile_options("-fsanitize=bool")
-	# add_compile_options("-fsanitize=enum")
-	# add_compile_options("-fsanitize=vptr")
-	# add_compile_options("-fsanitize=pointer-overflow")
+	# add_compile_options("-Wno-deprecated")
+	add_compile_options("-Wno-deprecated-declarations")
+	# add_compile_options("-std=c++latest")
+	# add_compile_options("-fsanitize=address") # oops, mingw doesn't support asan
 endif()
 
-set(GTest_DIR "D:/Projects/123/vcpkg_installed/test-triplet-asan/share/gtest")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	set(GTest_DIR "D:/Projects/vcpkg-asan/vcpkg_installed/test-triplet-asan/share/gtest")
+	# compiled by vcpkg, but with custom triplet with asan
+else()
+	set(GTest_DIR "D:/Projects/vcpkg-mingw-asan/mingw64/lib/cmake/GTest")
+	# gtest for mingw is unavailable to compile with vcpkg
+	# pls download from msys2 : "https://packages.msys2.org/packages/mingw-w64-x86_64-gtest"
+endif()
+
 find_package(GTest REQUIRED)
 
 
