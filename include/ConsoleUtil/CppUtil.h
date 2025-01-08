@@ -122,9 +122,8 @@ namespace internal {
 			typename std::enable_if<cutil::internal::is_pointer_both_same_attributes<P1, P2>::value, bool>::type = true
 #define _CUTIL_CONCEPT_POINTER_IS_BASE_OF(PBase, PDerived) \
 			typename std::enable_if<cutil::internal::is_base_of_pointer<PBase, PDerived>::value, bool>::type = true
-#define _CUTIL_CONCEPT_COMPARABLE(T, U) 	\
+#define _CUTIL_CONCEPT_COMPARABLE(T, U, COMP) 	\
 			typename = decltype(std::declval<T>() == std::declval<U>())
-
 
 #define _CUTIL_CONCEPT_MEMBER(T, Member) 	\
 			typename = decltype(std::declval<T>().Member)
@@ -146,73 +145,112 @@ namespace internal {
 
 //=================== Comparison Statements =======================
 inline namespace compare {
-
-template<typename T, typename Arg, _CUTIL_CONCEPT_COMPARABLE(T, Arg)> _CUTIL_NODISCARD
-inline bool equal_any(T&& compared, Arg&& a1) { // end of recursion
-	return (std::forward<T>(compared) == std::forward<Arg>(a1));
+template<typename T> inline constexpr bool equal_any(T&& compared) {
+	return false; // end of recursion
 }
-template<typename T, typename Arg, _CUTIL_CONCEPT_COMPARABLE(T, Arg)> _CUTIL_NODISCARD
-inline bool equal_all(T&& compared, Arg&& a1) { // end of recursion
-	return (std::forward<T>(compared) == std::forward<Arg>(a1));
+template<typename T> inline constexpr bool equal_all(T&& compared) {
+	return true; // end of recursion
 }
-template<typename T, typename Arg, _CUTIL_CONCEPT_COMPARABLE(T, Arg)> _CUTIL_NODISCARD
-inline bool unequal_any(T&& compared, Arg&& a1) { // end of recursion
-	return (std::forward<T>(compared) != std::forward<Arg>(a1));
+template<typename T> inline constexpr bool unequal_any(T&& compared) {
+	return false; // end of recursion
 }
-template<typename T, typename Arg, _CUTIL_CONCEPT_COMPARABLE(T, Arg)> _CUTIL_NODISCARD
-inline bool unequal_all(T&& compared, Arg&& a1) { // end of recursion
-	return (std::forward<T>(compared) != std::forward<Arg>(a1));
+template<typename T> inline constexpr bool unequal_all(T&& compared) {
+	return true; // end of recursion
 }
-template<typename T, typename Arg, _CUTIL_CONCEPT_COMPARABLE(T, Arg)> _CUTIL_NODISCARD
-inline bool unequal_mutually(T&& a1, Arg&& a2) { // end of recursion
-	return (std::forward<T>(a1) != std::forward<Arg>(a2));
+template<typename T> inline constexpr bool unequal_mutually(T&& a1) {
+	return true; // end of recursion
+}
+template<typename T> inline constexpr bool equal_mutually(T&& a1) {
+	return true; // end of recursion
+}
+template<typename T> inline constexpr bool increasing(T&& a1) {
+	return true; // end of recursion
+}
+template<typename T> inline constexpr bool increasing_equal(T&& a1) {
+	return true; // end of recursion
+}
+template<typename T> inline constexpr bool decreasing(T&& a1) {
+	return true; // end of recursion
+}
+template<typename T> inline constexpr bool decreasing_equal(T&& a1) {
+	return true; // end of recursion
 }
 
 //* bool statement: `(compared == arg1 || compared == arg2 || compared == arg3 || ...)`
 //  if 1st param `compared` is equal to ANY of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U)> _CUTIL_NODISCARD
-inline bool equal_any(T&& compared, U&& a1, E&&... a) {
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD
+inline constexpr bool equal_any(T&& compared, U&& a1, E&&... a) {
 	return (std::forward<T>(compared) == std::forward<U>(a1))
 			|| cutil::compare::equal_any(std::forward<T>(compared), std::forward<E>(a)...);
 }
 
 //* bool statement: `(compared == arg1 && compared == arg2 && compared == arg3 && ...)`
 //  if 1st param `compared` is equal to ALL of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U)> _CUTIL_NODISCARD
-inline bool equal_all(T&& compared, U&& a1, E&&... a) {
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD
+inline constexpr bool equal_all(T&& compared, U&& a1, E&&... a) {
 	return ((std::forward<T>(compared) == std::forward<U>(a1))
 			&& cutil::compare::equal_all(std::forward<T>(compared), std::forward<E>(a)...));
 }
 
 //* bool statement: `(compared != arg1 || compared != arg2 || compared != arg3 || ...)`
 //  if 1st param `compared` is NOT equal to Any of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U)> _CUTIL_NODISCARD
-inline bool unequal_any(T&& compared, U&& a1, E&&... a) {
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
+inline constexpr bool unequal_any(T&& compared, U&& a1, E&&... a) {
 	return ((std::forward<T>(compared) != std::forward<U>(a1))
 			|| cutil::compare::unequal_any(std::forward<T>(compared), std::forward<E>(a)...));
 }
 
 //* bool statement: `(compared != arg1 && compared != arg2 && compared != arg3 && ...)`
 //  if 1st param `compared` is NOT equal to ALL of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U)> _CUTIL_NODISCARD
-inline bool unequal_all(T&& compared, U&& a1, E&&... a) {
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
+inline constexpr bool unequal_all(T&& compared, U&& a1, E&&... a) {
 	return ((std::forward<T>(compared) != std::forward<U>(a1))
 			&& cutil::compare::unequal_all(std::forward<T>(compared), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually nonequal, not recommanded for large amount of arguments
 // if you want to compare more arguments, pls use `std::set` or `std::unordered_set` (hashset)
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U)> _CUTIL_NODISCARD
-inline bool unequal_mutually(T&& a1, U&& a2, E&&... a) {
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
+inline constexpr bool unequal_mutually(T&& a1, U&& a2, E&&... a) {
 	return (cutil::unequal_all(std::forward<T>(a1), std::forward<U>(a2), std::forward<E>(a)...)
 			&& cutil::compare::unequal_mutually(std::forward<T>(a2), std::forward<E>(a)...));
 }
 
-//* check if all of the variables are mutually equal
-template<typename T, typename... E> _CUTIL_NODISCARD
-inline bool equal_mutually(T&& a, E&&... e) {
-	return cutil::compare::equal_all(std::forward<T>(a), std::forward<E>(e)...);
+//* check if all of the variables are mutually equal `(a1 == a2 && a2 == a3 && ...)`
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD
+inline constexpr bool equal_mutually(T&& a1, U&& a2, E&&... a) {
+	return ((std::forward<T>(a1) == std::forward<U>(a2))
+			&& cutil::compare::equal_mutually(std::forward<T>(a2), std::forward<E>(a)...));
 }
+
+//* check if all of the variables are mutually increasing, `(a1 < a2 && a2 < a3 && ...)`
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, <)> _CUTIL_NODISCARD
+inline constexpr bool increasing(T&& a1, U&& a2, E&&... a) {
+	return ((std::forward<T>(a1) < std::forward<U>(a2))
+			&& cutil::compare::increasing(std::forward<T>(a2), std::forward<E>(a)...));
+}
+
+//* check if all of the variables are mutually increasing or equal, `(a1 <= a2 && a2 <= a3 && ...)`
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, <=)> _CUTIL_NODISCARD
+inline constexpr bool increasing_equal(T&& a1, U&& a2, E&&... a) {
+	return ((std::forward<T>(a1) <= std::forward<U>(a2))
+			&& cutil::compare::increasing_equal(std::forward<T>(a2), std::forward<E>(a)...));
+}
+
+//* check if all of the variables are mutually decreasing, `(a1 > a2 && a2 > a3 && ...)`
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, >)> _CUTIL_NODISCARD
+inline constexpr bool decreasing(T&& a1, U&& a2, E&&... a) {
+	return ((std::forward<T>(a1) > std::forward<U>(a2))
+			&& cutil::compare::decreasing(std::forward<T>(a2), std::forward<E>(a)...));
+}
+
+//* check if all of the variables are mutually decreasing or equal, `(a1 >= a2 && a2 >= a3 && ...)`
+template <typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, >=)> _CUTIL_NODISCARD
+inline constexpr bool decreasing_equal(T&& a1, U&& a2, E&&... a) {
+	return ((std::forward<T>(a1) >= std::forward<U>(a2))
+			&& cutil::compare::decreasing_equal(std::forward<T>(a2), std::forward<E>(a)...));
+}
+
 /* Instruction:
 	int var = 10;
 	if(cutil::equal_any(var, 2, 4, 6, 8, 10)){
@@ -246,6 +284,14 @@ inline bool equal_mutually(T&& a, E&&... e) {
 		// ((a1) == (a2) && (a1) == (a3) && (a1) == (a4) && (a1) == (a5))
 		// equivalent to `if(cutil::equal_all(a1, a2, a3, a4, a5))`
 	}
+	
+	//*--------------------------------------
+	bool b1 = cutil::increasing(1, 2, 3, 4, 5); // true
+	bool b2 = cutil::increasing(1, 2, 3, 3, 5); // false
+	bool b3 = cutil::decreasing(5, 4, 3, 2, 1); // true
+	bool b4 = cutil::decreasing(5, 4, 3, 3, 1); // false
+	bool b5 = cutil::increasing_equal(1, 2, 3, 3, 5); // true
+	bool b6 = cutil::decreasing_equal(5, 4, 3, 3, 1); // true
 */
 } // namespace compare
 
@@ -883,17 +929,17 @@ inline namespace math { // inline
 	bool isOverflowed4 = cutil::math::decrease_no_underflow(num);    // equivelent
 
 */
-	//* constexpr abs of an number, overloaded for unsigned integer types
-	template<typename T, _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T)> _CUTIL_NODISCARD constexpr
-	inline T abs(T num) noexcept { // for signed intergers and `float`, `double`, `long double`
+	//* constexpr abs() of an number, overloaded for unsigned integer types
+	template<typename T, _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T)> _CUTIL_NODISCARD
+	inline constexpr T abs(T num) noexcept { // for signed intergers and `float`, `double`, `long double`
 	#ifdef CUTIL_CPP23_SUPPORTED
 		return std::abs(num);	// std::abs() is constexpr since C++23
 	#else
-		return (num < 0) ? -num : num;
+		return (num < 0) ? -num : num; // in C++11/14/17/20, std::abs() is not constexpr
 	#endif
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD constexpr
-	inline T abs(T num) noexcept { // for `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t`, `size_t`
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	inline T constexpr abs(T num) noexcept { // for `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t`, `size_t`
 		return num;
 	}
 	
@@ -926,7 +972,7 @@ inline namespace math { // inline
 	inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
 		_CUTIL_CONSTEXPR_ASSERT(epsilon >= 0);
 		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(a) && std::isfinite(b) && std::isfinite(epsilon));
-		return (std::abs(a - b) <= epsilon); // overloaded abs() for floating number in <cstdlib>
+		return (cutil::math::abs(a - b) <= epsilon); // overloaded abs() for floating number in <cstdlib>
 	}
 /*
 	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
@@ -1080,6 +1126,7 @@ inline namespace math { // inline
 //======================= Type Conversions =========================
 inline namespace type {
 	//* cast bitwise, `(reinterpret_cast<volatile Out*>(&in))`
+	// is not constexpr in C++11/14/17, but constexpr in C++20
 	template<typename Out, typename In> _CUTIL_NODISCARD
 	inline constexpr Out bit_cast(In&& in) noexcept {
 		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 project(Test LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -9,8 +9,8 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	add_compile_options("/MP")
 	add_compile_options("/sdl-")
 	add_compile_options("/diagnostics:caret")
-	add_compile_options("/Zc:preprocessor")
-	add_compile_options("/fsanitize=address")
+	# add_compile_options("/Zc:preprocessor")
+	add_compile_options("/fsanitize=address") # asan for msvc, needs to compile gtest with asan too
 	add_compile_options("/permissive-")
 else()
 	# add_compile_options("-std=c++2b")

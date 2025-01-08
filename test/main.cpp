@@ -37,18 +37,68 @@ int main(int argc, char* argv[])
 	return RUN_ALL_TESTS();
 }
 
+int test_macros_enum(CUTIL_ENUM(var_, int, 3)){
+	return var_0 + var_1 + var_2;
+}
 
-TEST(BoolStatement, equal_any)
+TEST(Basic, macros)
 {
+	EXPECT_EQ(CUTIL_MULTICAT(1, 23, 4), 1234);
+	EXPECT_EQ(CUTIL_MULTICAT(1, 23, 4, 56), 123456);
+	
+	std::vector<int> vec {};
+	#define TEST_BASIC_APPEND(x) vec.push_back(x)
+	CUTIL_SEQ_FOREACH(TEST_BASIC_APPEND, 1, 2, 3, 4, 5);
+	EXPECT_EQ(vec, (std::vector<int>{1, 2, 3, 4, 5}));
+	vec.clear();
+	
+	#define TEST_BASIC_REPEAT(x) vec.push_back(x)
+	CUTIL_REPEAT(5, TEST_BASIC_REPEAT, 1);
+	EXPECT_EQ(vec, (std::vector<int>{1, 1, 1, 1, 1}));
+	vec.clear();
+	
+	EXPECT_EQ(6, test_macros_enum(1, 2, 3));
+	
+	
+	CUTIL_FOR(i, 5){
+		vec.push_back(i);
+	}
+	EXPECT_EQ(vec, (std::vector<int>{0, 1, 2, 3, 4}));
+	vec.clear();
+	
+	CUTIL_FOR_TYPE(int, i, 5){
+		vec.push_back(i);
+	}
+	EXPECT_EQ(vec, (std::vector<int>{0, 1, 2, 3, 4}));
+	vec.clear();
+	
+	CUTIL_FOR(i, 2, 5){
+		vec.push_back(i);
+	}
+	EXPECT_EQ(vec, (std::vector<int>{2, 3, 4}));
+	vec.clear();
+	
+	CUTIL_FOR_TYPE(int, i, 2, 5){
+		vec.push_back(i);
+	}
+	EXPECT_EQ(vec, (std::vector<int>{2, 3, 4}));
+	vec.clear();
+}
+
+TEST(Compare, equal_any)
+{
+	int a = 2;
+	int b = 1;
 	EXPECT_EQ(true,  cutil::equal_any(1, 1));
-	EXPECT_EQ(false, cutil::equal_any(1, 2));
-	EXPECT_EQ(true,  cutil::equal_any(1, 1, 2));
-	EXPECT_EQ(false, cutil::equal_any(1, 2, 3));
+	EXPECT_EQ(false, cutil::equal_any(1, a));
+	EXPECT_EQ(true,  cutil::equal_any(1, 1, a));
+	EXPECT_EQ(false, cutil::equal_any(b, 2, 3));
 	EXPECT_EQ(true,  cutil::equal_any(1, 2, 1));
-	EXPECT_EQ(true,  cutil::equal_any(1, 1, 1));
-	EXPECT_EQ(true,  cutil::equal_any(1, 1, 2, 3));
+	EXPECT_EQ(true,  cutil::equal_any(b, 1, 1));
+	EXPECT_EQ(true,  cutil::equal_any(1, 1, a, 3));
 	EXPECT_EQ(true,  cutil::equal_any(1, 2, 3, 1));
-	EXPECT_EQ(false, cutil::equal_any(1, 2, 3, 4));
+	EXPECT_EQ(false, cutil::equal_any(b, 2, 3, 4));
+	static_assert(true == cutil::equal_any(1, 2, 3, 1));
 	
 	EXPECT_EQ(true,  CUTIL_EQUAL_ANY(1, 1));
 	EXPECT_EQ(false, CUTIL_EQUAL_ANY(1, 2));
@@ -59,20 +109,24 @@ TEST(BoolStatement, equal_any)
 	EXPECT_EQ(true,  CUTIL_EQUAL_ANY(1, 1, 2, 3));
 	EXPECT_EQ(true,  CUTIL_EQUAL_ANY(1, 2, 3, 1));
 	EXPECT_EQ(false, CUTIL_EQUAL_ANY(1, 2, 3, 4));
+	
 }
-TEST(BoolStatement, equal_all)
+TEST(Compare, equal_all)
 {
+	int a = 2;
+	int b = 1;
 	EXPECT_EQ(true,  cutil::equal_all(1, 1));
-	EXPECT_EQ(false, cutil::equal_all(1, 2));
-	EXPECT_EQ(false, cutil::equal_all(1, 1, 2));
+	EXPECT_EQ(false, cutil::equal_all(1, a));
+	EXPECT_EQ(false, cutil::equal_all(b, 1, a));
 	EXPECT_EQ(false, cutil::equal_all(1, 2, 3));
 	EXPECT_EQ(false, cutil::equal_all(1, 2, 1));
 	EXPECT_EQ(true,  cutil::equal_all(1, 1, 1));
-	EXPECT_EQ(false, cutil::equal_all(1, 1, 2, 3));
-	EXPECT_EQ(false, cutil::equal_all(1, 2, 3, 1));
+	EXPECT_EQ(false, cutil::equal_all(1, 1, a, 3));
+	EXPECT_EQ(false, cutil::equal_all(b, 2, 3, 1));
 	EXPECT_EQ(false, cutil::equal_all(1, 2, 3, 4));
-	EXPECT_EQ(false, cutil::equal_all(1, 2, 1, 1));
-	EXPECT_EQ(true,  cutil::equal_all(1, 1, 1, 1));
+	EXPECT_EQ(false, cutil::equal_all(1, a, 1, 1));
+	EXPECT_EQ(true,  cutil::equal_all(b, 1, 1, 1));
+	static_assert(false == cutil::equal_all(1, 2, 3, 4));
 	
 	EXPECT_EQ(true,  CUTIL_EQUAL_ALL(1, 1));
 	EXPECT_EQ(false, CUTIL_EQUAL_ALL(1, 2));
@@ -85,9 +139,35 @@ TEST(BoolStatement, equal_all)
 	EXPECT_EQ(false, CUTIL_EQUAL_ALL(1, 2, 3, 4));
 	EXPECT_EQ(false, CUTIL_EQUAL_ALL(1, 2, 1, 1));
 	EXPECT_EQ(true,  CUTIL_EQUAL_ALL(1, 1, 1, 1));
+	
+	EXPECT_EQ(true,  cutil::equal_mutually(1, 1));
+	EXPECT_EQ(false, cutil::equal_mutually(1, a));
+	EXPECT_EQ(false, cutil::equal_mutually(b, 1, a));
+	EXPECT_EQ(false, cutil::equal_mutually(1, 2, 3));
+	EXPECT_EQ(false, cutil::equal_mutually(1, 2, 1));
+	EXPECT_EQ(true,  cutil::equal_mutually(1, 1, 1));
+	EXPECT_EQ(false, cutil::equal_mutually(1, 1, a, 3));
+	EXPECT_EQ(false, cutil::equal_mutually(b, 2, 3, 1));
+	EXPECT_EQ(false, cutil::equal_mutually(1, 2, 3, 4));
+	EXPECT_EQ(false, cutil::equal_mutually(1, a, 1, 1));
+	EXPECT_EQ(true,  cutil::equal_mutually(b, 1, 1, 1));
+	
+	EXPECT_EQ(true,  CUTIL_EQUAL_MUTUALLY(1, 1));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(1, a));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(b, 1, a));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(1, 2, 3));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(1, 2, 1));
+	EXPECT_EQ(true,  CUTIL_EQUAL_MUTUALLY(1, 1, 1));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(1, 1, a, 3));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(b, 2, 3, 1));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(1, 2, 3, 4));
+	EXPECT_EQ(false, CUTIL_EQUAL_MUTUALLY(1, a, 1, 1));
+	EXPECT_EQ(true,  CUTIL_EQUAL_MUTUALLY(b, 1, 1, 1));
 }
-TEST(BoolStatement, unequal_any)
+TEST(Compare, unequal_any)
 {
+	int a = 2;
+	int b = 1;
 	EXPECT_EQ(false, cutil::unequal_any(1, 1));
 	EXPECT_EQ(true,  cutil::unequal_any(1, 2));
 	EXPECT_EQ(true,  cutil::unequal_any(1, 1, 2));
@@ -99,6 +179,7 @@ TEST(BoolStatement, unequal_any)
 	EXPECT_EQ(true,  cutil::unequal_any(1, 2, 3, 4));
 	EXPECT_EQ(true,  cutil::unequal_any(1, 2, 1, 1));
 	EXPECT_EQ(false, cutil::unequal_any(1, 1, 1, 1));
+	static_assert(false == cutil::unequal_any(1, 1, 1, 1));
 	
 	EXPECT_EQ(false, CUTIL_UNEQUAL_ANY(1, 1));
 	EXPECT_EQ(true,  CUTIL_UNEQUAL_ANY(1, 2));
@@ -113,7 +194,7 @@ TEST(BoolStatement, unequal_any)
 	EXPECT_EQ(false, CUTIL_UNEQUAL_ANY(1, 1, 1, 1));
 	
 }
-TEST(BoolStatement, unequal_all)
+TEST(Compare, unequal_all)
 {
 	EXPECT_EQ(false, cutil::unequal_all(1, 1));
 	EXPECT_EQ(true,  cutil::unequal_all(1, 2));
@@ -137,7 +218,7 @@ TEST(BoolStatement, unequal_all)
 	EXPECT_EQ(true,  CUTIL_UNEQUAL_ALL(1, 2, 3, 4));
 	EXPECT_EQ(true,  CUTIL_UNEQUAL_ALL(1, 2, 2, 2));
 }
-TEST(BoolStatement, unequal_mutually)
+TEST(Compare, unequal_mutually)
 {
 	EXPECT_EQ(false, cutil::unequal_mutually(1, 1));
 	EXPECT_EQ(true, cutil::unequal_mutually(1, 2));
@@ -165,6 +246,119 @@ TEST(BoolStatement, unequal_mutually)
 	
 }
 
+TEST(Compare, others)
+{
+	int a1 = 9;
+	EXPECT_EQ(false, cutil::increasing(1, 1));
+	EXPECT_EQ(true,  cutil::increasing(1, 2));
+	EXPECT_EQ(false, cutil::increasing(1, 1, 2));
+	EXPECT_EQ(false, cutil::increasing(1, 2, 2));
+	EXPECT_EQ(true,  cutil::increasing(1, 2, 3));
+	EXPECT_EQ(false, cutil::increasing(3, 2, 1));
+	EXPECT_EQ(false, cutil::increasing(1, 2, 1, 4));
+	EXPECT_EQ(false, cutil::increasing(1, 2, 2, 4));
+	EXPECT_EQ(false, cutil::increasing(1, 2, 2, 5, 3));
+	EXPECT_EQ(false, cutil::increasing(1, 2, 2, 5, 9));
+	EXPECT_EQ(true,  cutil::increasing(1, 3, 5, 7, 9));
+	EXPECT_EQ(true,  cutil::increasing(1, 3, 5, 7, a1));
+	static_assert(true == cutil::increasing(1, 3, 5, 7, 9));
+	
+	EXPECT_EQ(false, CUTIL_INCREASING(1, 1));
+	EXPECT_EQ(true,  CUTIL_INCREASING(1, 2));
+	EXPECT_EQ(false, CUTIL_INCREASING(1, 1, 2));
+	EXPECT_EQ(false, CUTIL_INCREASING(1, 2, 2));
+	EXPECT_EQ(true,  CUTIL_INCREASING(1, 2, 3));
+	EXPECT_EQ(false, CUTIL_INCREASING(3, 2, 1));
+	EXPECT_EQ(false, CUTIL_INCREASING(1, 2, 1, 4));
+	EXPECT_EQ(false, CUTIL_INCREASING(1, 2, 2, 4));
+	EXPECT_EQ(false, CUTIL_INCREASING(1, 2, 2, 5, 3));
+	EXPECT_EQ(false, CUTIL_INCREASING(1, 2, 2, 5, 9));
+	EXPECT_EQ(true,  CUTIL_INCREASING(1, 3, 5, 7, 9));
+	EXPECT_EQ(true,  CUTIL_INCREASING(1, 3, 5, 7, a1));
+	
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 1));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 2));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 1, 2));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 2, 2));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 2, 3));
+	EXPECT_EQ(false, cutil::increasing_equal(3, 2, 1));
+	EXPECT_EQ(false, cutil::increasing_equal(1, 2, 1, 4));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 2, 2, 4));
+	EXPECT_EQ(false, cutil::increasing_equal(1, 2, 2, 5, 3));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 2, 2, 5, 9));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 3, 5, 7, 9));
+	EXPECT_EQ(true,  cutil::increasing_equal(1, 3, 5, 7, a1));
+	
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 1));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 2));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 1, 2));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 2, 2));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 2, 3));
+	EXPECT_EQ(false, CUTIL_INCREASING_EQUAL(3, 2, 1));
+	EXPECT_EQ(false, CUTIL_INCREASING_EQUAL(1, 2, 1, 4));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 2, 2, 4));
+	EXPECT_EQ(false, CUTIL_INCREASING_EQUAL(1, 2, 2, 5, 3));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 2, 2, 5, 9));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 3, 5, 7, 9));
+	EXPECT_EQ(true,  CUTIL_INCREASING_EQUAL(1, 3, 5, 7, a1));
+	
+	EXPECT_EQ(false, cutil::decreasing(1, 1));
+	EXPECT_EQ(true,  cutil::decreasing(2, 1));
+	EXPECT_EQ(false, cutil::decreasing(2, 1, 1));
+	EXPECT_EQ(false, cutil::decreasing(3, 2, 2));
+	EXPECT_EQ(true,  cutil::decreasing(3, 2, 1));
+	EXPECT_EQ(false, cutil::decreasing(1, 2, 3));
+	EXPECT_EQ(false, cutil::decreasing(3, 2, 2));
+	EXPECT_EQ(false, cutil::decreasing(3, 3, 2));
+	EXPECT_EQ(false, cutil::decreasing(4, 2, 2, 1));
+	EXPECT_EQ(false, cutil::decreasing(1, 4, 2, 1));
+	EXPECT_EQ(true,  cutil::decreasing(a1, 7, 6, 5, 3, 1));
+	EXPECT_EQ(false, cutil::decreasing(9, 7, 6, 6, 3, 1));
+	EXPECT_EQ(false, cutil::decreasing(a1, 7, 6, 5, 6, 1));
+	
+	EXPECT_EQ(false, CUTIL_DECREASING(1, 1));
+	EXPECT_EQ(true,  CUTIL_DECREASING(2, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING(2, 1, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING(3, 2, 2));
+	EXPECT_EQ(true,  CUTIL_DECREASING(3, 2, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING(1, 2, 3));
+	EXPECT_EQ(false, CUTIL_DECREASING(3, 2, 2));
+	EXPECT_EQ(false, CUTIL_DECREASING(3, 3, 2));
+	EXPECT_EQ(false, CUTIL_DECREASING(4, 2, 2, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING(1, 4, 2, 1));
+	EXPECT_EQ(true,  CUTIL_DECREASING(a1, 7, 6, 5, 3, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING(9, 7, 6, 6, 3, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING(a1, 7, 6, 5, 6, 1));
+	
+	EXPECT_EQ(true,  cutil::decreasing_equal(1, 1));
+	EXPECT_EQ(true,  cutil::decreasing_equal(2, 1));
+	EXPECT_EQ(true,  cutil::decreasing_equal(2, 1, 1));
+	EXPECT_EQ(true,  cutil::decreasing_equal(3, 2, 2));
+	EXPECT_EQ(true,  cutil::decreasing_equal(3, 2, 1));
+	EXPECT_EQ(false, cutil::decreasing_equal(1, 2, 3));
+	EXPECT_EQ(true,  cutil::decreasing_equal(3, 3, 2));
+	EXPECT_EQ(true,  cutil::decreasing_equal(4, 2, 2, 1));
+	EXPECT_EQ(false, cutil::decreasing_equal(1, 4, 2, 1));
+	EXPECT_EQ(true,  cutil::decreasing_equal(a1, 7, 6, 5, 3, 1));
+	EXPECT_EQ(true,  cutil::decreasing_equal(9, 7, 6, 6, 3, 1));
+	EXPECT_EQ(false, cutil::decreasing_equal(a1, 7, 6, 5, 6, 1));
+	
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(1, 1));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(2, 1));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(2, 1, 1));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(3, 2, 2));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(3, 2, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING_EQUAL(1, 2, 3));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(3, 3, 2));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(4, 2, 2, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING_EQUAL(1, 4, 2, 1));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(a1, 7, 6, 5, 3, 1));
+	EXPECT_EQ(true,  CUTIL_DECREASING_EQUAL(9, 7, 6, 6, 3, 1));
+	EXPECT_EQ(false, CUTIL_DECREASING_EQUAL(a1, 7, 6, 5, 6, 1));
+	
+	CUTIL_DECREASING_EQUAL(a1, 7, 6, 5, 6, 1);
+	
+}
 
 TEST(Range, contains)
 {
@@ -261,6 +455,8 @@ TEST(Bit, simple)
 	EXPECT_EQ(false, cutil::check_bit_by_idx((uint8_t)0b10101010, 0));
 	EXPECT_EQ(true, cutil::check_bit_by_idx((uint8_t)0b10101010, 1));
 	EXPECT_EQ(false, cutil::check_bit_by_idx((uint8_t)0b10101010, 2));
+	static_assert(0b00000000 == cutil::get_bit_by_idx((uint8_t)0b10101010, 0));
+	static_assert(true == cutil::check_bit_by_mask((uint8_t)0b10101010, (uint8_t)0b10000000));
 	
 	EXPECT_EQ(0b10000000, CUTIL_BIT_GET_MASK(0b10101010, 0b10000000));
 	EXPECT_EQ(0b00000000, CUTIL_BIT_GET_MASK(0b10101010, 0b01000000));
@@ -283,6 +479,7 @@ TEST(Bit, simple)
 	EXPECT_EQ(0b10101010, cutil::set_bit_by_idx((uint8_t)0b10101010, 1));
 	EXPECT_EQ(0b10101110, cutil::set_bit_by_idx((uint8_t)0b10101010, 2));
 	EXPECT_EQ(0b10101010, cutil::set_bit_by_idx((uint8_t)0b10101010, 3));
+	static_assert(0b10101010 == cutil::set_bit_by_idx((uint8_t)0b10101010, 3));
 	
 	EXPECT_EQ(0b10101010, CUTIL_BIT_SET_MASK(0b10101010, 0b10000000));
 	EXPECT_EQ(0b11101010, CUTIL_BIT_SET_MASK(0b10101010, 0b11000000));
@@ -315,6 +512,7 @@ TEST(Bit, simple)
 	EXPECT_EQ(0b10101000, cutil::flip_bit_by_idx((uint8_t)0b10101010, 1));
 	EXPECT_EQ(0b10101110, cutil::flip_bit_by_idx((uint8_t)0b10101010, 2));
 	EXPECT_EQ(0b10100010, cutil::flip_bit_by_idx((uint8_t)0b10101010, 3));
+	static_assert(0b10100010 == cutil::flip_bit_by_idx((uint8_t)0b10101010, 3));
 	
 	EXPECT_EQ(0b00101010, CUTIL_BIT_FLIP_MASK(0b10101010, 0b10000000));
 	EXPECT_EQ(0b01101010, CUTIL_BIT_FLIP_MASK(0b10101010, 0b11000000));
@@ -330,6 +528,7 @@ TEST(Bit, rotate)
 	EXPECT_EQ(0b10101010, cutil::rotate_bit_left((uint8_t)0b10101010, 0));
 	EXPECT_EQ(0b01010101, cutil::rotate_bit_left((uint8_t)0b10101010, 1));
 	EXPECT_EQ(0b10101010, cutil::rotate_bit_left((uint8_t)0b10101010, 2));
+	static_assert(0b10101010 == cutil::rotate_bit_left((uint8_t)0b10101010, 2));
 	
 	EXPECT_EQ(0b10101010, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b10101010, 0));
 	EXPECT_EQ(0b01010101, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b10101010, 1));
@@ -390,6 +589,7 @@ TEST(Bit, Others)
 	EXPECT_EQ(0b00000000, cutil::get_lsb((uint8_t)0b00000000));
 	EXPECT_EQ(0b00000000, cutil::get_msb((uint8_t)0b00100101));
 	EXPECT_EQ(0b10000000, cutil::get_msb((uint8_t)0b10100101));
+	static_assert(0b10000000 == cutil::get_msb((uint8_t)0b10100101));
 	
 	EXPECT_EQ(0b00000001, CUTIL_BIT_GET_LSB((uint8_t)0b00100101));
 	EXPECT_EQ(0b00000000, CUTIL_BIT_GET_LSB((uint8_t)0b00100100));
@@ -435,6 +635,7 @@ TEST(Math, range)
 	EXPECT_EQ(15.0, cutil::clamp(15.0, 10.0, 20.0));
 	EXPECT_EQ(17.0, cutil::clamp(15.0, 17.0, 20.0));
 	EXPECT_EQ(13.0, cutil::clamp(15.0, 10.0, 13.0));
+	static_assert(13.0 == cutil::clamp(15.0, 10.0, 13.0));
 	EXPECT_EQ(15, CUTIL_CLAMP(15, 10, 20));
 	EXPECT_EQ(17, CUTIL_CLAMP(15, 17, 20));
 	EXPECT_EQ(13, CUTIL_CLAMP(15, 10, 13));
@@ -665,9 +866,11 @@ TEST(Math, others)
 	
 	EXPECT_EQ(true, (cutil::fequal(cutil::numbers::pi_3, cutil::math::deg2rad(60.0))));
 	EXPECT_EQ(false, (cutil::numbers::pi_3 == cutil::math::deg2rad(60.0)));
+	static_assert(true == cutil::fequal(cutil::numbers::pi_3, cutil::math::deg2rad(60.0)));
 
 	EXPECT_EQ(true, (cutil::fequal(60.0, cutil::math::rad2deg(cutil::numbers::pi_3), 1e-14)));
 	EXPECT_EQ(false, (60.0 == cutil::math::rad2deg(cutil::numbers::pi_3)));
+	static_assert(true == cutil::fequal(60.0, cutil::math::rad2deg(cutil::numbers::pi_3), 1e-14));
 	
 	EXPECT_EQ(true, (CUTIL_EQUAL(CUTIL_PI_3, CUTIL_DEG_TO_RAD(60.0), 1e-14)));
 	EXPECT_EQ(false, (CUTIL_PI_3 == CUTIL_DEG_TO_RAD(60.0)));
@@ -684,6 +887,7 @@ TEST(Math, others)
 	EXPECT_EQ(true, (cutil::fequal(5.0, cutil::math::lerp(10, 20, -0.5), 1e-14)) );
 	EXPECT_EQ(true, (cutil::fequal(25.0, cutil::math::lerp(10, 20, 1.5), 1e-14)) );
 	EXPECT_EQ(true, (cutil::fequal(10.0, cutil::math::lerp(10, 10, 0.5), 1e-14)) );
+	static_assert(true == cutil::fequal(10.0, cutil::math::lerp(10, 10, 0.5), 1e-14));
 	
 	EXPECT_EQ(true, (CUTIL_EQUAL(15.0, CUTIL_LERP(10, 20 ,0.5), 1e-14)));
 	EXPECT_EQ(true, (CUTIL_EQUAL(17.5, CUTIL_LERP(10, 20 ,0.75), 1e-14)));
@@ -716,8 +920,11 @@ TEST(Math, others)
 	EXPECT_EQ(24, (cutil::math::gcd(0, 24)) );
 	EXPECT_EQ(24, (cutil::math::gcd(0, -24)) );
 	EXPECT_EQ(2, (cutil::math::gcd(6u, 10u)) );
-	
-	// static_assert(cutil::math::lcm(6, 10) == 30);
+
+#ifdef CUTIL_CPP14_SUPPORTED
+	static_assert(cutil::math::lcm(6, 10) == 30);
+	static_assert(cutil::math::gcd(-6, 10) == 2);
+#endif
 	EXPECT_EQ(cutil::math::lcm(6, 10), 30);
 	EXPECT_EQ(cutil::math::lcm(10, 6), 30);
 	EXPECT_EQ(cutil::math::lcm(6, -10), 30);
@@ -741,6 +948,12 @@ TEST(Math, others)
 	EXPECT_EQ(cutil::math::pow_int<1>(3), 3);
 	EXPECT_EQ(cutil::math::pow_int<2>(3), 9);
 	EXPECT_EQ(cutil::math::pow_int<3>(3), 27);
+	
+#ifdef CUTIL_CPP14_SUPPORTED
+	static_assert(cutil::math::pow_int(3, 2) == 9);
+	static_assert(cutil::math::pow_int<2>(3) == 9);
+	static_assert(cutil::math::factorial(3) == 6);
+#endif
 	
 	uint64_t z = 2;
 	EXPECT_EQ(cutil::math::pow_int(z++, 2), 4);
@@ -788,10 +1001,15 @@ TEST(Memory, Bitwise)
 	f[5] = cutil::bit_cast<float>(i);
 	f[6] = cutil::bit_cast<float>(0x12345678);
 	
+	
+	
 #ifdef CUTIL_CPP20_SUPPORTED
 	f[13] = std::bit_cast<float>(i);
 	f[14] = std::bit_cast<float>(0x12345678);
+	constexpr float f5 = cutil::bit_cast<float>(0x12345678);
+	EXPECT_EQ(f5, f[5]);
 #endif
+
 	EXPECT_EQ(f[0], f[1]);
 	EXPECT_EQ(f[0], f[2]);
 	EXPECT_EQ(f[0], f[3]);

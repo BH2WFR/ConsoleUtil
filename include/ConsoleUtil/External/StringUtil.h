@@ -681,6 +681,25 @@ namespace str
 		std::reverse(result.begin(), result.end());
 		return result;
 	}
+	
+	// //*
+	// inline std::string get_valid_path(const std::string& str)
+	// {
+	// 	std::string output = cutil::str::trim_copy(str);
+	// 	cutil::str::replace_all(output, "\\\\", "/");
+	// 	std::replace(output.begin(), output.end(), '\\', '/');
+	// 	return output;
+	// }
+	
+	// //*
+	// inline std::string get_valid_filename(const std::string& str)
+	// {
+	// 	std::string output = cutil::str::trim_copy(str);
+		
+	// 	return output;
+	// }
+	
+	
 } // namespace
 
 _CUTIL_NAMESPACE_END

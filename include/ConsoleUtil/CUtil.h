@@ -16,181 +16,7 @@
 
 
 
-//===================== Basic Macros =========================
-#define CUTIL_EMPTY()										// empty macro function
-#define CUTIL_DEFAULT										// empty macro
-// #define CUTIL_DEFER(_x)			_x CUTIL_EMPTY
-#define CUTIL_EXPAND(...)			__VA_ARGS__ 			// expand `__VA_ARGS__` in MSVC without `/Zc:preprocessor`
-#define CUTIL_SELF(_x)				_x						// expand
-#define CUTIL_ZERO()				0						// do not delete `()`
-#define CUTIL_COMMA					,						// a comma that can avoid recognizing as seperator of arguments
-#define CUTIL_CAT_RAW(_1, _2)		_1 ## _2 				// do not merge with `_CUTIL_CAT_2()`
-#define CUTIL_CAT_TOKENS(_1, _2)	CUTIL_CAT_RAW(_1, _2) 	// for enable unwrapping after `##` concatenation
-
-
-#define _CUTIL_GET_1ST_ARG(_1, ...)		_1
-#define _CUTIL_CHK_1ST_ARG(...)			CUTIL_EXPAND(_CUTIL_GET_1ST_ARG(__VA_ARGS__, 0)) // if 1st param dosen't exist, returns 0
-#define _CUTIL_GET_2ND_ARG(_1, _2, ...)	_2
-#define _CUTIL_CHK_2ND_ARG(...)			CUTIL_EXPAND(_CUTIL_GET_2ND_ARG(__VA_ARGS__, 0, 0)) // if 2nd param dosen't exist, returns 0
-#define _CUTIL_GET_63TH_ARG(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z, \
-							A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,_63,...)  _63
-
-
-// #define _CUTIL_PARAMS_SINCE_2ND(_1, ...)	 CUTIL_EXPAND(__VA_ARGS__) // retrive all params since 2nd, and drop 1st param
-// #define _CUTIL_PARAMS_SINCE_3RD(_1, _2, ...) CUTIL_EXPAND(__VA_ARGS__)
-
-
-//* string conversion support
-#define CUTIL_STR(_1)				#_1
-#define CUTIL_LSTR(_1)				CUTIL_CAT_RAW(L, #_1)	// wchar_t
-#define CUTIL_U8STR(_1)				CUTIL_CAT_RAW(u8, #_1) 	// C++17, char8_t
-#define CUTIL_U16STR(_1)			CUTIL_CAT_RAW(u, #_1) 	// C++11, char16_t
-#define CUTIL_U32STR(_1)			CUTIL_CAT_RAW(U, #_1) 	// C++11, char32_t
-
-
-//* BOOL statement
-#define CUTIL_NOT(_x)				_CUTIL_CHK_2ND_ARG(CUTIL_CAT_TOKENS(_CUTIL_NOT_, _x))
-#define _CUTIL_NOT_0				~, 1
-#define _CUTIL_NOT_false			~, 1
-#define _CUTIL_NOT_FALSE			~, 1
-#define _CUTIL_NOT_nullptr			~, 1
-#define _CUTIL_NOT_NULL				~, 1
-#define _CUTIL_NOT_00				~, 1
-#define _CUTIL_NOT_000				~, 1
-#define _CUTIL_NOT_0000				~, 1
-#define _CUTIL_NOT_00000			~, 1
-#define _CUTIL_NOT_000000			~, 1
-#define _CUTIL_NOT_0000000			~, 1
-#define _CUTIL_NOT_00000000			~, 1
-#define _CUTIL_NOT_0b0				~, 1
-#define _CUTIL_NOT_0b00				~, 1
-#define _CUTIL_NOT_0b000			~, 1
-#define _CUTIL_NOT_0b0000			~, 1
-#define _CUTIL_NOT_0b00000			~, 1
-#define _CUTIL_NOT_0b000000			~, 1
-#define _CUTIL_NOT_0b0000000		~, 1
-#define _CUTIL_NOT_0b00000000		~, 1
-#define _CUTIL_NOT_0x0				~, 1
-#define _CUTIL_NOT_0x00				~, 1
-#define _CUTIL_NOT_0x000			~, 1
-#define _CUTIL_NOT_0x0000			~, 1
-#define _CUTIL_NOT_0x00000			~, 1
-#define _CUTIL_NOT_0x000000			~, 1
-#define _CUTIL_NOT_0x0000000		~, 1
-#define _CUTIL_NOT_0x00000000		~, 1
-
-
-#define CUTIL_BOOL(_x)				CUTIL_NOT(CUTIL_NOT(_x))
-
-#define CUTIL_OR(_x, _y)			CUTIL_CAT_TOKENS(_CUTIL_OR_, CUTIL_BOOL(_x))(CUTIL_BOOL(_y))
-#define _CUTIL_OR_0(_x)				_x
-#define _CUTIL_OR_1(_x)				1
-
-#define CUTIL_AND(_x, _y)			CUTIL_CAT_TOKENS(_CUTIL_AND_, CUTIL_BOOL(_x))(CUTIL_BOOL(_y))
-#define _CUTIL_AND_0(_x)			0
-#define _CUTIL_AND_1(_x)			_x
-
-#define CUTIL_XOR(_x, _y)			CUTIL_CAT_TOKENS(_CUTIL_XOR_, CUTIL_BOOL(_x))(CUTIL_BOOL(_y))
-#define _CUTIL_XOR_0(_x)			_x
-#define _CUTIL_XOR_1(_x)			CUTIL_NOT(_x)
-
-#define CUTIL_NOR(_x, _y)			CUTIL_NOT(CUTIL_OR(_x, _y))
-/*
-	CUTIL_BOOL(abcd);	// -> 1
-	CUTIL_BOOL(345);	// -> 1
-	CUTIL_BOOL(1);		// -> 1
-	CUTIL_BOOL(0);		// -> 0
-	CUTIL_BOOL();		// ERROR: you must provide an argument, or it will be evaluated to 1.
-*/
-
-
-
-//* IF statement
-#define CUTIL_IF(_condition, _trueVal, _falseVal) CUTIL_CAT_TOKENS(_CUTIL_IF_, CUTIL_BOOL(_condition))((_trueVal), _falseVal)
-#define _CUTIL_IF_0(_trueVal, _falseVal) 		_falseVal
-#define _CUTIL_IF_1(_trueVal, _falseVal) 		_trueVal
-/*
-	CUTIL_IF(1, a, b)		-> a
-	CUTIL_IF(0, a, b)		-> b
-	CUTIL_IF(666, a, b)		-> a
-*/
-
-
-
-//* get count of arguments, up to 35 params
-#define CUTIL_VA_EXISTS(...) 	CUTIL_EXPAND(CUTIL_BOOL(_CUTIL_GET_1ST_ARG(CUTIL_ZERO __VA_ARGS__)()))
-// #define CUTIL_COMMA_OPT(...)	CUTIL_EXPAND(CUTIL_CAT_TOKENS(_CUTIL_IF_, CUTIL_VA_EXISTS(__VA_ARGS__))(CUTIL_COMMA, CUTIL_EMPTY()))
-
-#define _CUTIL_VA_CNT_0(...)	0	// for compilers that do not support `##__VA_ARGS__` to eliminate leading comma if empty
-#define _CUTIL_VA_CNT_1(...)	CUTIL_EXPAND(_CUTIL_GET_63TH_ARG("ignored", __VA_ARGS__, \
-			Z,Y,X,W,V,U,T,S,R,Q,P,O,N,M,L,K,J,I,H,G,F,E,D,C,B,A,35,34,33,32,31,30,29,28,27, \
-			26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0))
-#define CUTIL_VA_CNT(...)		CUTIL_OVERLOAD_IDX(_CUTIL_VA_CNT_, CUTIL_VA_EXISTS(__VA_ARGS__))(__VA_ARGS__)
-// #define CUTIL_VA_CNT(...)		CUTIL_EXPAND(_CUTIL_GET_63TH_ARG("ignored", ##__VA_ARGS__, \
-// 			Z,Y,X,W,V,U,T,S,R,Q,P,O,N,M,L,K,J,I,H,G,F,E,D,C,B,A,35,34,33,32,31,30,29,28,27, \
-// 			26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0))
-/*
- Examples:
-	int a = CUTIL_VA_CNT(); 			// -> 0
-	int b = CUTIL_VA_CNT(b1); 			// -> 1
-	int c = CUTIL_VA_CNT(c1, c2); 		// -> 2
-	int d = CUTIL_VA_CNT(c1, c2, c3); 	// -> 3
-	...
-	int a = CUTIL_VA_EXISTS(); 			// -> 0
-	int b = CUTIL_VA_EXISTS(b1); 		// -> 1
-	int c = CUTIL_VA_EXISTS(c1, c2); 	// -> 1
-	int d = CUTIL_VA_EXISTS(c1, c2, c3);// -> 1
-*/
-
-
-//* macro function overloading support
-#define CUTIL_OVERLOAD_IDX(_func, _idx)		CUTIL_CAT_RAW(_func, _idx)
-#define CUTIL_OVERLOAD_AMOUNT(_func, ...) 	CUTIL_OVERLOAD_IDX(_func, CUTIL_VA_CNT(__VA_ARGS__))
-/* example:
-	CUTIL_OVERLOAD_IDX(MyFunc, 2)(); 	// MyFunc2();
-	CUTIL_OVERLOAD_IDX(var_, 3) = 10; 	// var_3 = 10;
-	
-	// Deduce suffix by amount of arguments within the macro
-	CUTIL_OVERLOAD_AMOUNT(MyFunc, 2, 4, 6)(2, 4, 6); // MyFunc3(2, 4, 6);
-*/
-
-
-//* token concatenation support, up to 25 tokens
-#define CUTIL_CAT(...)        		CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_CAT_, __VA_ARGS__)(__VA_ARGS__))
-	// The following macro definitions are private, DO NOT call them EXTERNALLY.
-#define _CUTIL_CAT_2(_1, _2)		CUTIL_CAT_TOKENS(_1, _2)
-#define _CUTIL_CAT_3(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_2(__VA_ARGS__)))
-#define _CUTIL_CAT_4(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_3(__VA_ARGS__)))
-#define _CUTIL_CAT_5(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_4(__VA_ARGS__)))
-#define _CUTIL_CAT_6(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_5(__VA_ARGS__)))
-#define _CUTIL_CAT_7(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_6(__VA_ARGS__)))
-#define _CUTIL_CAT_8(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_7(__VA_ARGS__)))
-#define _CUTIL_CAT_9(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_8(__VA_ARGS__)))
-#define _CUTIL_CAT_10(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_9(__VA_ARGS__)))
-#define _CUTIL_CAT_11(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_10(__VA_ARGS__)))
-#define _CUTIL_CAT_12(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_11(__VA_ARGS__)))
-#define _CUTIL_CAT_13(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_12(__VA_ARGS__)))
-#define _CUTIL_CAT_14(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_13(__VA_ARGS__)))
-#define _CUTIL_CAT_15(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_14(__VA_ARGS__)))
-#define _CUTIL_CAT_16(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_15(__VA_ARGS__)))
-#define _CUTIL_CAT_17(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_16(__VA_ARGS__)))
-#define _CUTIL_CAT_18(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_17(__VA_ARGS__)))
-#define _CUTIL_CAT_19(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_18(__VA_ARGS__)))
-#define _CUTIL_CAT_20(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_19(__VA_ARGS__)))
-#define _CUTIL_CAT_21(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_20(__VA_ARGS__)))
-#define _CUTIL_CAT_22(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_21(__VA_ARGS__)))
-#define _CUTIL_CAT_23(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_22(__VA_ARGS__)))
-#define _CUTIL_CAT_24(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_23(__VA_ARGS__)))
-#define _CUTIL_CAT_25(_1, ...)		CUTIL_EXPAND(CUTIL_CAT_TOKENS(_1, _CUTIL_CAT_24(__VA_ARGS__))) // recurse upwards
-/* Instruction:
-	int a1 = CUTIL_CAT(11, 22); 			// a1 = 1122
-	int a2 = CUTIL_CAT(10, 11, 12, 13); 	// a2 = 10111213
-	std::cout << CUTIL_CAT(a, 1) << "\n"; 	// print variable `a1`
-*/
-
-
-
-//===================== Bool Statements =========================
+//===================== Comparisons Statements =========================
 
 //* to generate the code like `(var == 1 || var == 2 || var == 3 || ...)`, up to 25 compared params
 #define CUTIL_EQUAL_ANY(_var, ...) 			(CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_EQUAL_ANY_, __VA_ARGS__)(_var, __VA_ARGS__)))
@@ -314,7 +140,7 @@
 //* generate codes for checking if all of the params are mutually nonequal, up to 25 params
 	// CUTIL_UNEQUAL_MUTUALLY(a1, a2, a3, a4)
 	//   -> (a1 != a2) && (a1 != a3) && (a1 != a4) && (a2 != a3) && (a2 != a4) && (a3 != a4)
-#define CUTIL_UNEQUAL_MUTUALLY(...)			CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_UNEQUAL_MUTUALLY_, CUTIL_VA_CNT(__VA_ARGS__))(__VA_ARGS__))
+#define CUTIL_UNEQUAL_MUTUALLY(...)			(CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_UNEQUAL_MUTUALLY_, CUTIL_VA_CNT(__VA_ARGS__))(__VA_ARGS__)))
 #define _CUTIL_UNEQUAL_MUTUALLY_2(a1, a2)	CUTIL_UNEQUAL_ALL(a1, a2)
 #define _CUTIL_UNEQUAL_MUTUALLY_3(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_2(__VA_ARGS__))
 #define _CUTIL_UNEQUAL_MUTUALLY_4(a1, ...)	CUTIL_EXPAND(CUTIL_UNEQUAL_ALL(a1, __VA_ARGS__) && _CUTIL_UNEQUAL_MUTUALLY_3(__VA_ARGS__))
@@ -405,7 +231,161 @@
 */
 
 
+
+//* check if all of the variables are mutually equal `(a1 == a2 && a2 == a3 && ...)`, up to 25 params
+#define CUTIL_INCREASING(_var, ...) 		  (CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_INCREASING_, __VA_ARGS__)(_var, __VA_ARGS__)))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_INCREASING_1(_var, _1) 		 (_var) < (_1)
+#define _CUTIL_INCREASING_2(_var, _1, _2) 	 (_var) < (_1) && _CUTIL_INCREASING_1(_1, _2)
+#define _CUTIL_INCREASING_3(_var, _1, ...)	 CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_2(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_4(_var, _1, ...)	 CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_3(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_5(_var, _1, ...)	 CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_4(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_6(_var, _1, ...)	 CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_5(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_7(_var, _1, ...)	 CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_6(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_8(_var, _1, ...)	 CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_7(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_9(_var, _1, ...)	 CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_8(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_10(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_9(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_11(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_10(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_12(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_11(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_13(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_12(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_14(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_13(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_15(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_14(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_16(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_15(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_17(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_16(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_18(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_17(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_19(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_18(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_20(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_19(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_21(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_20(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_22(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_21(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_23(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_22(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_24(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_23(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_25(_var, _1, ...)  CUTIL_EXPAND((_var) < (_1) && _CUTIL_INCREASING_24(_1, __VA_ARGS__)) // recurse upwards
+
+//* check if all of the variables are mutually increasing or equal, `(a1 <= a2 && a2 <= a3 && ...)`
+#define CUTIL_INCREASING_EQUAL(_var, ...) 		  (CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_INCREASING_EQUAL_, __VA_ARGS__)(_var, __VA_ARGS__)))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_INCREASING_EQUAL_1(_var, _1) 		  (_var) <= (_1)
+#define _CUTIL_INCREASING_EQUAL_2(_var, _1, _2) 	  (_var) <= (_1) && _CUTIL_INCREASING_EQUAL_1(_1, _2)
+#define _CUTIL_INCREASING_EQUAL_3(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_2(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_4(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_3(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_5(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_4(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_6(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_5(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_7(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_6(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_8(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_7(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_9(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_8(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_10(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_9(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_11(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_10(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_12(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_11(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_13(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_12(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_14(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_13(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_15(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_14(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_16(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_15(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_17(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_16(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_18(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_17(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_19(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_18(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_20(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_19(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_21(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_20(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_22(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_21(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_23(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_22(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_24(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_23(_1, __VA_ARGS__))
+#define _CUTIL_INCREASING_EQUAL_25(_var, _1, ...)	  CUTIL_EXPAND((_var) <= (_1) && _CUTIL_INCREASING_EQUAL_24(_1, __VA_ARGS__)) // recurse upwards
+
+//* check if all of the variables are mutually decreasing, `(a1 > a2 && a2 > a3 && ...)`
+#define CUTIL_DECREASING(_var, ...) 		  (CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_DECREASING_, __VA_ARGS__)(_var, __VA_ARGS__)))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_DECREASING_1(_var, _1) 		  (_var) > (_1)
+#define _CUTIL_DECREASING_2(_var, _1, _2) 	  (_var) > (_1) && _CUTIL_DECREASING_1(_1, _2)
+#define _CUTIL_DECREASING_3(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_2(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_4(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_3(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_5(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_4(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_6(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_5(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_7(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_6(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_8(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_7(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_9(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_8(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_10(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_9(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_11(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_10(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_12(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_11(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_13(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_12(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_14(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_13(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_15(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_14(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_16(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_15(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_17(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_16(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_18(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_17(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_19(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_18(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_20(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_19(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_21(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_20(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_22(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_21(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_23(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_22(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_24(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_23(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_25(_var, _1, ...)	  CUTIL_EXPAND((_var) > (_1) && _CUTIL_DECREASING_24(_1, __VA_ARGS__)) // recurse upwards
+
+//* check if all of the variables are mutually decreasing or equal, `(a1 >= a2 && a2 >= a3 && ...)`
+#define CUTIL_DECREASING_EQUAL(_var, ...) 		  (CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_DECREASING_EQUAL_, __VA_ARGS__)(_var, __VA_ARGS__)))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_DECREASING_EQUAL_1(_var, _1) 		  (_var) >= (_1)
+#define _CUTIL_DECREASING_EQUAL_2(_var, _1, _2) 	  (_var) >= (_1) && _CUTIL_DECREASING_EQUAL_1(_1, _2)
+#define _CUTIL_DECREASING_EQUAL_3(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_2(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_4(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_3(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_5(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_4(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_6(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_5(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_7(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_6(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_8(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_7(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_9(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_8(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_10(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_9(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_11(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_10(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_12(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_11(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_13(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_12(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_14(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_13(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_15(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_14(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_16(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_15(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_17(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_16(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_18(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_17(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_19(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_18(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_20(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_19(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_21(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_20(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_22(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_21(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_23(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_22(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_24(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_23(_1, __VA_ARGS__))
+#define _CUTIL_DECREASING_EQUAL_25(_var, _1, ...)	  CUTIL_EXPAND((_var) >= (_1) && _CUTIL_DECREASING_EQUAL_24(_1, __VA_ARGS__)) // recurse upwards
+
+
+
+
 //======================== Repeat And Range Statements =========================
+
+//* token concatenation support, up to 25 tokens
+#define CUTIL_MULTICAT(...)        		CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_MULTICAT_, __VA_ARGS__)(__VA_ARGS__))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_MULTICAT_2(_1, _2)		CUTIL_CAT(_1, _2)
+#define _CUTIL_MULTICAT_3(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_2(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_4(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_3(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_5(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_4(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_6(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_5(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_7(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_6(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_8(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_7(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_9(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_8(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_10(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_9(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_11(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_10(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_12(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_11(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_13(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_12(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_14(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_13(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_15(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_14(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_16(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_15(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_17(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_16(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_18(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_17(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_19(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_18(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_20(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_19(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_21(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_20(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_22(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_21(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_23(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_22(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_24(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_23(__VA_ARGS__)))
+#define _CUTIL_MULTICAT_25(_1, ...)		CUTIL_EXPAND(CUTIL_CAT(_1, _CUTIL_MULTICAT_24(__VA_ARGS__))) // recurse upwards
+/* Instruction:
+	int a1 = CUTIL_MULTICAT(11, 22); 			// a1 = 1122
+	int a2 = CUTIL_MULTICAT(10, 11, 12, 13); 	// a2 = 10111213
+	std::cout << CUTIL_MULTICAT(a, 1) << "\n"; 	// print variable `a1`
+*/
+
 
 //* call a single-argument function/macro for each parameter, simillar to `BOOST_PP_SEQ_FOR_EACH`, up to 25 iterations
 #define CUTIL_SEQ_FOREACH(_action, ...)				do {CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_SEQ_FOREACH_, __VA_ARGS__)(_action, __VA_ARGS__))} while(0)
@@ -446,7 +426,7 @@
 //* repeat function or macro calling, similar to `BOOST_PP_REPEAT`, up to 25 loops
 #define CUTIL_REPEAT(_count, _action, ...)		do {CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_REPEAT_, _count)(_action, __VA_ARGS__))} while(0)
 	// The following macro definitions are private, DO NOT call them EXTERNALLY.
-#define _CUTIL_REPEAT_1(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__));
+#define _CUTIL_REPEAT_1(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__);)
 #define _CUTIL_REPEAT_2(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_1(_action, __VA_ARGS__))
 #define _CUTIL_REPEAT_3(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_2(_action, __VA_ARGS__))
 #define _CUTIL_REPEAT_4(_action, ...)			CUTIL_EXPAND(_action(__VA_ARGS__); _CUTIL_REPEAT_3(_action, __VA_ARGS__))
@@ -482,7 +462,7 @@
 
 
 //* generate code like `int arg0, int arg1, int arg2`, similar to `BOOST_PP_ENUM`, up to 25 params
-#define CUTIL_ENUM(_type, _name, _count)	CUTIL_OVERLOAD_IDX(_CUTIL_ENUM_, _count)(_name, _type)
+#define CUTIL_ENUM(_type, _name, _count)	CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_ENUM_, _count)(_name, _type))
 	// The following macro definitions are private, DO NOT call them EXTERNALLY.
 #define _CUTIL_ENUM_1(_type, _name)			_type _name##0
 #define _CUTIL_ENUM_2(_type, _name)			_CUTIL_ENUM_1(_type, _name), _type _name##1
@@ -554,10 +534,10 @@
 	printf("%d %d %d %d", test_a, test_b, test_c, test_d);	// equivalent to above
 */
 
-//* for loop in range [0, _end) or [_first, _end)
-#define CUTIL_FOR_TYPE(_type, ...)		 CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_FOR_TYPE_, CUTIL_VA_CNT(__VA_ARGS__))(_type, __VA_ARGS__))
-#define _CUTIL_FOR_TYPE_1(_type, _var, _end)		 for(_type _var = 0;        (_var) <= (_end); (_var)++)
-#define _CUTIL_FOR_TYPE_2(_type, _var, _first, _end) for(_type _var = (_first); (_var) <= (_end); (_var)++)
+//* for loop in range `[0, _end)` or `[_first, _end)`
+#define CUTIL_FOR_TYPE(_type, _var, ...)	CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_FOR_TYPE_, CUTIL_VA_CNT(__VA_ARGS__))(_type, _var, __VA_ARGS__))
+#define _CUTIL_FOR_TYPE_1(_type, _var, _end)		 for(_type _var = 0;        (_var) < (_end); (_var)++)
+#define _CUTIL_FOR_TYPE_2(_type, _var, _first, _end) for(_type _var = (_first); (_var) < (_end); (_var)++)
 
 #define CUTIL_FOR(_var, ...)			 CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_FOR_, CUTIL_VA_CNT(__VA_ARGS__))(_var, __VA_ARGS__))
 #define _CUTIL_FOR_1(_var, _end)		 _CUTIL_FOR_TYPE_1(CUTIL_TYPEOF(_end), _var, _end)
