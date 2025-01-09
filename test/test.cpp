@@ -486,7 +486,7 @@ TEST(SplittingDropEmptyCopyVector, drop_empty_copy)
 TEST(SplittingDropEmptySet, drop_empty)
 {
     std::set<std::string> tokens = { "t1", "t2", "", "t4", ""};
-    cutil::str::drop_empty(tokens);
+    cutil::str::drop_empty_set(tokens);
     auto it = tokens.begin();
 
     ASSERT_EQ(tokens.size(), 3);
@@ -498,7 +498,7 @@ TEST(SplittingDropEmptySet, drop_empty)
 TEST(SplittingDropEmptyCopySet, drop_empty_copy)
 {
     std::set<std::string> tokens = { "t1", "t2", "", "t4", "" };
-    auto res = cutil::str::drop_empty_copy(tokens);
+    auto res = cutil::str::drop_empty_set_copy(tokens);
     auto it  = res.begin();
 
     ASSERT_EQ(res.size(), 3);
@@ -703,4 +703,12 @@ TEST(TextReverseCopy, reverse_copy)
 
     EXPECT_EQ(std::equal(str1.cbegin(), str1.cend(), str3.cbegin()), true);
     EXPECT_EQ(std::equal(str4.cbegin(), str4.cend(), str2.cbegin()), true);
+}
+TEST(TextReverseCopy, filename)
+{
+    EXPECT_EQ("a_bc123,.12", cutil::str::sanitize_filename_copy("a_bc123,.12"));
+    EXPECT_EQ("abc defg", cutil::str::sanitize_filename_copy(" abc defg  ", '_'));
+    EXPECT_EQ("abc defg", cutil::str::sanitize_filename_copy(" abc defg  "));
+    EXPECT_EQ("abcdefg", cutil::str::sanitize_filename_copy(" a<b>:c>\\d\"e/f|g:** ? "));
+    EXPECT_EQ("a_b__c__d_e_f_g___ _", cutil::str::sanitize_filename_copy(" a<b>:c>\\d\"e/f|g:** ? ", '_'));
 }

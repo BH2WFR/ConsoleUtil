@@ -22,12 +22,16 @@
 #include <cctype>
 #include <map>
 #include <regex>
-#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#ifdef CUTIL_CPP17_SUPPORTED
+#ifndef CUTIL_STRINGUTIL_DO_NOT_USE_PARALLEL
+	#define CUTIL_STRINGUTIL_DO_NOT_USE_PARALLEL	0
+#endif
+
+#if defined(CUTIL_CPP17_SUPPORTED) && !CUTIL_STRINGUTIL_DO_NOT_USE_PARALLEL
+	#define _CUTIL_STRINGUTIL_USE_PARALLEL //* use std::execution::par for some algorithms (>=C++17)
 	#include <execution>
 #endif
 
@@ -45,7 +49,7 @@ namespace str
 	namespace internal{
 		template<typename T, typename Compare>
 		inline void sort(std::vector<T>& vec, Compare comp = std::less<T>()) {
-		#ifdef CUTIL_CPP17_SUPPORTED
+		#ifdef _CUTIL_STRINGUTIL_USE_PARALLEL
 			std::sort(std::execution::par_unseq, vec.begin(), vec.end(), comp);
 		#else
 			std::sort(vec.begin(), vec.end(), comp);
@@ -83,7 +87,12 @@ namespace str
 		std::istringstream(str) >> result;
 		return result;
 	}
-
+/*
+	EXPECT_EQ(-255, cutil::str::parse_string<long int>("-255"));
+	EXPECT_EQ("5.245", cutil::str::to_string<float>(5.245f));
+*/
+	
+	
 	/**
 	 * @brief Converts std::string to lower case.
 	 * @param str - std::string that needs to be converted.
@@ -147,6 +156,14 @@ namespace str
 		}
 		return result;
 	}
+/*
+	EXPECT_EQ("hello strutil", cutil::str::to_lower("HeLlo StRUTIL"));
+	EXPECT_EQ("HELLO STRUTIL", cutil::str::to_upper("HeLlo StRUTIL"));
+	EXPECT_EQ("HeLlo StRUTIL", cutil::str::capitalize("heLlo StRUTIL"));
+	EXPECT_EQ("Hello strutil", cutil::str::capitalize_first_char("HeLlo StRUTIL"));
+*/
+
+
 
 	/**
 	 * @brief Checks if input std::string str contains specified substring.
@@ -171,6 +188,11 @@ namespace str
 	{
 		return contains(str, std::string(1, character));
 	}
+/*
+	EXPECT_EQ(true, cutil::str::contains("Hello StrUtil", "Str"));
+	EXPECT_EQ(true, cutil::str::contains("Hello StrUtil", 'S'));
+*/
+
 
 	/**
 	 * @brief Compares two std::strings ignoring their case (lower/upper).
@@ -183,7 +205,17 @@ namespace str
 	{
 		return to_lower(str1) == to_lower(str2);
 	}
-
+/*
+	std::string str1 = "POKEMON";
+	std::string str2 = "pokemon";
+	std::string str3 = "POKEMON";
+	EXPECT_EQ(true, cutil::str::compare_ignore_case(str1, str2));
+	EXPECT_EQ(true, cutil::str::compare_ignore_case(str1, str3));
+	EXPECT_EQ(true, cutil::str::compare_ignore_case(str2, str3));
+*/
+	
+	
+	
 	/**
 	 * @brief Trims (in-place) white spaces from the left side of std::string.
 	 *        Taken from: http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring.
@@ -259,6 +291,16 @@ namespace str
 		trim(result);
 		return result;
 	}
+/*
+	EXPECT_EQ("HeLlo StRUTIL", cutil::str::trim_left_copy("   HeLlo StRUTIL"));
+	EXPECT_EQ("HeLlo StRUTIL", cutil::str::trim_right_copy("HeLlo StRUTIL    "));
+	EXPECT_EQ("HeLlo StRUTIL", cutil::str::trim_copy("    HeLlo StRUTIL      "));
+	
+	std::string test = "   HeLlo StRUTIL";
+	cutil::str::trim_left(test);
+	EXPECT_EQ("HeLlo StRUTIL", test);
+*/
+
 
 	/**
 	 * @brief Replaces (in-place) the first occurrence of target with replacement.
@@ -324,6 +366,21 @@ namespace str
 		}
 		return found_substring;
 	}
+/*
+    std::string str1 = "This is $name and that is also $name.";
+    bool res = cutil::str::replace_last(str1, "$name$", "Jon Doe");
+    EXPECT_EQ(false, res);
+    EXPECT_EQ("This is $name and that is also $name.", str1);
+	
+	std::string str2 = "This is $name and that is also $name.";
+	bool res2 = cutil::str::replace_all(str1, "$name", "Jon Doe");
+	EXPECT_EQ(true, res2);
+	EXPECT_EQ("This is Jon Doe and that is also Jon Doe.", str2);
+*/
+
+
+
+
 
 	/**
 	 * @brief Checks if std::string str ends with specified suffix.
@@ -374,12 +431,25 @@ namespace str
 	{
 		return !str.empty() && (str.front() == prefix);
 	}
+/*
+	EXPECT_EQ(true, cutil::str::ends_with("DiffuseTexture_m", "_m"));
+	EXPECT_EQ(true, cutil::str::ends_with("DiffuseTexture_m", 'm'));
+	EXPECT_EQ(true, cutil::str::starts_with("DiffuseTexture_m", "Diffuse"));
+	EXPECT_EQ(true, cutil::str::starts_with("DiffuseTexture_m", 'D'));
+*/
+
+
 
 	/**
 	 * @brief Splits input std::string str according to input delim.
 	 * @param str - std::string that will be splitted.
 	 * @param delim - the delimiter.
 	 * @return std::vector<std::string> that contains all splitted tokens.
+	 * @note If input str is empty, the output vector will contain one empty string.
+	 * 	 If input str ends with delim, the output vector will contain one empty string at the end.
+	 * 	 If input str is empty and ends with delim, the output vector will contain two empty strings.
+	 *   If delim is not found in str, the output vector will contain one string equal to input str.
+	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::vector<std::string> split(const std::string & str, const char delim)
@@ -404,6 +474,11 @@ namespace str
 	 * @param str - std::string that will be split.
 	 * @param delim - the delimiter.
 	 * @return std::vector<std::string> that contains all splitted tokens.
+	 * @note If input str is empty, the output vector will contain one empty string.
+	 * 	 If input str ends with delim, the output vector will contain one empty string at the end.
+	 * 	 If input str is empty and ends with delim, the output vector will contain two empty strings.
+	 *   If delim is not found in str, the output vector will contain one string equal to input str.
+	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::vector<std::string> split(const std::string & str, const std::string & delim)
@@ -422,10 +497,46 @@ namespace str
 	}
 
 	/**
+	 * @brief Splits input string using any delimiter in the given set.
+	 * @param str - std::string that will be split.
+	 * @param delims - the set of delimiter characters.
+	 * @return vector of resulting tokens.
+	 * @note If input str is empty, the output vector will contain one empty string.
+	 * 	 If input str ends with delim, the output vector will contain one empty string at the end.
+	 * 	 If input str is empty and ends with delim, the output vector will contain two empty strings.
+	 *   If delim is not found in str, the output vector will contain one string equal to input str.
+	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
+	 */
+	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
+	std::vector<std::string> split_any(const std::string & str, const std::string & delims)
+	{
+		std::string token;
+		std::vector<std::string> tokens;
+		size_t pos_start = 0;
+		for (size_t pos_end = 0; pos_end < str.length(); ++pos_end)
+		{
+			if (contains(delims, str[pos_end]))
+			{
+				token = str.substr(pos_start, pos_end - pos_start);
+				tokens.push_back(token);
+				pos_start = pos_end + 1;
+			}
+		}
+		tokens.push_back(str.substr(pos_start));
+		return tokens;
+	}
+	
+	
+	/**
 	 * @brief Splits input string using regex as a delimiter.
 	 * @param src - std::string that will be split.
 	 * @param rgx_str - the set of delimiter characters.
 	 * @return vector of resulting tokens.
+	 * @note If input str is empty, the output vector will contain one empty string.
+	 * 	 If input str ends with delim, the output vector will contain one empty string at the end.
+	 * 	 If input str is empty and ends with delim, the output vector will contain two empty strings.
+	 *   If delim is not found in str, the output vector will contain one string equal to input str.
+	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::vector<std::string> regex_split(const std::string& src, const std::string& rgx_str)
@@ -448,6 +559,7 @@ namespace str
 	 * @param dest - map of matched delimiter and those being splitted.
 	 * @param rgx_str - the set of delimiter characters.
 	 * @return True if the parsing is successfully done.
+	 * @note space around the delimiter will be trimmed.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
 	std::map<std::string, std::string> regex_split_map(const std::string& src, const std::string& rgx_str)
@@ -468,35 +580,49 @@ namespace str
 		return dest;
 	}
 
-	/**
-	 * @brief Splits input string using any delimiter in the given set.
-	 * @param str - std::string that will be split.
-	 * @param delims - the set of delimiter characters.
-	 * @return vector of resulting tokens.
-	 */
-	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
-	std::vector<std::string> split_any(const std::string & str, const std::string & delims)
-	{
-		std::string token;
-		std::vector<std::string> tokens;
-		size_t pos_start = 0;
-		for (size_t pos_end = 0; pos_end < str.length(); ++pos_end)
-		{
-			if (contains(delims, str[pos_end]))
-			{
-				token = str.substr(pos_start, pos_end - pos_start);
-				tokens.push_back(token);
-				pos_start = pos_end + 1;
-			}
-		}
-		tokens.push_back(str.substr(pos_start));
-		return tokens;
-	}
+/*
+	std::vector<std::string> res;
+	res = cutil::str::split("asdf;asdfgh;asdfghjk", ';'); //* char
+	// -> { "asdf", "asdfgh", "asdfghjk" }
+	
+	res = cutil::str::split("asdf>=asdfgh>=asdfghjk", ">="); //* string
+	// -> { "asdf", "asdfgh", "asdfghjk" }
+	
+	res = cutil::str::split_any("abc,def|ghi jkl", ",| "); //* any of the delimiters
+	// -> { "abc", "def", "ghi", "jkl" }
+	
+	res = cutil::str::regex_split("abc,abcd;abce.abcf?", "[,;\\.\\?]+"); //* regex
+	// -> { "abc", "abcd", "abce", "abcf" }
+	
+	std::map<std::string, std::string> res_map;
+	res_map = cutil::str::regex_split_map( //* regex map
+						"[abc] name = 123; [abd]  name = 123;[abe] name = 123;  "
+					  , "\\[[^\\]]+\\]" // starts with '[' and ends with ']', contains without ']'
+					  );
+	);
+	// -> { "[abc]" : "name = 123;", "[abd]" : "name = 123;", "[abe]" : "name = 123;" }
+	
+	
+	//* edge cases
+	res = cutil::str::split("", ';'); 			// -> { "" }
+	res = cutil::str::split("abcdef", ';'); 	// -> { "abcdef" }
+	res = cutil::str::split("abcdef;", ';'); 	// -> { "abcdef", "" }
+	res = cutil::str::split("abcdef;;", ';'); 	// -> { "abcdef", "", "" }
+	res = cutil::str::split(";abcdef", ';'); 	// -> { "", "abcdef" }
+	res = cutil::str::split("abc;;;def", ";"); 	// -> { "abc", "", "", "def" }
+	
+*/
+
+
+
+
+
+
 
     /**
      * @brief Joins all elements of a container of arbitrary datatypes
      *        into one std::string with delimiter delim.
-     * @tparam Container - container type.
+     * @tparam Container - container type. (std::vector, std::set, std::list, ...)
      * @param tokens - container of tokens.
      * @param delim - the delimiter.
      * @return std::string with joined elements of container tokens with delimiter delim.
@@ -517,10 +643,19 @@ namespace str
 
         return result.str();
     }
+/*
+	std::vector<std::string> tokens = { "abc", "def", "ghi" };
+	EXPECT_EQ("abc,def,ghi", cutil::str::join(tokens, ","));
+	
+	std::set<std::string> tokens_set = { "abc", "def", "ghi" };
+	EXPECT_EQ("abc,def,ghi", cutil::str::join(tokens_set, ","));
+*/
+
+
 
 	/**
 	 * @brief Inplace removal of all empty strings in a container of strings
-	 * @tparam Container - container type.
+	 * @tparam Container - container type, like std::vector, std::set, std::list, ...
 	 * @param tokens - container of strings.
 	 */
 	template<template<typename, typename...> typename Container, typename... E> _CUTIL_STRINGUTIL_STATIC
@@ -533,11 +668,13 @@ namespace str
 		tokens.erase(it, tokens.end());
 	#endif
 	}
-
-#ifndef CUTIL_CPP20_SUPPORTED // under C++20
-	_CUTIL_STRINGUTIL_STATIC
-	inline void drop_empty(std::set<std::string>& tokens) // versions for std::set<std::string>
+	
+	template<template<typename, typename...> typename Container, typename... E> _CUTIL_STRINGUTIL_STATIC
+	inline void drop_empty_set(Container<std::string, E...> & tokens) // versions for std::set<std::string>
 	{
+	#ifdef CUTIL_CPP20_SUPPORTED // C++20, use erase_if
+		auto last = std::erase_if(tokens, [](auto& s){ return s.empty(); });
+	#else // C++11
 		for(auto it = tokens.begin(); it != tokens.end(); ){
 			if(it->empty()){
 				it = tokens.erase(it);
@@ -545,9 +682,9 @@ namespace str
 				++it;
 			}
 		}
+	#endif
 	}
-#endif
-	
+
 	/**
 	 * @brief Inplace removal of all empty strings in a container of strings
 	 * @tparam container - container type.
@@ -561,6 +698,26 @@ namespace str
 		drop_empty(result);
 		return result;
 	}
+	template<template<typename, typename...> typename Container, typename... E> _CUTIL_NODISCARD _CUTIL_STRINGUTIL_STATIC
+	inline Container<std::string> drop_empty_set_copy(const Container<std::string, E...>& tokens)
+	{
+		auto result = tokens;
+		drop_empty_set(result);
+		return result;
+	}
+/*
+	std::vector<std::string> tokens = { "t1", "t2", "", "t4", "" };
+	cutil::str::drop_empty(tokens);
+		// -> { "t1", "t2", "t4" }
+	
+	std::set<std::string> tokens_set = { "t1", "t2", "", "t4", "" };
+	cutil::str::drop_empty_set(tokens_set);
+		// -> { "t1", "t2", "t4" }
+	
+	auto new_set = cutil::str::drop_empty_set_copy(tokens_set);
+		// -> { "t1", "t2", "t4" }
+*/
+
 
 	/**
 	 * @brief Inplace removal of all duplicate strings in a vector<string> where order is not to be maintained
@@ -573,7 +730,6 @@ namespace str
 	inline void drop_duplicate(std::vector<T> &tokens)
 	{
 		internal::sort(tokens, std::less<T>());
-		// std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
 		auto end_unique = std::unique(tokens.begin(), tokens.end());
 		tokens.erase(end_unique, tokens.end());
 	}
@@ -590,11 +746,17 @@ namespace str
 	{
 		std::vector<T> result = tokens;
 		internal::sort(result, std::less<T>());
-		// std::sort(std::execution::par_unseq, tokens.begin(), tokens.end());
 		auto end_unique = std::unique(result.begin(), result.end());
 		result.erase(end_unique, result.end());
 		return result;
 	}
+/*
+	std::vector<std::string> str1 = { "t1", "t2", "", "t4", "", "t1"};
+    cutil::str::drop_duplicate(str1);
+		// -> { "", "t1", "t2", "t4" }
+*/
+
+
 
 	/**
 	 * @brief Creates new std::string with repeated n times substring str.
@@ -625,6 +787,12 @@ namespace str
 	{
 		return std::string(n, c);
 	}
+/*
+	EXPECT_EQ("GoGoGoGo",   cutil::str::repeat("Go", 4));
+	EXPECT_EQ("ZZZZZZZZZZ", cutil::str::repeat('Z', 10));
+*/
+
+
 
 	/**
 	 * @brief Checks if input std::string str matches specified reular expression regex.
@@ -637,6 +805,8 @@ namespace str
 	{
 		return std::regex_match(str, regex);
 	}
+
+
 
 	/**
 	 * @brief Sort input std::vector<std::string> strs in ascending order.
@@ -681,23 +851,50 @@ namespace str
 		std::reverse(result.begin(), result.end());
 		return result;
 	}
+
 	
-	// //*
-	// inline std::string get_valid_path(const std::string& str)
-	// {
-	// 	std::string output = cutil::str::trim_copy(str);
-	// 	cutil::str::replace_all(output, "\\\\", "/");
-	// 	std::replace(output.begin(), output.end(), '\\', '/');
-	// 	return output;
-	// }
+	//* modify input string to valid filename by replace invalid characters
+	// if `(replace == '\0')`, invalid characters will be removed; otherwise there will be replaced by `replace`
+	inline void sanitize_filename(std::string& str, char replace = '\0')
+	{
+		std::string invalid_chars = "<>:\"/\\|?*";
+	#ifdef _CUTIL_STRINGUTIL_USE_PARALLEL
+		if(replace == '\0'){
+			str.erase(std::remove_if(std::execution::par, str.begin(), str.end(), [&invalid_chars](char c){
+				return invalid_chars.find(c) != std::string::npos;
+			}), str.end());
+		}else{
+			std::replace_if(std::execution::par, str.begin(), str.end(), [&invalid_chars](char c){
+				return invalid_chars.find(c) != std::string::npos;
+			}, replace);
+		}
+	#else
+		if(replace == '\0'){
+			str.erase(std::remove_if(str.begin(), str.end(), [&invalid_chars](char c){
+				return invalid_chars.find(c) != std::string::npos;
+			}), str.end());
+		}else{
+			std::replace_if(str.begin(), str.end(), [&invalid_chars](char c){
+				return invalid_chars.find(c) != std::string::npos;
+			}, replace);
+		}
+	#endif
+		cutil::str::trim(str);
+	}
 	
-	// //*
-	// inline std::string get_valid_filename(const std::string& str)
-	// {
-	// 	std::string output = cutil::str::trim_copy(str);
-		
-	// 	return output;
-	// }
+	//* get valid filename from the input string by replace invalid characters
+	// if `(replace == '\0')`, invalid characters will be removed; otherwise there will be replaced by `replace`
+	_CUTIL_NODISCARD
+	inline std::string sanitize_filename_copy(const std::string& str, char replace = '\0')
+	{
+		std::string result = str;
+		cutil::str::sanitize_filename(result, replace);
+		return result;
+	}
+/*
+	EXPECT_EQ("abcdefg", cutil::str::sanitize_filename_copy(" a<b>:c>\\d\"e/f|g:** ? "));
+    EXPECT_EQ("a_b__c__d_e_f_g___ _", cutil::str::sanitize_filename_copy(" a<b>:c>\\d\"e/f|g:** ? ", '_'));
+*/
 	
 	
 } // namespace
