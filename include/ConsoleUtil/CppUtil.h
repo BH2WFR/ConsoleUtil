@@ -932,11 +932,11 @@ inline namespace math { // inline
 	//* constexpr abs() of an number, overloaded for unsigned integer types
 	template<typename T, _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T)> _CUTIL_NODISCARD
 	inline constexpr T abs(T num) noexcept { // for signed intergers and `float`, `double`, `long double`
-	#ifdef CUTIL_CPP23_SUPPORTED
-		return std::abs(num);	// std::abs() is constexpr since C++23
-	#else
+	// #ifdef CUTIL_CPP23_SUPPORTED
+		// return std::abs(num);	// std::abs() is constexpr since C++23
+	// #else
 		return (num < 0) ? -num : num; // in C++11/14/17/20, std::abs() is not constexpr
-	#endif
+	// #endif
 	}
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline T constexpr abs(T num) noexcept { // for `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t`, `size_t`

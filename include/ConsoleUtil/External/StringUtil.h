@@ -452,11 +452,14 @@ namespace str
 	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
-	std::vector<std::string> split(const std::string & str, const char delim)
+	std::vector<std::string> split(const std::string & str, const char delim, size_t reserve = 0)
 	{
 		std::vector<std::string> tokens;
 		std::stringstream ss(str);
 		std::string token;
+		if(reserve > 0){
+			tokens.reserve(reserve);
+		}
 		while(std::getline(ss, token, delim))
 		{
 			tokens.push_back(token);
@@ -481,11 +484,14 @@ namespace str
 	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
-	std::vector<std::string> split(const std::string & str, const std::string & delim)
+	std::vector<std::string> split(const std::string & str, const std::string & delim, size_t reserve = 0)
 	{
 		size_t pos_start = 0, pos_end, delim_len = delim.length();
 		std::string token;
 		std::vector<std::string> tokens;
+		if(reserve > 0){
+			tokens.reserve(reserve);
+		}
 		while ((pos_end = str.find(delim, pos_start)) != std::string::npos)
 		{
 			token = str.substr(pos_start, pos_end - pos_start);
@@ -508,10 +514,13 @@ namespace str
 	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
-	std::vector<std::string> split_any(const std::string & str, const std::string & delims)
+	std::vector<std::string> split_any(const std::string & str, const std::string & delims, size_t reserve = 0)
 	{
 		std::string token;
 		std::vector<std::string> tokens;
+		if(reserve > 0){
+			tokens.reserve(reserve);
+		}
 		size_t pos_start = 0;
 		for (size_t pos_end = 0; pos_end < str.length(); ++pos_end)
 		{
@@ -539,9 +548,12 @@ namespace str
 	 *   If delim is repeated in str, the output vector will contain empty strings for each repeated occurrence.
 	 */
 	_CUTIL_STRINGUTIL_STATIC _CUTIL_NODISCARD inline
-	std::vector<std::string> regex_split(const std::string& src, const std::string& rgx_str)
+	std::vector<std::string> regex_split(const std::string& src, const std::string& rgx_str, size_t reserve = 0)
 	{
 		std::vector<std::string> elems;
+		if(reserve > 0){
+			elems.reserve(reserve);
+		}
 		const std::regex rgx(rgx_str);
 		std::sregex_token_iterator iter(src.begin(), src.end(), rgx, -1);
 		std::sregex_token_iterator end;
