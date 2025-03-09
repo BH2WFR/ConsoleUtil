@@ -423,7 +423,7 @@ _CUTIL_NAMESPACE_BEGIN
 			FRed "    file: " FCyan  __FILE__ "\n" \
 			FRed "    func: " FCyan "%s\n" \
 			FRed "    line: " FCyan "%d\n" \
-			CRst "\n" , __func__, __LINE__ \
+			CRst "\n" , CUTIL_FUNC_NAME, __LINE__ \
 	)
 
 //* print an warning message with filename, function name and line number ATTACHED.
@@ -432,7 +432,7 @@ _CUTIL_NAMESPACE_BEGIN
 			FYellow "    file: " FCyan  __FILE__ "\n" \
 			FYellow "    func: " FCyan "%s\n" \
 			FYellow "    line: " FCyan "%d\n" \
-			CRst "\n" , __func__, __LINE__ \
+			CRst "\n" , CUTIL_FUNC_NAME, __LINE__ \
 	)
 
 

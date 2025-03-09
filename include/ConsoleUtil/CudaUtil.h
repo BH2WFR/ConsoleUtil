@@ -19,21 +19,20 @@ _CUTIL_NAMESPACE_BEGIN_NAME(cuda)
 
 //==================== CUDA Utils ==========================
 
-
 #define CUTIL_CUDA_ERROR_MESSAGE(_CUDA_ERROR, _REASON) 		\
-	fprintf(stderr, FLRed CBold	"\n==== ERROR MESSAGE for CUDA, cudaError: " FLWhite "%d" FLRed ", reason: " FLWhite _REASON CRst "\n" \
+	fprintf(stderr, FLRed CBold	"\n==== ERROR, cudaError: " FLWhite "%d" FLRed ", reason: " FLWhite _REASON CRst "\n" \
 			FRed "    file: " FCyan  __FILE__ "\n" 			\
 			FRed "    func: " FCyan "%s\n" 					\
 			FRed "    line: " FCyan "%d\n" 					\
-			CRst "\n" , (_CUDA_ERROR), __func__, __LINE__ 	\
+			CRst "\n" , (_CUDA_ERROR), CUTIL_FUNC_NAME, __LINE__ 	\
 	)
 
 #define CUTIL_CUDA_WARNING_MESSAGE(_CUDA_ERROR, _REASON) 	\
-	fprintf(stderr, FLYellow "\n==== WARNING MESSAGE for CUDA, cudaError: " FLWhite "%d" FLYellow ", reason: " FLWhite _REASON CRst "\n" \
+	fprintf(stderr, FLYellow "\n==== WARNING, cudaError: " FLWhite "%d" FLYellow ", reason: " FLWhite _REASON CRst "\n" \
 			FYellow "    file: " FCyan  __FILE__ "\n" 		\
 			FYellow "    func: " FCyan "%s\n" 				\
 			FYellow "    line: " FCyan "%d\n" 				\
-			CRst "\n" , (_CUDA_ERROR), __func__, __LINE__ 	\
+			CRst "\n" , (_CUDA_ERROR), CUTIL_FUNC_NAME, __LINE__ 	\
 	)
 
 

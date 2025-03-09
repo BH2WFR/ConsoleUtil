@@ -191,6 +191,16 @@
 	#define _CUTIL_ASSERT(_EXPR)
 #endif
 
+
+//* `__FUNCTION__`(not standard, but supported by MSVC/GCC/Clang) or `__func__`(C99/C++11)
+#if defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER) \
+|| defined(__CUDA_ARCH__) || defined(__CC_ARM)
+	#define CUTIL_FUNC_NAME		__FUNCTION__
+#else
+	#define CUTIL_FUNC_NAME		__func__
+#endif
+
+
 //* get decayed type of variable, only for GNU C, C23, C++11
 #ifndef __cplusplus // C
 	#if defined(__GNUC__) || defined(CUTIL_C23_SUPPORTED)
