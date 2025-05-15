@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		2 JAN 2025
+  Updated:		15 MAY 2025
   License:		MIT License
 * You can include this header in header files.
 */
@@ -123,7 +123,7 @@ namespace internal {
 #define _CUTIL_CONCEPT_POINTER_IS_BASE_OF(PBase, PDerived) \
 			typename std::enable_if<cutil::internal::is_base_of_pointer<PBase, PDerived>::value, bool>::type = true
 #define _CUTIL_CONCEPT_COMPARABLE(T, U, COMP) 	\
-			typename = decltype(std::declval<T>() == std::declval<U>())
+			typename = decltype(std::declval<T>() COMP std::declval<U>())
 
 #define _CUTIL_CONCEPT_MEMBER(T, Member) 	\
 			typename = decltype(std::declval<T>().Member)
