@@ -1025,7 +1025,7 @@ inline namespace math { // inline
 	//* int ret = cutil::pow_int(2, 3); // 2^3 = 8
 	//  size_t ret = cutil::pow_int<int, size_t>(2, 3); // return as size_t
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
-	template <typename T, typename R = T, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD
+	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD
 	inline _CUTIL_CONSTEXPR_CPP14 R pow_int(const T base, const size_t exp) {
 		_CUTIL_CONSTEXPR_ASSERT((exp >= 0) && "The exponent should be greater than or equal to 0");
 		if(exp == 0){
@@ -1071,7 +1071,7 @@ inline namespace math { // inline
 	//* int ret = cutil::pow_int<3>(2); // 2^3 = 8, 需要 >=C++17
 	//  size_t ret = cutil::pow_int<3, int, size_t>(2); // return as size_t
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
-	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD
+	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD
 	inline constexpr R pow_int(const T base) {
 		if constexpr (exp == 0) {
 			return static_cast<R>(1);

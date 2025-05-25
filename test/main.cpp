@@ -949,9 +949,13 @@ TEST(Math, others)
 	EXPECT_EQ(cutil::math::pow_int<2>(3), 9);
 	EXPECT_EQ(cutil::math::pow_int<3>(3), 27);
 	
+	EXPECT_EQ(cutil::math::pow_int(-2.5, 1), -2.5);
+	EXPECT_EQ(cutil::math::pow_int(-2.5, 2), 6.25);
+	
 #ifdef CUTIL_CPP14_SUPPORTED
 	static_assert(cutil::math::pow_int(3, 2) == 9);
 	static_assert(cutil::math::pow_int<2>(3) == 9);
+	static_assert(cutil::math::pow_int<2>(-2.5) == 6.25);
 	static_assert(cutil::math::factorial(3) == 6);
 #endif
 	
