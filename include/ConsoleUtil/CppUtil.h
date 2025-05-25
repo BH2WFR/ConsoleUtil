@@ -1022,11 +1022,11 @@ inline namespace math { // inline
 	}
 	
 
-	//* int ret = cutil::pow_int(2, 3); // 2^3 = 8
-	//  size_t ret = cutil::pow_int<int, size_t>(2, 3); // return as size_t
+	//* int ret = cutil::pow(2, 3); // 2^3 = 8
+	//  size_t ret = cutil::pow<int, size_t>(2, 3); // return as size_t
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
 	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD
-	inline _CUTIL_CONSTEXPR_CPP14 R pow_int(const T base, const size_t exp) {
+	inline _CUTIL_CONSTEXPR_CPP14 R pow(const T base, const size_t exp) {
 		_CUTIL_CONSTEXPR_ASSERT((exp >= 0) && "The exponent should be greater than or equal to 0");
 		if(exp == 0){
 			return static_cast<R>(1);
@@ -1040,7 +1040,7 @@ inline namespace math { // inline
 		if(exp == 3){
 			return static_cast<R>(base * base * base);
 		}
-		int tmp = cutil::math::pow_int(base, exp/2);
+		int tmp = cutil::math::pow(base, exp/2);
 		if (exp % 2 == 0){
 			return static_cast<R>(tmp * tmp);
 		}else{
@@ -1068,11 +1068,11 @@ inline namespace math { // inline
 	}
 	
 #ifdef CUTIL_CPP17_SUPPORTED
-	//* int ret = cutil::pow_int<3>(2); // 2^3 = 8, 需要 >=C++17
-	//  size_t ret = cutil::pow_int<3, int, size_t>(2); // return as size_t
+	//* int ret = cutil::pow<3>(2); // 2^3 = 8, 需要 >=C++17
+	//  size_t ret = cutil::pow<3, int, size_t>(2); // return as size_t
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
 	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD
-	inline constexpr R pow_int(const T base) {
+	inline constexpr R pow(const T base) {
 		if constexpr (exp == 0) {
 			return static_cast<R>(1);
 		}else if constexpr (exp == 1) {
@@ -1082,7 +1082,7 @@ inline namespace math { // inline
 		}else if constexpr (exp == 3) {
 			return static_cast<R>(base * base * base);
 		}
-		R tmp = cutil::math::pow_int<exp / 2, T, R>(base);
+		R tmp = cutil::math::pow<exp / 2, T, R>(base);
 		if (exp % 2 == 0){
 			return static_cast<R>(tmp * tmp);
 		}else{
@@ -1107,8 +1107,8 @@ inline namespace math { // inline
 	
 #else
 	template <const size_t exp, typename T, typename R = T> _CUTIL_NODISCARD
-	inline constexpr R pow_int(const T base) {
-		return cutil::math::pow_int(base, exp);
+	inline constexpr R pow(const T base) {
+		return cutil::math::pow(base, exp);
 	}
 	
 	template <const size_t base, typename R = size_t> _CUTIL_NODISCARD

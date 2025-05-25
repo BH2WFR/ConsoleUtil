@@ -936,37 +936,37 @@ TEST(Math, others)
 	EXPECT_EQ(cutil::math::midpoint(6, 9), 7);
 	EXPECT_EQ(CUTIL_MIDPOINT(6, 9), 7);
 
-	// constexpr auto zzzz = cutil::pow_int<30>(2lu);
-	EXPECT_EQ(cutil::math::pow_int(2, 0), 1);
-	EXPECT_EQ(cutil::math::pow_int(2, 1), 2);
-	EXPECT_EQ(cutil::math::pow_int(2, 2), 4);
-	EXPECT_EQ(cutil::math::pow_int(2, 3), 8);
-	EXPECT_EQ(cutil::math::pow_int(2, 4), 16);
-	EXPECT_EQ(cutil::math::pow_int(3, 1), 3);
-	EXPECT_EQ(cutil::math::pow_int(3, 2), 9);
-	EXPECT_EQ(cutil::math::pow_int(3, 3), 27);
-	EXPECT_EQ(cutil::math::pow_int<1>(3), 3);
-	EXPECT_EQ(cutil::math::pow_int<2>(3), 9);
-	EXPECT_EQ(cutil::math::pow_int<3>(3), 27);
+	// constexpr auto zzzz = cutil::pow<30>(2lu);
+	EXPECT_EQ(cutil::math::pow(2, 0), 1);
+	EXPECT_EQ(cutil::math::pow(2, 1), 2);
+	EXPECT_EQ(cutil::math::pow(2, 2), 4);
+	EXPECT_EQ(cutil::math::pow(2, 3), 8);
+	EXPECT_EQ(cutil::math::pow(2, 4), 16);
+	EXPECT_EQ(cutil::math::pow(3, 1), 3);
+	EXPECT_EQ(cutil::math::pow(3, 2), 9);
+	EXPECT_EQ(cutil::math::pow(3, 3), 27);
+	EXPECT_EQ(cutil::math::pow<1>(3), 3);
+	EXPECT_EQ(cutil::math::pow<2>(3), 9);
+	EXPECT_EQ(cutil::math::pow<3>(3), 27);
 	
-	EXPECT_EQ(cutil::math::pow_int(-2.5, 1), -2.5);
-	EXPECT_EQ(cutil::math::pow_int(-2.5, 2), 6.25);
+	EXPECT_EQ(cutil::math::pow(-2.5, 1), -2.5);
+	EXPECT_EQ(cutil::math::pow(-2.5, 2), 6.25);
 	
 #ifdef CUTIL_CPP14_SUPPORTED
-	static_assert(cutil::math::pow_int(3, 2) == 9);
-	static_assert(cutil::math::pow_int<2>(3) == 9);
-	static_assert(cutil::math::pow_int<2>(-2.5) == 6.25);
+	static_assert(cutil::math::pow(3, 2) == 9);
+	static_assert(cutil::math::pow<2>(3) == 9);
+	static_assert(cutil::math::pow<2>(-2.5) == 6.25);
 	static_assert(cutil::math::factorial(3) == 6);
 #endif
 	
 	uint64_t z = 2;
-	EXPECT_EQ(cutil::math::pow_int(z++, 2), 4);
-	EXPECT_EQ(cutil::math::pow_int(z++, 2), 9);
-	EXPECT_EQ(cutil::math::pow_int(z++, 2), 16);
+	EXPECT_EQ(cutil::math::pow(z++, 2), 4);
+	EXPECT_EQ(cutil::math::pow(z++, 2), 9);
+	EXPECT_EQ(cutil::math::pow(z++, 2), 16);
 	z = 2;
-	EXPECT_EQ(cutil::math::pow_int<2>(z++), 4);
-	EXPECT_EQ(cutil::math::pow_int<2>(z++), 9);
-	EXPECT_EQ(cutil::math::pow_int<2>(z++), 16);
+	EXPECT_EQ(cutil::math::pow<2>(z++), 4);
+	EXPECT_EQ(cutil::math::pow<2>(z++), 9);
+	EXPECT_EQ(cutil::math::pow<2>(z++), 16);
 	
 	EXPECT_EQ(cutil::math::factorial(1), 1);
 	EXPECT_EQ(cutil::math::factorial(2), 2);
