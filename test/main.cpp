@@ -1,5 +1,4 @@
 #include <iostream>
-#include <windows.h>
 
 #include <ConsoleUtil/All.h>
 
@@ -19,6 +18,10 @@
 #include <algorithm>
 #include <bit>
 #include <execution>
+
+#ifdef CUTIL_OS_WINDOWS
+	#include <windows.h>
+#endif
 
 int main(int argc, char* argv[])
 {

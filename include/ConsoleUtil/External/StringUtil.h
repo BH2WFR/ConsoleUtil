@@ -18,6 +18,8 @@
 
 #if defined(__cplusplus) && defined(CUTIL_CPP11_SUPPORTED)
 #include <cstdint>
+#include <cstdlib>
+#include <type_traits>
 #include <algorithm>
 #include <cctype>
 #include <map>
@@ -33,6 +35,9 @@
 #if defined(CUTIL_CPP17_SUPPORTED) && !CUTIL_STRINGUTIL_DO_NOT_USE_PARALLEL
 	#define _CUTIL_STRINGUTIL_USE_PARALLEL //* use std::execution::par for some algorithms (>=C++17)
 	#include <execution>
+#endif
+#ifdef CUTIL_CPP17_SUPPORTED
+	#include <optional>
 #endif
 
 // #define CUTIL_STRINGUTIL_USE_STATIC_INLINE
@@ -907,6 +912,94 @@ namespace str
 	EXPECT_EQ("abcdefg", cutil::str::sanitize_filename_copy(" a<b>:c>\\d\"e/f|g:** ? "));
     EXPECT_EQ("a_b__c__d_e_f_g___ _", cutil::str::sanitize_filename_copy(" a<b>:c>\\d\"e/f|g:** ? ", '_'));
 */
+	
+	
+	
+	//* convert string to the specified type, like int, float, double, etc.
+	//  if failed, it throws exception
+	//  these functions are only the wrappers of std::stoi, std::stol, std::stof, etc.
+	//  if you want to use std::stringstream, use `cutil::str::parse_string()`
+	//  do not support `uint8_t`, `int8_t`, `uint16_t`, `int16_t` and other non-arithmetic types
+	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD
+	inline Ret convert_to(const std::string& str){ // for `uint8_t`, `int8_t`, `uint16_t`, `int16_t`
+		int32_t ret = std::stol(str);
+		if(ret < std::numeric_limits<Ret>::min() || ret > std::numeric_limits<Ret>::max()){
+			throw std::out_of_range("convert_to: value out of range for type " + std::string(typeid(Ret).name()));
+		}
+		return static_cast<Ret>(ret);
+	}
+	template<> _CUTIL_NODISCARD
+	inline int16_t convert_to<int16_t>(const std::string& str){
+		return static_cast<int16_t>(std::stoi(str));
+	}
+	template<> _CUTIL_NODISCARD
+	inline int convert_to<int>(const std::string& str){
+		return std::stoi(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline unsigned int convert_to<unsigned int>(const std::string& str){
+		return std::stoul(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline long convert_to<long>(const std::string& str){
+		return std::stol(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline unsigned long convert_to<unsigned long>(const std::string& str){
+		return std::stoul(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline int64_t convert_to<int64_t>(const std::string& str){
+		return std::stoll(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline uint64_t convert_to<uint64_t>(const std::string& str){
+		return std::stoull(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline float convert_to<float>(const std::string& str){
+		return std::stof(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline double convert_to<double>(const std::string& str){
+		return std::stod(str);
+	}
+	template<> _CUTIL_NODISCARD
+	inline long double convert_to<long double>(const std::string& str){
+		return std::stold(str);
+	}
+	
+	
+	//* convert string to the specified type, like int, float, double, etc.
+	//  if failed, it returns default_value
+	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD
+	inline Ret convert_to(const std::string& str, Ret default_value){
+		try {
+			return convert_to<Ret>(str);
+		} catch (...) {
+			return default_value;
+		}
+	}
+	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD
+	inline auto convert_to_pair(const std::string& str) -> std::pair<bool, Ret>
+	{
+		try {
+			return {true, convert_to<Ret>(str)};
+		} catch (...) {
+			return {false, Ret()};
+		}
+	}
+#ifdef CUTIL_CPP17_SUPPORTED
+	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD
+	inline auto convert_to_opt(const std::string& str) -> std::optional<Ret>
+	{
+		try {
+			return convert_to<Ret>(str);
+		} catch (...) {
+			return std::nullopt;
+		}
+	}
+#endif
 	
 	
 } // namespace

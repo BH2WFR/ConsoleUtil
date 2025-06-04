@@ -1,6 +1,10 @@
 
 #include <gtest/gtest.h>
 
+#ifdef CUTIL_CPP17_SUPPORTED
+#include <optional>
+#endif
+
 #include <ConsoleUtil/External/StringUtil.h>
 #include <ConsoleUtil/CppUtil.h>
 
@@ -173,6 +177,16 @@ TEST(Parsing, neg_bool_to_string)
 TEST(Parsing, string_to_short_int)
 {
     EXPECT_EQ(-255, cutil::str::parse_string<short int>("-255"));
+    EXPECT_EQ(-255, cutil::str::convert_to<int32_t>("-255"));
+    EXPECT_EQ(-255, cutil::str::convert_to<int64_t>("-255"));
+#ifdef CUTIL_CPP17_SUPPORTED
+    EXPECT_EQ(-255, cutil::str::convert_to_opt<int32_t>("-255"));
+    EXPECT_EQ(std::nullopt, cutil::str::convert_to_opt<size_t>("aaa")); // failed
+    EXPECT_EQ(std::nullopt, cutil::str::convert_to_opt<int32_t>("99999999999999")); // overflow
+    EXPECT_EQ(-2, cutil::str::convert_to_opt<int8_t>("-2"));
+    EXPECT_EQ(127, cutil::str::convert_to_opt<int8_t>("127"));
+    EXPECT_EQ(std::nullopt, cutil::str::convert_to_opt<uint8_t>("-2"));
+#endif
 }
 
 TEST(Parsing, string_to_u_short_int)
@@ -223,6 +237,14 @@ TEST(Parsing, string_to_u_char)
 TEST(Parsing, string_to_float)
 {
     EXPECT_EQ(5.245f, cutil::str::parse_string<float>("5.245f"));
+    EXPECT_EQ(-255.0f, cutil::str::convert_to<float>("-255"));
+    
+#ifdef CUTIL_CPP17_SUPPORTED
+    EXPECT_EQ(5.245f, cutil::str::convert_to_opt<float>("5.245f"));
+    EXPECT_EQ(std::nullopt, cutil::str::convert_to_opt<float>("aaa")); // failed
+    EXPECT_EQ(99999999999999.0f, cutil::str::convert_to_opt<float>("99999999999999"));
+    EXPECT_EQ(1e2f, cutil::str::convert_to_opt<float>("1e2"));
+#endif
 }
 
 TEST(Parsing, string_to_double)

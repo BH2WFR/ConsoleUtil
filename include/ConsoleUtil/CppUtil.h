@@ -462,6 +462,8 @@ inline namespace bit { // inline
 	
 	//* rotate bit left by step, `((num << step) | (num >> (sizeof(T) - step)))`
 	//  use std::rotl() since C++20
+	//  if /O2 is enabled, this will be optimized to a single instruction on x86 and ARM
+	//  also, you can use `_rotl()` `_rotl64()` in MSVC
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T rotate_bit_left(T num, size_t step = 1) noexcept {
 		_CUTIL_CONSTEXPR_ASSERT(step <= 8u * sizeof(T));
@@ -478,6 +480,8 @@ inline namespace bit { // inline
 	
 	//* rotate bit right by step, `((num >> step) | (num << (sizeof(T) - step)))`
 	//  use std::rotr() since C++20
+	//  if /O2 is enabled, this will be optimized to a single instruction on x86 and ARM
+	//  also, you can use `_rotr()` `_rotr64()` in MSVC
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T rotate_bit_right(T num, size_t step = 1) noexcept {
 		_CUTIL_CONSTEXPR_ASSERT(step <= 8u * sizeof(T));
