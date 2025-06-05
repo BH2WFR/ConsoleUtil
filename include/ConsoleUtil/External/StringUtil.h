@@ -16,7 +16,7 @@
 #define CONSOLEUTIL_EXTERNAL_STRING_UTIL_H__
 #include <ConsoleUtil/Base.h>
 
-#if defined(__cplusplus) && defined(CUTIL_CPP11_SUPPORTED)
+#if defined(__cplusplus) && defined(CUTIL_CPP14_SUPPORTED)
 #include <cstdint>
 #include <cstdlib>
 #include <type_traits>
@@ -70,7 +70,7 @@ namespace str
 	 * @param value - will be converted into std::string.
 	 * @return Converted value as std::string.
 	 */
-	template<typename T> _CUTIL_DEPRECATED _CUTIL_STRINGUTIL_STATIC
+	template<typename T> [[deprecated]] _CUTIL_STRINGUTIL_STATIC
 	inline std::string to_string(T value)
 	{
 		std::stringstream ss;
@@ -85,7 +85,7 @@ namespace str
 	 * @param str - std::string that will be converted into datatype T.
 	 * @return Variable of datatype T.
 	 */
-	template<typename T> _CUTIL_DEPRECATED _CUTIL_STRINGUTIL_STATIC
+	template<typename T> [[deprecated]] _CUTIL_STRINGUTIL_STATIC
 	inline T parse_string(const std::string & str)
 	{
 		T result;

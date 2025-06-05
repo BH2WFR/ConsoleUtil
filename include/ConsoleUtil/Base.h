@@ -373,7 +373,7 @@
 //* ==== Environment Check, `> C99/C++11` with `##__VA_ARGS__` extension (available in MSVC(>VS2015 U3)/GCC/Clang)
 #if (!defined(__cplusplus)) && !defined(CUTIL_C99_SUPPORTED)
 	#error This Header DO NOT SUPPORTS C89! - >=C99 or C++ Required.
-#elif defined(__cplusplus) && !defined(CUTIL_CPP11_SUPPORTED)
+#elif defined(__cplusplus) && !defined(CUTIL_CPP14_SUPPORTED)
 	#error This Header DO NOT SUPPORTS C++98! - >=C++14 Required.
 #else
 	// available
@@ -435,11 +435,6 @@
 #else
 	#define _CUTIL_CONSTEXPR_CPP17
 #endif
-#if defined(CUTIL_CPP14_SUPPORTED) || (defined(__cpp_constexpr) && __cpp_constexpr >= 201304) // C++14
-	#define _CUTIL_CONSTEXPR_CPP14	constexpr
-#else
-	#define _CUTIL_CONSTEXPR_CPP14
-#endif
 
 
 //* attributes
@@ -450,24 +445,7 @@
 	#define _CUTIL_NODISCARD
 	#define _CUTIL_MAYBE_UNUSED
 #endif
-#ifdef CUTIL_CPP14_SUPPORTED // C+14
-	#define _CUTIL_DEPRECATED	[[deprecated]]
-#else
-	#define _CUTIL_DEPRECATED
-#endif
 
-
-//* assert in constexpr function
-#if defined(CUTIL_CPP14_SUPPORTED) && defined(CUTIL_DEBUG_BUILD) // C++14
-	#define _CUTIL_CONSTEXPR_ASSERT(_EXPR)	assert(_EXPR)
-#else
-	#define _CUTIL_CONSTEXPR_ASSERT(_EXPR)
-#endif
-#ifdef CUTIL_DEBUG_BUILD
-	#define _CUTIL_ASSERT(_EXPR)	assert(_EXPR)
-#else
-	#define _CUTIL_ASSERT(_EXPR)
-#endif
 
 
 //* `__FUNCTION__`(not standard, but supported by MSVC/GCC/Clang) or `__func__`(C99/C++11)

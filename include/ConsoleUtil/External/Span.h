@@ -15,7 +15,7 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf
 #include <ConsoleUtil/Base.h>
 
 
-#if defined(__cplusplus) && defined(CUTIL_CPP11_SUPPORTED)
+#if defined(__cplusplus) && defined(CUTIL_CPP14_SUPPORTED)
 #include <array>
 #include <cstddef>
 #include <cstdint>

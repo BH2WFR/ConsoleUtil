@@ -27,7 +27,7 @@
 
 
 
-#if defined(__cplusplus) && defined(CUTIL_CPP11_SUPPORTED)
+#if defined(__cplusplus) && defined(CUTIL_CPP14_SUPPORTED)
 #include <type_traits>
 #include <utility>
 

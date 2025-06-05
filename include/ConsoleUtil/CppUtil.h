@@ -1,25 +1,28 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		15 MAY 2025
+  Updated:		5 JUN 2025
   License:		MIT License
 * You can include this header in header files.
+* C++14 or later is required.
 */
 #ifndef CONSOLEUTIL_CPP_UTIL_H__
 #define CONSOLEUTIL_CPP_UTIL_H__
 #include <ConsoleUtil/Base.h>
 
-#ifndef CUTIL_CPP11_SUPPORTED
-	#error "C++11 is required, >=C++14 is recommended for this header"
+#ifndef CUTIL_CPP14_SUPPORTED
+	#error ">= C++14 is required"
 #endif
 
-#if defined(__cplusplus) && defined(CUTIL_CPP11_SUPPORTED)
+#if defined(__cplusplus)
 #include <type_traits>
 #include <algorithm>
 #include <iterator>
 #include <cassert>
 #include <cmath>
 #include <numeric>
+#include <limits>
+#include <functional>
 #ifdef CUTIL_CPP20_SUPPORTED
 	#include <bit>
 #endif
@@ -28,7 +31,7 @@
 _CUTIL_NAMESPACE_BEGIN
 
 
-//* -----------  concepts
+//===============  concepts ================
 namespace internal {
 	// concept in C++20 will make it easier
 	
@@ -58,7 +61,7 @@ namespace internal {
 	
 	template <typename Ptr>
 	struct remove_const_pointer_to_type {
-		using type = typename std::remove_const<typename std::remove_pointer<Ptr>::type>::type;
+		using type = typename std::remove_const_t<typename std::remove_pointer_t<Ptr>>;
 	};
 	
 	template <typename P1, typename P2>
@@ -74,10 +77,10 @@ namespace internal {
 	struct is_pointer_both_same_attributes : std::integral_constant<bool
 										,  std::is_pointer<P1>::value
 										&& std::is_pointer<P2>::value
-										&& (   std::is_const<typename std::remove_pointer<P1>::type>::value
-											== std::is_const<typename std::remove_pointer<P2>::type>::value)
-										&& (  std::is_volatile<typename std::remove_pointer<P1>::type>::value
-											== std::is_volatile<typename std::remove_pointer<P2>::type>::value)
+										&& (   std::is_const<typename std::remove_pointer_t<P1>>::value
+											== std::is_const<typename std::remove_pointer_t<P2>>::value)
+										&& (  std::is_volatile<typename std::remove_pointer_t<P1>>::value
+											== std::is_volatile<typename std::remove_pointer_t<P2>>::value)
 									>{};
 	
 	template <typename PBase, typename PDerived>
@@ -89,39 +92,79 @@ namespace internal {
 											, typename cutil::internal::remove_const_pointer_to_type<PDerived>::type
 										>::value
 									>{};
+
+#ifndef CUTIL_CPP17_SUPPORTED // C++14
+	namespace detail {
+		// SFINAE辅助模板
+		template<bool B, typename T = void>
+		using enable_if_t = typename std::enable_if_t<B, T>;
+
+		// 检测函数调用并转换返回类型
+		template<typename R, typename F, typename... Args>
+		auto is_invocable_r_helper(F&& f, Args&&... args) ->
+			decltype(static_cast<R>(std::forward<F>(f)(std::forward<Args>(args)...)), std::true_type{});
+		template<typename R, typename F, typename... Args>
+		std::false_type is_invocable_r_helper(...);
+
+		// 主实现类
+		template<typename R, typename F, typename... Args>
+		struct is_invocable_r_impl {
+			using type = decltype(is_invocable_r_helper<R>(
+				std::declval<F>(), std::declval<Args>()...
+			));
+		};
+	}
+	// C++17 std::void_t implementation for C++14
+	template <typename...>
+	using void_t = void;
 	
+	// C++17 std:is_invocable implementation for C++14
+	template<typename R, typename F, typename... Args>
+	struct is_invocable_r : cutil::internal::detail::is_invocable_r_impl<R, F, Args...>::type {};
+
+	template<typename F, typename... Args>
+	struct is_invocable : cutil::internal::detail::is_invocable_r_impl<void, F, Args...>::type {};
+
+#else // >= C++17
+	template <typename...>
+	using void_t = std::void_t<>;
 	
-	
+	template<typename R, typename F, typename... Args>
+	using is_invocable_r = std::is_invocable_r<R, F, Args...>;
+
+	template<typename F, typename... Args>
+	using is_invocable = std::is_invocable<F, Args...>;
+#endif
 }
 
 #define _CUTIL_CONCEPT_UNSIGNED(T) 			\
-			typename std::enable_if<cutil::internal::is_uint<T>::value, bool>::type = false
+			typename std::enable_if_t<cutil::internal::is_uint<T>::value, bool> = false
 #define _CUTIL_CONCEPT_INTEGRAL(T) 			\
-			typename std::enable_if<std::is_integral<T>::value, bool>::type = false
+			typename std::enable_if_t<std::is_integral<T>::value, bool> = false
 #define _CUTIL_CONCEPT_FLOAT(T) 			\
-			typename std::enable_if<std::is_floating_point<T>::value, bool>::type = false
+			typename std::enable_if_t<std::is_floating_point<T>::value, bool> = false
 #define _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T) 	\
-			typename std::enable_if<cutil::internal::is_int_or_float<T>::value, bool>::type = false
+			typename std::enable_if_t<cutil::internal::is_int_or_float<T>::value, bool> = false
 #define _CUTIL_CONCEPT_ARITHMETIC(T)		\
-			typename std::enable_if<std::is_arithmetic<T>::value, bool>::type = false
+			typename std::enable_if_t<std::is_arithmetic<T>::value, bool> = false
 #define _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(From, To) \
-			typename std::enable_if<cutil::internal::is_arithmetic_and_convertible<From, To>::value, bool>::type = true
-#define _CUTIL_CONCEPT_INTEGRAL_CONVERTIBLE(From, To) 	\
-			typename std::enable_if<cutil::internal::is_integral_and_convertible<From, To>::value, bool>::type = true
+			typename std::enable_if_t<cutil::internal::is_arithmetic_and_convertible<From, To>::value, bool> = true
+// #define _CUTIL_CONCEPT_INTEGRAL_CONVERTIBLE(From, To) 	\
+// 			typename std::enable_if_t<cutil::internal::is_integral_and_convertible<From, To>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER(T) 			\
-			typename std::enable_if<std::is_pointer<T>::value, bool>::type = false
+			typename std::enable_if_t<std::is_pointer<T>::value, bool> = false
 // #define _CUTIL_CONCEPT_IS_SAME(T1, T2) 	\
-// 			typename std::enable_if<std::is_same<T1, T2>::value, bool>::type = true
+// 			typename std::enable_if_t<std::is_same<T1, T2>::value, bool> = true
 // #define _CUTIL_CONCEPT_IS_DIFFERENT(T1, T2) \
-// 			typename std::enable_if<!std::is_same<T1, T2>::value, bool>::type = true
-// #define _CUTIL_CONCEPT_CONVERTIBLE(From, To) \
-// 			typename std::enable_if<std::is_convertible<From, To>::value, bool>::type = true
+// 			typename std::enable_if_t<!std::is_same<T1, T2>::value, bool> = true
+#define _CUTIL_CONCEPT_CONVERTIBLE(From, To) \
+			typename std::enable_if_t<std::is_convertible<From, To>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER_DIFFERENT_TYPES(P1, P2) \
-			typename std::enable_if<!cutil::internal::is_same_pointer_types<P1, P2>::value, bool>::type = true
+			typename std::enable_if_t<!cutil::internal::is_same_pointer_types<P1, P2>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER_SAME_ATTRIBUTES(P1, P2) \
-			typename std::enable_if<cutil::internal::is_pointer_both_same_attributes<P1, P2>::value, bool>::type = true
+			typename std::enable_if_t<cutil::internal::is_pointer_both_same_attributes<P1, P2>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER_IS_BASE_OF(PBase, PDerived) \
-			typename std::enable_if<cutil::internal::is_base_of_pointer<PBase, PDerived>::value, bool>::type = true
+			typename std::enable_if_t<cutil::internal::is_base_of_pointer<PBase, PDerived>::value, bool> = true
 #define _CUTIL_CONCEPT_COMPARABLE(T, U, COMP) 	\
 			typename = decltype(std::declval<T>() COMP std::declval<U>())
 
@@ -134,12 +177,12 @@ namespace internal {
 #define _CUTIL_CONCEPT_INVOKABLE_RET(Func, Ret, ...) 	\
 			typename = decltype(std::declval<Func>()(__VA_ARGS__) == std::declval<Ret>())
 #define _CUTIL_CONCEPT_HAS_ITERATOR(T)  	\
-			typename std::enable_if<cutil::internal::has_iterators<T>::value, bool>::type = true
+			typename std::enable_if_t<cutil::internal::has_iterators<T>::value, bool> = true
 
 #define _CUTIL_CONCEPT_SAME_SIZE(T, U) 		\
-			typename std::enable_if<cutil::internal::has_same_size<T, U>::value, bool>::type = true
-	
-	
+			typename std::enable_if_t<cutil::internal::has_same_size<T, U>::value, bool> = true
+
+
 
 
 
@@ -432,74 +475,117 @@ inline namespace bit { // inline
 	//* get the bit filtered by nth bit, `(num & (1<<bit_idx))`
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T get_bit_by_idx(T num, size_t bit_idx) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT((bit_idx < (8u * sizeof(T))) && "bit index out of range");
-		return cutil::bit::get_bit_by_mask(num, (T)((T)(1u) << bit_idx));
+		return cutil::bit::get_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
+	}
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	inline constexpr T get_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
+		T mask = static_cast<T>(0);
+		for(auto idx : bit_idx) {
+			mask |= (static_cast<T>(1u) << (idx % std::numeric_limits<T>::digits));
+		}
+		return cutil::bit::get_bit_by_mask(num, mask);
 	}
 	//* set the bit specified by nth bit, `(num | (1<<bit_idx))`
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T set_bit_by_idx(T num, size_t bit_idx) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT((bit_idx < (8u * sizeof(T))) && "bit index out of range");
-		return cutil::bit::set_bit_by_mask(num, (T)((T)(1u) << bit_idx));
+		return cutil::bit::set_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
+	}
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	inline constexpr T set_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
+		T mask = static_cast<T>(0);
+		for(auto idx : bit_idx) {
+			mask |= (static_cast<T>(1u) << (idx % std::numeric_limits<T>::digits));
+		}
+		return cutil::bit::set_bit_by_mask(num, mask);
 	}
 	//* clear the bit specified by nth bit, `(num & ~(1<<bit_idx))`
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T clear_bit_by_idx(T num, size_t bit_idx) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT((bit_idx < (8u * sizeof(T))) && "bit index out of range");
-		return cutil::bit::clear_bit_by_mask(num, (T)((T)(1u) << bit_idx));
+		return cutil::bit::clear_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
+	}
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	inline constexpr T clear_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
+		T mask = static_cast<T>(0);
+		for(auto idx : bit_idx) {
+			mask |= (static_cast<T>(1u) << (idx % std::numeric_limits<T>::digits));
+		}
+		return cutil::bit::clear_bit_by_mask(num, mask);
 	}
 	//* flip the bit specified by nth bit, `(num ^ (1<<bit_idx))`
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T flip_bit_by_idx(T num, size_t bit_idx) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT((bit_idx < (8u * sizeof(T))) && "bit index out of range");
-		return cutil::bit::flip_bit_by_mask(num, (T)((T)(1u) << bit_idx));
+		return cutil::bit::flip_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
+	}
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	inline constexpr T flip_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
+		T mask = static_cast<T>(0);
+		for(auto idx : bit_idx) {
+			mask |= (static_cast<T>(1u) << (idx % std::numeric_limits<T>::digits));
+		}
+		return cutil::bit::flip_bit_by_mask(num, mask);
 	}
 	//* check if the bit filtered by nth bit is zero or not, `(bool)(num & (1<<bit_idx))`
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr bool check_bit_by_idx(T num, size_t bit_idx) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT((bit_idx < (8u * sizeof(T))) && "bit index out of range");
+		return static_cast<bool>(cutil::bit::get_bit_by_idx(num, bit_idx));
+	}
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	inline constexpr bool check_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
 		return static_cast<bool>(cutil::bit::get_bit_by_idx(num, bit_idx));
 	}
 	
-	//* rotate bit left by step, `((num << step) | (num >> (sizeof(T) - step)))`
+	//* rotate bit left by step, `((num << step) | (num >> (N - step)))`
 	//  use std::rotl() since C++20
 	//  if /O2 is enabled, this will be optimized to a single instruction on x86 and ARM
 	//  also, you can use `_rotl()` `_rotl64()` in MSVC
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
-	inline constexpr T rotate_bit_left(T num, size_t step = 1) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT(step <= 8u * sizeof(T));
-	#ifdef CUTIL_CXX20_SUPPORTED
-		return std::rotl(num, step); // x86 and ARM have CPU instructions for this
+	inline constexpr T rotate_bit_left(T num, int step = 1) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::rotl(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
 	#else
-		return ((num << step) | (num >> (8u * sizeof(T) - step)));
+		constexpr auto digits = std::numeric_limits<T>::digits;
+		step = step % digits; // ensure step is within range
+		if(step > 0){
+			return ((num << step) | (num >> (digits - step)));
+		}else if(step < 0){
+			return ((num >> -step) | (num << (digits + step))); // rotate left if step is negative
+		}
+		return num; // step == 0, no rotation needed
 	#endif
 	}
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
-	inline constexpr T rotl(T num, size_t step = 1) noexcept {
+	inline constexpr T rotl(T num, int step = 1) noexcept {
 		return cutil::bit::rotate_bit_left(num, step);
 	}
 	
-	//* rotate bit right by step, `((num >> step) | (num << (sizeof(T) - step)))`
+	//* rotate bit right by step, `((num >> step) | (num << (N - step)))`
 	//  use std::rotr() since C++20
 	//  if /O2 is enabled, this will be optimized to a single instruction on x86 and ARM
 	//  also, you can use `_rotr()` `_rotr64()` in MSVC
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
-	inline constexpr T rotate_bit_right(T num, size_t step = 1) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT(step <= 8u * sizeof(T));
-	#ifdef CUTIL_CXX20_SUPPORTED
-		return std::rotr(num, step); // x86 and ARM have CPU instructions for this
+	inline constexpr T rotate_bit_right(T num, int step = 1) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::rotr(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
 	#else
-		return ((num >> step) | (num << (8u * sizeof(T) - step)));
+		constexpr auto digits = std::numeric_limits<T>::digits;
+		step = step % digits; // ensure step is within range
+		if(step > 0){
+			return ((num >> step) | (num << (digits - step)));
+		}else if(step < 0){
+			return ((num << -step) | (num >> (digits + step))); // rotate right if step is negative
+		}
+		return num; // step == 0, no rotation needed
 	#endif
 	}
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
-	inline constexpr T rotr(T num, size_t step = 1) noexcept {
+	inline constexpr T rotr(T num, int step = 1) noexcept {
 		return cutil::bit::rotate_bit_right(num, step);
 	}
 	
 	//* insert bit to the left, then shift others to right. `(bit >> 1) | (inserted << (bitSize - 1))`
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T insert_bit_left(T num, bool inserted = true) noexcept {
-		return (num >> 1) | (static_cast<T>(inserted) << (8u * sizeof(T) - 1));
+		return (num >> 1) | (static_cast<T>(inserted) << (std::numeric_limits<T>::digits - 1));
 	}
 	
 	//* insert bit to the right, then shift others to left. `(bit << 1) | inserted`
@@ -517,7 +603,7 @@ inline namespace bit { // inline
 	//* get msb (most significant bit, the leftmost bit)
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
 	inline constexpr T get_msb(T num) noexcept {
-		return (num & (1u << (8u * sizeof(T) - 1)));
+		return (num & (1u << (std::numeric_limits<T>::digits - 1)));
 	}
 	
 	//* has_single_bit, check if the number is power of 2 ({1, 2, 4, 8...})
@@ -540,6 +626,9 @@ inline namespace bit { // inline
 	num = cutil::bit::set_bit_by_idx(num, 1);   // equals to {num = num |  (1u << 0));}
 	num = cutil::bit::clear_bit_by_idx(num, 2); // equals to {num = num & ~(1u << 2));}
 	num = cutil::bit::flip_bit_by_idx(num, 3);  // equals to {num = num ^  (1u << 3));}
+	num = cutil::bit::set_bit_by_idx(num, {0, 1, 3});   // initializer_list available
+	num = cutil::bit::clear_bit_by_idx(num, {0, 1, 3}); // initializer_list available
+	num = cutil::bit::flip_bit_by_idx(num, {0, 1, 3});  // initializer_list available
 	if(cutil::bit::get_bit_by_idx(num, 0) != 0x0000){ // reading bit, if bit is 1, returns `(1<<bitIdx)`, NOT `1`
 		printf("%x\n", num);
 	}
@@ -578,6 +667,9 @@ inline namespace bit { // inline
 	bool out = cutil::bit::has_single_bit(num));
 	
 */
+
+	//* get low byte and high byte of a word (16-bit unsigned integer)
+	//  regardless of the endianness, the low byte is always the rightmost byte
 	_CUTIL_NODISCARD inline constexpr
 	uint8_t get_word_low(uint16_t word) {
 		return (uint8_t)(word & 0xFF);
@@ -604,121 +696,121 @@ inline namespace bit { // inline
 
 
 //======================= Math Constants =========================
+template <typename T, _CUTIL_CONCEPT_FLOAT(T)>
+struct Numbers {
+	static constexpr T e 			= static_cast<T>(2.71828182845904523536); // e
+	static constexpr T log2e 		= static_cast<T>(1.44269504088896340736); // log2(e)
+	static constexpr T log10e 		= static_cast<T>(0.43429448190325182765); // log10(e)
+	static constexpr T ln2 			= static_cast<T>(0.69314718055994530942); // ln(2)
+	static constexpr T ln10 		= static_cast<T>(2.30258509299404568402); // ln(10)
+
+	static constexpr T pi 			= static_cast<T>(3.14159265358979323846); // pi
+	static constexpr T two_pi 		= static_cast<T>(6.28318530717958647692); // 2 * pi
+	static constexpr T three_pi 	= static_cast<T>(9.42477796076937971538); // 3 * pi
+	static constexpr T pi_2 		= static_cast<T>(1.57079632679489661923); // pi / 2
+	static constexpr T pi_3 		= static_cast<T>(1.04719755119659774615); // pi / 3
+	static constexpr T pi_4 		= static_cast<T>(0.78539816339744830962); // pi / 4
+	static constexpr T inv_pi 		= static_cast<T>(0.31830988618379067154); // 1 / pi
+	static constexpr T inv_sqrt_pi 	= static_cast<T>(0.56418958354775628694); // 1 / sqrt(pi)
+	static constexpr T two_inv_pi 	= static_cast<T>(0.63661977236758134308); // 2 / pi
+	static constexpr T two_sqrt_pi 	= static_cast<T>(1.12837916709551257390); // 2 / sqrt(pi)
+
+	static constexpr T sqrt2 		= static_cast<T>(1.41421356237309504880); // sqrt(2)
+	static constexpr T inv_sqrt2 	= static_cast<T>(0.70710678118654752440); // 1 / sqrt(2)
+	static constexpr T sqrt3 		= static_cast<T>(1.73205080756887729353); // sqrt(3)
+	static constexpr T inv_sqrt3 	= static_cast<T>(0.57735026918962576451); // 1 / sqrt(3)
+
+	static constexpr T phi 			= static_cast<T>(1.61803398874989484820); // (1 + sqrt(5)) / 2, golden ratio
+	static constexpr T inv_phi 		= static_cast<T>(0.61803398874989484820); // 2 / (1 + sqrt(5)), inverted golden ratio
+
+	static constexpr T egamma 		= static_cast<T>(0.57721566490153286060); // Euler-Mascheroni constant
+};
 
 inline namespace numbers { // inline
-	template <typename T, typename std::enable_if<std::is_floating_point<T>::value, bool>::type = true>
-	struct Numbers {
-		static constexpr T e 			= static_cast<T>(2.71828182845904523536); // e
-		static constexpr T log2e 		= static_cast<T>(1.44269504088896340736); // log2(e)
-		static constexpr T log10e 		= static_cast<T>(0.43429448190325182765); // log10(e)
-		static constexpr T ln2 			= static_cast<T>(0.69314718055994530942); // ln(2)
-		static constexpr T ln10 		= static_cast<T>(2.30258509299404568402); // ln(10)
-
-		static constexpr T pi 			= static_cast<T>(3.14159265358979323846); // pi
-		static constexpr T two_pi 		= static_cast<T>(6.28318530717958647692); // 2*pi
-		static constexpr T three_pi 	= static_cast<T>(9.42477796076937971538); // 3*pi
-		static constexpr T pi_2 		= static_cast<T>(1.57079632679489661923); // pi/2
-		static constexpr T pi_3 		= static_cast<T>(1.04719755119659774615); // pi/3
-		static constexpr T pi_4 		= static_cast<T>(0.78539816339744830962); // pi/4
-		static constexpr T inv_pi 		= static_cast<T>(0.31830988618379067154); // 1/pi
-		static constexpr T inv_sqrt_pi 	= static_cast<T>(0.56418958354775628694); // 1/sqrt(pi)
-		static constexpr T two_inv_pi 	= static_cast<T>(0.63661977236758134308); // 2/pi
-		static constexpr T two_sqrt_pi 	= static_cast<T>(1.12837916709551257390); // 2/sqrt(pi)
-
-		static constexpr T sqrt2 		= static_cast<T>(1.41421356237309504880); // sqrt(2)
-		static constexpr T inv_sqrt2 	= static_cast<T>(0.70710678118654752440); // 1/sqrt(2)
-		static constexpr T sqrt3 		= static_cast<T>(1.73205080756887729353); // sqrt(3)
-		static constexpr T inv_sqrt3 	= static_cast<T>(0.57735026918962576451); // 1/sqrt(3)
-
-		static constexpr T phi 			= static_cast<T>(1.61803398874989484820); // (1 + sqrt(5)) / 2, golden ratio
-		static constexpr T inv_phi 		= static_cast<T>(0.61803398874989484820); // 2 / (1 + sqrt(5)), inversed golden ratio
-
-		static constexpr T egamma 		= static_cast<T>(0.57721566490153286060); // Euler-Mascheroni constant
-	};
 	//* alternatives for C++20 std::numbers
 	//* double versions
-	constexpr double e 				= cutil::numbers::Numbers<double>::e;
-	constexpr double log2e 			= cutil::numbers::Numbers<double>::log2e;
-	constexpr double log10e 		= cutil::numbers::Numbers<double>::log10e;
-	constexpr double ln2 			= cutil::numbers::Numbers<double>::ln2;
-	constexpr double ln10			= cutil::numbers::Numbers<double>::ln10;
+	constexpr double e 				= cutil::Numbers<double>::e;
+	constexpr double log2e 			= cutil::Numbers<double>::log2e;
+	constexpr double log10e 		= cutil::Numbers<double>::log10e;
+	constexpr double ln2 			= cutil::Numbers<double>::ln2;
+	constexpr double ln10			= cutil::Numbers<double>::ln10;
 		
-	constexpr double pi 			= cutil::numbers::Numbers<double>::pi;
-	constexpr double two_pi 		= cutil::numbers::Numbers<double>::two_pi;
-	constexpr double three_pi 		= cutil::numbers::Numbers<double>::three_pi;
-	constexpr double pi_2 			= cutil::numbers::Numbers<double>::pi_2;
-	constexpr double pi_3 			= cutil::numbers::Numbers<double>::pi_3;
-	constexpr double pi_4 			= cutil::numbers::Numbers<double>::pi_4;
-	constexpr double inv_pi 		= cutil::numbers::Numbers<double>::inv_pi;
-	constexpr double inv_sqrt_pi 	= cutil::numbers::Numbers<double>::inv_sqrt_pi;
-	constexpr double two_inv_pi 	= cutil::numbers::Numbers<double>::two_inv_pi;
-	constexpr double two_sqrt_pi 	= cutil::numbers::Numbers<double>::two_sqrt_pi;
+	constexpr double pi 			= cutil::Numbers<double>::pi;
+	constexpr double two_pi 		= cutil::Numbers<double>::two_pi;
+	constexpr double three_pi 		= cutil::Numbers<double>::three_pi;
+	constexpr double pi_2 			= cutil::Numbers<double>::pi_2;
+	constexpr double pi_3 			= cutil::Numbers<double>::pi_3;
+	constexpr double pi_4 			= cutil::Numbers<double>::pi_4;
+	constexpr double inv_pi 		= cutil::Numbers<double>::inv_pi;
+	constexpr double inv_sqrt_pi 	= cutil::Numbers<double>::inv_sqrt_pi;
+	constexpr double two_inv_pi 	= cutil::Numbers<double>::two_inv_pi;
+	constexpr double two_sqrt_pi 	= cutil::Numbers<double>::two_sqrt_pi;
 	
-	constexpr double sqrt2 			= cutil::numbers::Numbers<double>::sqrt2;
-	constexpr double inv_sqrt2 		= cutil::numbers::Numbers<double>::inv_sqrt2;
-	constexpr double sqrt3 			= cutil::numbers::Numbers<double>::sqrt3;
-	constexpr double inv_sqrt3 		= cutil::numbers::Numbers<double>::inv_sqrt3;
+	constexpr double sqrt2 			= cutil::Numbers<double>::sqrt2;
+	constexpr double inv_sqrt2 		= cutil::Numbers<double>::inv_sqrt2;
+	constexpr double sqrt3 			= cutil::Numbers<double>::sqrt3;
+	constexpr double inv_sqrt3 		= cutil::Numbers<double>::inv_sqrt3;
 	
-	constexpr double phi 			= cutil::numbers::Numbers<double>::phi;
-	constexpr double inv_phi 		= cutil::numbers::Numbers<double>::inv_phi;
+	constexpr double phi 			= cutil::Numbers<double>::phi;
+	constexpr double inv_phi 		= cutil::Numbers<double>::inv_phi;
 		
-	constexpr double egamma 		= cutil::numbers::Numbers<double>::egamma;
+	constexpr double egamma 		= cutil::Numbers<double>::egamma;
 	
 	//* float versions
-	constexpr float e_f 			= cutil::numbers::Numbers<float>::e;
-	constexpr float log2e_f 		= cutil::numbers::Numbers<float>::log2e;
-	constexpr float log10e_f 		= cutil::numbers::Numbers<float>::log10e;
-	constexpr float ln2_f 			= cutil::numbers::Numbers<float>::ln2;
-	constexpr float ln10_f 			= cutil::numbers::Numbers<float>::ln10;
+	constexpr float e_f 			= cutil::Numbers<float>::e;
+	constexpr float log2e_f 		= cutil::Numbers<float>::log2e;
+	constexpr float log10e_f 		= cutil::Numbers<float>::log10e;
+	constexpr float ln2_f 			= cutil::Numbers<float>::ln2;
+	constexpr float ln10_f 			= cutil::Numbers<float>::ln10;
 	
-	constexpr float pi_f 			= cutil::numbers::Numbers<float>::pi;
-	constexpr float two_pi_f 		= cutil::numbers::Numbers<float>::two_pi;
-	constexpr float three_pi_f 		= cutil::numbers::Numbers<float>::three_pi;
-	constexpr float pi_2_f 			= cutil::numbers::Numbers<float>::pi_2;
-	constexpr float pi_3_f 			= cutil::numbers::Numbers<float>::pi_3;
-	constexpr float pi_4_f 			= cutil::numbers::Numbers<float>::pi_4;
-	constexpr float inv_pi_f 		= cutil::numbers::Numbers<float>::inv_pi;
-	constexpr float inv_sqrt_pi_f 	= cutil::numbers::Numbers<float>::inv_sqrt_pi;
-	constexpr float two_inv_pi_f 	= cutil::numbers::Numbers<float>::two_inv_pi;
-	constexpr float two_sqrt_pi_f 	= cutil::numbers::Numbers<float>::two_sqrt_pi;
+	constexpr float pi_f 			= cutil::Numbers<float>::pi;
+	constexpr float two_pi_f 		= cutil::Numbers<float>::two_pi;
+	constexpr float three_pi_f 		= cutil::Numbers<float>::three_pi;
+	constexpr float pi_2_f 			= cutil::Numbers<float>::pi_2;
+	constexpr float pi_3_f 			= cutil::Numbers<float>::pi_3;
+	constexpr float pi_4_f 			= cutil::Numbers<float>::pi_4;
+	constexpr float inv_pi_f 		= cutil::Numbers<float>::inv_pi;
+	constexpr float inv_sqrt_pi_f 	= cutil::Numbers<float>::inv_sqrt_pi;
+	constexpr float two_inv_pi_f 	= cutil::Numbers<float>::two_inv_pi;
+	constexpr float two_sqrt_pi_f 	= cutil::Numbers<float>::two_sqrt_pi;
 	
-	constexpr float sqrt2_f 		= cutil::numbers::Numbers<float>::sqrt2;
-	constexpr float inv_sqrt2_f 	= cutil::numbers::Numbers<float>::inv_sqrt2;
-	constexpr float sqrt3_f 		= cutil::numbers::Numbers<float>::sqrt3;
-	constexpr float inv_sqrt3_f 	= cutil::numbers::Numbers<float>::inv_sqrt3;
+	constexpr float sqrt2_f 		= cutil::Numbers<float>::sqrt2;
+	constexpr float inv_sqrt2_f 	= cutil::Numbers<float>::inv_sqrt2;
+	constexpr float sqrt3_f 		= cutil::Numbers<float>::sqrt3;
+	constexpr float inv_sqrt3_f 	= cutil::Numbers<float>::inv_sqrt3;
 	
-	constexpr float phi_f 			= cutil::numbers::Numbers<float>::phi;
-	constexpr float inv_phi_f 		= cutil::numbers::Numbers<float>::inv_phi;
+	constexpr float phi_f 			= cutil::Numbers<float>::phi;
+	constexpr float inv_phi_f 		= cutil::Numbers<float>::inv_phi;
 		
-	constexpr float egamma_f 		= cutil::numbers::Numbers<float>::egamma;
+	constexpr float egamma_f 		= cutil::Numbers<float>::egamma;
 	
 	//* long double versions
-	constexpr long double e_ld 				= cutil::numbers::Numbers<long double>::e;
-	constexpr long double log2e_ld 			= cutil::numbers::Numbers<long double>::log2e;
-	constexpr long double log10e_ld 		= cutil::numbers::Numbers<long double>::log10e;
-	constexpr long double ln2_ld 			= cutil::numbers::Numbers<long double>::ln2;
-	constexpr long double ln10_ld 			= cutil::numbers::Numbers<long double>::ln10;
+	constexpr long double e_ld 				= cutil::Numbers<long double>::e;
+	constexpr long double log2e_ld 			= cutil::Numbers<long double>::log2e;
+	constexpr long double log10e_ld 		= cutil::Numbers<long double>::log10e;
+	constexpr long double ln2_ld 			= cutil::Numbers<long double>::ln2;
+	constexpr long double ln10_ld 			= cutil::Numbers<long double>::ln10;
 	
-	constexpr long double pi_ld 			= cutil::numbers::Numbers<long double>::pi;
-	constexpr long double two_pi_ld 		= cutil::numbers::Numbers<long double>::two_pi;
-	constexpr long double three_pi_ld 		= cutil::numbers::Numbers<long double>::three_pi;
-	constexpr long double pi_2_ld 			= cutil::numbers::Numbers<long double>::pi_2;
-	constexpr long double pi_3_ld 			= cutil::numbers::Numbers<long double>::pi_3;
-	constexpr long double pi_4_ld 			= cutil::numbers::Numbers<long double>::pi_4;
-	constexpr long double inv_pi_ld 		= cutil::numbers::Numbers<long double>::inv_pi;
-	constexpr long double inv_sqrt_pi_ld 	= cutil::numbers::Numbers<long double>::inv_sqrt_pi;
-	constexpr long double two_inv_pi_ld 	= cutil::numbers::Numbers<long double>::two_inv_pi;
-	constexpr long double two_sqrt_pi_ld 	= cutil::numbers::Numbers<long double>::two_sqrt_pi;
+	constexpr long double pi_ld 			= cutil::Numbers<long double>::pi;
+	constexpr long double two_pi_ld 		= cutil::Numbers<long double>::two_pi;
+	constexpr long double three_pi_ld 		= cutil::Numbers<long double>::three_pi;
+	constexpr long double pi_2_ld 			= cutil::Numbers<long double>::pi_2;
+	constexpr long double pi_3_ld 			= cutil::Numbers<long double>::pi_3;
+	constexpr long double pi_4_ld 			= cutil::Numbers<long double>::pi_4;
+	constexpr long double inv_pi_ld 		= cutil::Numbers<long double>::inv_pi;
+	constexpr long double inv_sqrt_pi_ld 	= cutil::Numbers<long double>::inv_sqrt_pi;
+	constexpr long double two_inv_pi_ld 	= cutil::Numbers<long double>::two_inv_pi;
+	constexpr long double two_sqrt_pi_ld 	= cutil::Numbers<long double>::two_sqrt_pi;
 	
-	constexpr long double sqrt2_ld 			= cutil::numbers::Numbers<long double>::sqrt2;
-	constexpr long double inv_sqrt2_ld 		= cutil::numbers::Numbers<long double>::inv_sqrt2;
-	constexpr long double sqrt3_ld 			= cutil::numbers::Numbers<long double>::sqrt3;
-	constexpr long double inv_sqrt3_ld 		= cutil::numbers::Numbers<long double>::inv_sqrt3;
+	constexpr long double sqrt2_ld 			= cutil::Numbers<long double>::sqrt2;
+	constexpr long double inv_sqrt2_ld 		= cutil::Numbers<long double>::inv_sqrt2;
+	constexpr long double sqrt3_ld 			= cutil::Numbers<long double>::sqrt3;
+	constexpr long double inv_sqrt3_ld 		= cutil::Numbers<long double>::inv_sqrt3;
 	
-	constexpr long double phi_ld 			= cutil::numbers::Numbers<long double>::phi;
-	constexpr long double inv_phi_ld 		= cutil::numbers::Numbers<long double>::inv_phi;
+	constexpr long double phi_ld 			= cutil::Numbers<long double>::phi;
+	constexpr long double inv_phi_ld 		= cutil::Numbers<long double>::inv_phi;
 	
-	constexpr long double egamma_ld 		= cutil::numbers::Numbers<long double>::egamma;
+	constexpr long double egamma_ld 		= cutil::Numbers<long double>::egamma;
 }
 
 
@@ -728,31 +820,49 @@ inline namespace numbers { // inline
 
 inline namespace math { // inline
 	//* limit the numeric variable to the range [_MIN, _MAX], same as `std::clamp(var, min, max)` in C++17
-	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD
-	inline constexpr T clamp(T var, R min, R max) {
-		_CUTIL_CONSTEXPR_ASSERT((min < max) && "`min` should be less than `max`");
+	//  by default, comp == std::less<T>()
+	template<typename T> _CUTIL_NODISCARD
+	inline constexpr T clamp(T var, T min, T max) {
+		assert((min < max) && "`min` should be less than `max`");
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::clamp(var, min, max);
 	#else
-		return (var < min) ? min : (var > max) ? max : var;
+		return std::min(std::max(var, min), max);
 	#endif
 	}
+	template<typename T, typename Comp
+		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true> _CUTIL_NODISCARD
+	inline constexpr T clamp(T var, T min, T max, Comp comp) {
+		assert((comp(min, max)) && "`min` should be less than `max`");
+	#ifdef CUTIL_CPP17_SUPPORTED
+		return std::clamp(var, min, max, comp);
+	#else
+		return std::min(std::max(var, min, comp), max, comp);
+	#endif
+	}
+	
 	//* limit the numeric variable to the range [_MIN, _MAX], same as `var = std::clamp(var, min, max)` in C++17
-	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)>
+	//  by default, comp == std::less<T>()
+	template<typename T, typename R = T, _CUTIL_CONCEPT_CONVERTIBLE(R, T)>
 	inline void limit(T& var, R min, R max) {
-		var = math::clamp(var, min, max);
+		var = cutil::math::clamp(var, static_cast<T>(min), static_cast<T>(max));
+	}
+	template<typename T, typename Comp, typename R = T, _CUTIL_CONCEPT_CONVERTIBLE(R, T)
+		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true>
+	inline void limit(T& var, R min, R max, Comp comp) {
+		var = cutil::math::clamp(var, static_cast<T>(min), static_cast<T>(max), comp);
 	}
 	
 	//* get if a numeric variable is within the interval [_MIN, _MAX]
 	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD
 	inline constexpr bool num_in_interval(T var, R min, R max) {
-		_CUTIL_CONSTEXPR_ASSERT((min < max) && "`min` should be less than `max`");
+		assert((min < max) && "`min` should be less than `max`");
 		return (var >= min) && (var <= max);
 	}
 	//* get if a numeric variable is within the interval (_MIN, _MAX)
 	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD
 	inline constexpr bool num_in_open_interval(T var, R min, R max) {
-		_CUTIL_CONSTEXPR_ASSERT((min < max) && "`min` should be less than `max`");
+		assert((min < max) && "`min` should be less than `max`");
 		return (var > min) && (var < max);
 	}
 	
@@ -761,7 +871,7 @@ inline namespace math { // inline
 	template <bool LeftClosed, bool RightClosed, typename T, typename R = T
 			, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD
 	inline constexpr bool num_in_interval(T var, R min, R max) {
-		_CUTIL_CONSTEXPR_ASSERT((min < max) && "`min` should be less than `max`");
+		assert((min < max) && "`min` should be less than `max`");
 		if constexpr (LeftClosed && RightClosed) {
 			return (var >= min) && (var <= max); // [min, max]
 		} else if constexpr (LeftClosed && !RightClosed) {
@@ -778,9 +888,11 @@ inline namespace math { // inline
 /*
 	int a = 35, b = 26, c = 19, d = 35;
 	d = std::clamp(d, 20, 30);  		// C++17, equivalent to above
-	d = cutil::math::clamp(d, 20, 30); 	// C++11, equivalent to above
-	cutil::limit(d, 20, 30);			// d: 30, only modify value
-	printf("%d %d %d\n", a, b, c); // output: 30 26 20
+	d = cutil::math::clamp(d, 20, 30); 	// C++14, equivalent to above
+	d = cutil::math::clamp(d, 20, 30, std::less<int>()); // equivalent to above
+	cutil::limit(d, 20, 30);			// d: 30, equivalent to `d = cutil::clamp(d, 20, 30);`
+	cutil::limit(d, 20, 30, std::less<int>());	// equivalent to above
+	fmt::println("{} {} {}", a, b, c); // output: 30 26 20
 	
 
 	bool ret = cutil::math::num_in_interval(a, 20, 40);				  // whether a is in [20, 40]
@@ -795,17 +907,17 @@ inline namespace math { // inline
 	//  if exceeded, returns true.
 	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
 	inline bool increase_under_limit(T& var, L max, int inc) noexcept {
-		_CUTIL_ASSERT(var <= max && inc > 0);
-		if((var + (T)inc) <= (T)max) {
-			var += (T)inc;
+		assert(var <= max && inc > 0);
+		if((var + static_cast<T>(inc)) <= static_cast<T>(max)) {
+			var += static_cast<T>(inc);
 			return false;
 		}
 		return true;
 	}
 	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
 	inline bool increase_under_limit(T& var, L max) noexcept {
-		_CUTIL_ASSERT(var <= max);
-		if(var < (T)max) {
+		assert(var <= max);
+		if(var < static_cast<T>(max)) {
 			++var;
 			return false;
 		}
@@ -816,7 +928,7 @@ inline namespace math { // inline
 	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
 	inline bool increase_under_limit_clamp(T& var, L max, int inc) noexcept {
 		if(cutil::math::increase_under_limit(var, max, inc)) {
-			var = (T)max;
+			var = static_cast<T>(max);
 			return true;
 		}
 		return false;
@@ -826,17 +938,17 @@ inline namespace math { // inline
 	//  if exceeded, returns true.
 	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
 	inline bool decrease_above_limit(T& var, L min, int dec) noexcept {
-		_CUTIL_ASSERT(var >= min && dec > 0);
-		if((var - (T)dec) >= (T)min){
-			var -= (T)dec;
+		assert(var >= min && dec > 0);
+		if((var - static_cast<T>(dec)) >= static_cast<T>(min)){
+			var -= static_cast<T>(dec);
 			return false;
 		}
 		return true;
 	}
 	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
 	inline bool decrease_above_limit(T& var, L min) noexcept {
-		_CUTIL_ASSERT(var >= min);
-		if(var > (T)min){
+		assert(var >= min);
+		if(var > static_cast<T>(min)){
 			--var;
 			return false;
 		}
@@ -847,7 +959,7 @@ inline namespace math { // inline
 	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
 	inline bool decrease_above_limit_clamp(T& var, L min, int dec) noexcept {
 		if(cutil::math::decrease_above_limit(var, min, dec)){
-			var = (T)min;
+			var = static_cast<T>(min);
 			return true;
 		}
 		return false;
@@ -857,22 +969,22 @@ inline namespace math { // inline
 	//  if rolled, returns true.
 	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)>
 	inline bool increase_rolling(T& var, R min, R max, int inc) noexcept {
-		_CUTIL_ASSERT(min < max && cutil::num_in_interval(var, min, max) && inc > 0);
-		if((var + (T)inc) <= max){
-			var += (T)inc;
+		assert(min < max && cutil::num_in_interval(var, min, max) && inc > 0);
+		if((var + static_cast<T>(inc)) <= max){
+			var += static_cast<T>(inc);
 			return false;
 		}
-		var = (T)min;
+		var = static_cast<T>(min);
 		return true;
 	}
 	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)>
 	inline bool increase_rolling(T& var, R min, R max) noexcept {
-		_CUTIL_ASSERT(min < max && cutil::num_in_interval(var, min, max));
-		if(var < (T)max){
+		assert(min < max && cutil::num_in_interval(var, min, max));
+		if(var < static_cast<T>(max)){
 			var++;
 			return false;
 		}
-		var = (T)min;
+		var = static_cast<T>(min);
 		return true;
 	}
 	
@@ -880,9 +992,9 @@ inline namespace math { // inline
 	//  if rolled, returns true.
 	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)>
 	inline bool decrease_rolling(T& var, R min, R max, int dec) noexcept {
-		_CUTIL_ASSERT(min < max && cutil::num_in_interval(var, min, max) && dec > 0);
-		if((var - dec) >= min){
-			var -= dec;
+		assert(min < max && cutil::num_in_interval(var, min, max) && dec > 0);
+		if((var - static_cast<T>(dec)) >= min){
+			var -= static_cast<T>(dec);
 			return false;
 		}
 		var = max;
@@ -890,12 +1002,12 @@ inline namespace math { // inline
 	}
 	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)>
 	inline bool decrease_rolling(T& var, R min, R max) noexcept {
-		_CUTIL_ASSERT(min < max && cutil::num_in_interval(var, min, max));
-		if(var > min){
+		assert(min < max && cutil::num_in_interval(var, min, max));
+		if(var > static_cast<T>(min)){
 			var--;
 			return false;
 		}
-		var = max;
+		var = static_cast<T>(max);
 		return true;
 	}
 	
@@ -903,14 +1015,14 @@ inline namespace math { // inline
 	// if it is near to be overflowed, it will not increased any more and return true.
 	template<typename T, _CUTIL_CONCEPT_ARITHMETIC(T)>
 	inline bool increase_no_overflow(T& var, int inc = 1) noexcept {
-		_CUTIL_ASSERT(inc > 0);
+		assert(inc > 0);
 		return (static_cast<T>(var + inc) > var) ? (var += inc, false) : (true);
 	}
 	//* decrease the value of variable, and prevent underflowing,
 	// if it is near to be underflowed, it will not decreased any more and return true.
 	template<typename T, _CUTIL_CONCEPT_ARITHMETIC(T)>
 	inline bool decrease_no_underflow(T& var, int dec = 1) noexcept {
-		_CUTIL_ASSERT(dec > 0);
+		assert(dec > 0);
 		return (static_cast<T>(var - dec) < var) ? (var -= dec, false) : (true);
 	}
 /*
@@ -939,7 +1051,7 @@ inline namespace math { // inline
 	// #ifdef CUTIL_CPP23_SUPPORTED
 		// return std::abs(num);	// std::abs() is constexpr since C++23
 	// #else
-		return (num < 0) ? -num : num; // in C++11/14/17/20, std::abs() is not constexpr
+		return (num < 0) ? -num : num; // in C++14/17/20, std::abs() is not constexpr
 	// #endif
 	}
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
@@ -949,8 +1061,8 @@ inline namespace math { // inline
 	
 	
 	//* get gcd (greatest common divisor)
-	template<typename T, _CUTIL_CONCEPT_INTEGRAL(T)> _CUTIL_NODISCARD _CUTIL_CONSTEXPR_CPP14
-	inline T gcd(T a, T b) {
+	template<typename T, _CUTIL_CONCEPT_INTEGRAL(T)> _CUTIL_NODISCARD
+	inline constexpr T gcd(T a, T b) {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::gcd(a, b);
 	#else
@@ -961,8 +1073,8 @@ inline namespace math { // inline
 	}
 	
 	//* get lcm (least common multiple)
-	template<typename T, _CUTIL_CONCEPT_INTEGRAL(T)> _CUTIL_NODISCARD _CUTIL_CONSTEXPR_CPP14
-	inline T lcm(T a, T b) {
+	template<typename T, _CUTIL_CONCEPT_INTEGRAL(T)> _CUTIL_NODISCARD
+	inline constexpr T lcm(T a, T b) {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::lcm(a, b);
 	#else
@@ -974,8 +1086,8 @@ inline namespace math { // inline
 	//* Compares two floating-point numbers for equality within a specified epsilon.
 	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD
 	inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT(epsilon >= 0);
-		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(a) && std::isfinite(b) && std::isfinite(epsilon));
+		assert(epsilon >= 0);
+		// assert(std::isfinite(a) && std::isfinite(b) && std::isfinite(epsilon));
 		return (cutil::math::abs(a - b) <= epsilon); // overloaded abs() for floating number in <cstdlib>
 	}
 /*
@@ -988,16 +1100,16 @@ inline namespace math { // inline
 	// `cutil::fequal(cutil::numbers::pi_3, cutil::math::deg2rad(60.0)) == true`
 	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD
 	inline constexpr T deg2rad(T degree) noexcept {
-		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(degree));
-		return (degree * cutil::numbers::Numbers<T>::pi / (T)(180.0));
+		// assert(std::isfinite(degree));
+		return (degree * cutil::Numbers<T>::pi / static_cast<T>(180.0));
 	}
 	
 	//* convert radians to degrees, (radian * 180.0 / M_PI)
 	// `cutil::fequal(60.0, cutil::math::rad2deg(cutil::numbers::pi_3)) == true`
 	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD
 	inline constexpr T rad2deg(T radian) noexcept {
-		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(radian));
-		return (radian * (T)(180.0) / cutil::numbers::Numbers<T>::pi);
+		// assert(std::isfinite(radian));
+		return (radian * static_cast<T>(180.0) / cutil::Numbers<T>::pi);
 	}
 	
 	//* linear interpolation, (a + (b - a) * t)
@@ -1005,12 +1117,12 @@ inline namespace math { // inline
 	//  use std::lerp() since C++20
 	template<typename A, typename T, _CUTIL_CONCEPT_FLOAT(T), _CUTIL_CONCEPT_ARITHMETIC(A)> _CUTIL_NODISCARD
 	inline constexpr T lerp(A a, A b, T t) noexcept {
-		_CUTIL_CONSTEXPR_ASSERT((a <= b) && "The value of `a` should be less than or equal to `b`");
-		// _CUTIL_CONSTEXPR_ASSERT(std::isfinite(t));
+		assert((a <= b) && "The value of `a` should be less than or equal to `b`");
+		// assert(std::isfinite(t));
 	#ifdef CUTIL_CPP20_SUPPORTED
-		return std::lerp((T)a, (T)b, t);
+		return std::lerp(static_cast<T>(a), static_cast<T>(b), t);
 	#else
-		return ((T)a + t * ((T)b - (T)a));
+		return (static_cast<T>(a) + t * (static_cast<T>(b) - static_cast<T>(a)));
 	#endif
 	}
 	
@@ -1021,7 +1133,7 @@ inline namespace math { // inline
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::midpoint(a, b);
 	#else
-		return (a + b) / 2;
+		return (a + b) / static_cast<T>(2);
 	#endif
 	}
 	
@@ -1030,8 +1142,8 @@ inline namespace math { // inline
 	//  size_t ret = cutil::pow<int, size_t>(2, 3); // return as size_t
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
 	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD
-	inline _CUTIL_CONSTEXPR_CPP14 R pow(const T base, const size_t exp) {
-		_CUTIL_CONSTEXPR_ASSERT((exp >= 0) && "The exponent should be greater than or equal to 0");
+	inline constexpr R pow(const T base, const size_t exp) {
+		assert((exp >= 0) && "The exponent should be greater than or equal to 0");
 		if(exp == 0){
 			return static_cast<R>(1);
 		}
@@ -1055,8 +1167,8 @@ inline namespace math { // inline
 	//* int ret = cutil::factorial(3); // 3! = 6
 	//  size_t ret = cutil::factorial<int, size_t>(3); // return as size_t
 	template <typename T, typename R = T, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD
-	inline _CUTIL_CONSTEXPR_CPP14 R factorial(const T base) {
-		_CUTIL_CONSTEXPR_ASSERT(cutil::math::num_in_interval(base, 0, 40) && "`base` should be in [0, 40]");
+	inline constexpr R factorial(const T base) {
+		assert(cutil::math::num_in_interval(base, 0, 40) && "`base` should be in [0, 40]");
 		if (base <= 1) {
 			return static_cast<R>(1);
 		}else if(base == 2){
@@ -1130,7 +1242,7 @@ inline namespace math { // inline
 //======================= Type Conversions =========================
 inline namespace type {
 	//* cast bitwise, `(reinterpret_cast<volatile Out*>(&in))`
-	// is not constexpr in C++11/14/17, but constexpr in C++20
+	// is not constexpr in C++14/17, but constexpr in C++20
 	template<typename Out, typename In> _CUTIL_NODISCARD
 	inline constexpr Out bit_cast(In&& in) noexcept {
 		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
@@ -1144,8 +1256,8 @@ inline namespace type {
 	//* assign bitwise, `(memcpy(&out, &in, sizeof(T)))`
 	template<typename Out, typename In>
 	inline void bitwise_memcpy(Out& out, In&& in) {
-		// static_assert(std::is_trivially_copyable<Out>::value, "Out and In must be a trivially copyable type");
-		// static_assert(std::is_trivially_copyable<std::decay<In>::type>::value, "In must be a trivially copyable type");
+		// static_assert(std::is_trivially_copyable_v<Out>, "Out and In must be a trivially copyable type");
+		// static_assert(std::is_trivially_copyable_v<std::decay_t<In>>, "In must be a trivially copyable type");
 		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
 		memcpy(&out, &in, sizeof(Out));
 	}
@@ -1166,10 +1278,10 @@ inline namespace type {
 			, _CUTIL_CONCEPT_POINTER_DIFFERENT_TYPES(PDerived, PBase)
 			, _CUTIL_CONCEPT_POINTER_IS_BASE_OF(PBase, PDerived)
 			> _CUTIL_NODISCARD
-	inline _CUTIL_CONSTEXPR_CPP14 PDerived safe_cast(PBase in) {
+	inline constexpr PDerived safe_cast(PBase in) {
 	#ifdef CUTIL_DEBUG_BUILD
 		PDerived out = dynamic_cast<PDerived>(in);
-		_CUTIL_CONSTEXPR_ASSERT(out != nullptr && "dynamic cast failed");
+		assert(out != nullptr && "dynamic cast failed");
 		return out;
 	#else //release
 		return static_cast<PDerived>(in);
@@ -1217,13 +1329,13 @@ inline namespace memory {
 */
 
 	// (UB) get value from the memory address in the specific type
-	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> _CUTIL_NODISCARD _CUTIL_DEPRECATED _CUTIL_MAYBE_UNUSED
+	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> _CUTIL_NODISCARD [[deprecated]] _CUTIL_MAYBE_UNUSED
 	inline T& read_memory(P ptr) {
 		return *reinterpret_cast<T*>(ptr);
 	}
 	
 	// (UB) set memory at the specific location in the specific type
-	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> _CUTIL_DEPRECATED _CUTIL_MAYBE_UNUSED
+	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> [[deprecated]] _CUTIL_MAYBE_UNUSED
 	inline void write_memory(P ptr, T&& val) {
 		static_assert(sizeof(T) == sizeof(*ptr), "Size of T must be equal to the size of the memory at ptr");
 		*reinterpret_cast<T*>(ptr) = val;
@@ -1297,7 +1409,7 @@ inline namespace memory {
 
 //==================== C++ Class Utilities ========================
 
-//* set C++11 class constructor/moving/copying to disabled/default
+//* set class constructor/moving/copying to disabled/default
 // Default Constructor(no params) and Destructor
 #define CUTIL_CLASS_DEFAULT_CONSTRUCTOR(_CLASS_NAME) \
 	_CLASS_NAME() = default; \
@@ -1340,15 +1452,15 @@ inline namespace memory {
 
 
 
-//* generate getter and setter (>= C++11)
-// generate getter and setter with specific type (not recommended after C++11, and do not add `const` to the first parameter)
+//* generate getter and setter
+// generate getter and setter with specific type (not recommended, and do not add `const` to the first parameter)
 #define CUTIL_GETTER_TYPE(_type, _name, _getter) 	public: _type _getter() {return this->_name;}
 #define CUTIL_SETTER_TYPE(_type, _name, _setter) 	public: void _setter(const _type& _val)	{this->_name = _val;}
 #define CUTIL_MEMBER_TYPE(_type, _name, ...)		CUTIL_EXPAND(CUTIL_OVERLOAD_IDX(_CUTIL_MEMBER_TYPE_, CUTIL_VA_CNT(__VA_ARGS__))(_type, _name, __VA_ARGS__))
 #define _CUTIL_MEMBER_TYPE_2(_type, _name, _getter, _setter)	CUTIL_GETTER_TYPE(_type, _name, _getter) CUTIL_SETTER_TYPE(_type, _name, _setter)
 #define _CUTIL_MEMBER_TYPE_1(_type, _name, _func)				_CUTIL_MEMBER_TYPE_2(_type, _name, _func, _func)
 
-// generate getter and setter with type deducing (>=C++11, uses `std::decay<decltype(_name)>::type`)
+// generate getter and setter with type deducing (uses `std::decay_t<decltype(_name)>`)
 #define CUTIL_GETTER(_name, _getter) 		CUTIL_GETTER_TYPE(CUTIL_TYPEOF(_name), _name, _getter)
 #define CUTIL_SETTER(_name, _setter) 		CUTIL_SETTER_TYPE(CUTIL_TYPEOF(_name), _name, _setter)
 #define CUTIL_MEMBER(_name, ...) 			CUTIL_EXPAND(CUTIL_MEMBER_TYPE(CUTIL_TYPEOF(_name), _name, __VA_ARGS__))
