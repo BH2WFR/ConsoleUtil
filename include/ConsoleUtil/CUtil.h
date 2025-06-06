@@ -837,7 +837,7 @@
 	bool isEqual3 = CUTIL_EQUAL(c, d, 0.0001); // custom epsilon value
 	
 	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
-	bool isEqual5 = cutil::math::fequal(c, d, 0.0001); // equivelent
+	bool isEqual5 = cutil::math::fequal(c, d, 0.0001); // equivalent
 */
 
 
@@ -934,9 +934,9 @@
 
 	CUTIL_SWAP(a, b); // in C++(std::decay<decltype(var)>::type), GNU C(typeof), or C23(typeof)
 
-	CUTIL_SWAP_TYPE(uint32_t, a, b); 	// equivelent, specify the type.
-	CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivelent, in GNU C or C23
-	CUTIL_SWAP_TYPE(std::decay<decltype(var)>::type, a, b); // equivelent in C++, but prefer to use `std::swap()`
+	CUTIL_SWAP_TYPE(uint32_t, a, b); 	// equivalent, specify the type.
+	CUTIL_SWAP_TYPE(typeof(a), a, b); 	// equivalent, in GNU C or C23
+	CUTIL_SWAP_TYPE(std::decay<decltype(var)>::type, a, b); // equivalent in C++, but prefer to use `std::swap()`
 	
 	std::swap(a, b); // C++
 */
@@ -1076,7 +1076,7 @@
 	printf("%x, %x \n", CUTIL_GET_MEM_U32(&a), CUTIL_GET_MEM_U32(&b)); 	// get content as type `uint32_t` at the location `&a and `&b`, it prints the value of `a` and `b`
 	
 	printf("%p, %p \n", CUTIL_GET_PTR_U32(a), CUTIL_GET_PTR_U32(b));	// get address as type `uint32_t*` of the variable `a` and `b`
-	printf("%p\n", CUTIL_GET_PTR_TYPE(uint32_t, a));					// equivelent
+	printf("%p\n", CUTIL_GET_PTR_TYPE(uint32_t, a));					// equivalent
 	
 	CUTIL_SET_MEM_U32(&a, 0x66666666);				// set content of address `&b` as `0x66666666`, in the type of `uint32_t`
 	CUTIL_SET_MEM_TYPE(uint32_t, &b, 0x77777777);	// set content of address `&b` as `0x77777777`, in the type of `uint32_t`

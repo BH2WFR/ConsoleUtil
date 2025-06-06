@@ -5,8 +5,8 @@
 #include <optional>
 #endif
 
-#include <ConsoleUtil/External/StringUtil.h>
-#include <ConsoleUtil/CppUtil.h>
+#include "ConsoleUtil/External/StringUtil.h"
+#include "ConsoleUtil/CppUtil.h"
 
 TEST(Compare, compare_ignore_case)
 {
@@ -99,42 +99,42 @@ TEST(Compare, matches)
  * Parsing tests
  */
 
-TEST(Parsing, short_int_to_string)
+TEST(Parsing, short_To_string)
 {
     EXPECT_EQ("-255", cutil::str::to_string<short int>(-255));
 }
 
-TEST(Parsing, u_short_int_to_string)
+TEST(Parsing, u_short_To_string)
 {
     EXPECT_EQ("255", cutil::str::to_string<unsigned short int>(255));
 }
 
-TEST(Parsing, int_to_string)
+TEST(Parsing, To_string)
 {
     EXPECT_EQ("-255", cutil::str::to_string<int>(-255));
 }
 
-TEST(Parsing, u_int_to_string)
+TEST(Parsing, u_To_string)
 {
     EXPECT_EQ("255", cutil::str::to_string<unsigned int>(255));
 }
 
-TEST(Parsing, long_int_to_string)
+TEST(Parsing, long_To_string)
 {
     EXPECT_EQ("-255", cutil::str::to_string<long int>(-255));
 }
 
-TEST(Parsing, u_long_int_to_string)
+TEST(Parsing, u_long_To_string)
 {
     EXPECT_EQ("255", cutil::str::to_string<unsigned long int>(255));
 }
 
-TEST(Parsing, long_long_int_to_string)
+TEST(Parsing, long_long_To_string)
 {
     EXPECT_EQ("-255", cutil::str::to_string<long long int>(-255));
 }
 
-TEST(Parsing, u_long_long_int_to_string)
+TEST(Parsing, u_long_long_To_string)
 {
     EXPECT_EQ("255", cutil::str::to_string<unsigned long long int>(255));
 }

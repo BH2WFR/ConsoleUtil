@@ -10,7 +10,6 @@
 #ifndef CONSOLEUTIL_CONSOLE_UTIL_H__
 #define CONSOLEUTIL_CONSOLE_UTIL_H__
 #include <ConsoleUtil/Base.h>
-#include <ConsoleUtil/CUtil.h> // vital dependency
 
 
 //* ==== customize parameters:
@@ -400,7 +399,7 @@ _CUTIL_NAMESPACE_BEGIN
 	CUTIL_DEBUG_PRINTF("this is %d", 5); // expand to printf in debug build
 	
 	CUTIL_DEBUG_PRINTLN_ERR("err: cannot ...!"); // print to stderr
-	CUTIL_DEBUG_PRINTLN(stderr, "err: cannot ...!"); // equivelent
+	CUTIL_DEBUG_PRINTLN(stderr, "err: cannot ...!"); // equivalent
 	CUTIL_DEBUG_CERR("err: cannot ... !" << 2 << std::endl);
 */
 

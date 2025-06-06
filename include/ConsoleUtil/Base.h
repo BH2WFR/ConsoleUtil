@@ -446,7 +446,14 @@
 	#define _CUTIL_MAYBE_UNUSED
 #endif
 
-
+//* likely and unlikely
+#ifdef CUTIL_CPP20_SUPPORTED // C++20
+	#define _CUTIL_LIKELY		[[likely]]
+	#define _CUTIL_UNLIKELY		[[unlikely]]
+#else
+	#define _CUTIL_LIKELY
+	#define _CUTIL_UNLIKELY
+#endif // C++20
 
 //* `__FUNCTION__`(not standard, but supported by MSVC/GCC/Clang) or `__func__`(C99/C++11)
 #if defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER) \

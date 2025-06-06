@@ -1,10 +1,8 @@
 # ConsoleUtil
 
-A **HEADER FILE** project with macros that can change text color/style and move cursor in CONSOLE by ANSI Escape Codes, and some utility macros for CUDA and Qt.
+A **HEADER FILE** project with useful macros and template functions for C/C++.
 
 
-
-<img src="./assets/Example Effects.png" alt="image-20231205152753735" style="zoom: 50%;" />
 
 **Homepage**:  https://github.com/BH2WFR/ConsoleUtil
 
@@ -39,7 +37,7 @@ Reference of Ansi Escape Codes:
 - features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
     - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
-- C language version `≥ C99`, C++ language `≥ C++11`, with `##__VA_ARGS__` extension support.
+- C language version `≥ C99`, C++ language `≥ C++14`, with `##__VA_ARGS__` extension support.
 
     (**MSVC supports `##__VA_ARGS__` since VS2015 Update 3**. if your MSVC or VS version is older, pls delete "`##`", MSVC eats trailing comma before `__VA_ARGS__` by default without `/Zc::preprocessor` command)
 
@@ -51,12 +49,123 @@ Reference of Ansi Escape Codes:
 
 
 
+----------
+
+## <CppUtils.h> and <CUtils.h>
+
+### Comparing features
+
+**C++ templates:**
+
+**C macros:**
+
+
+
+### Bit Operations
+
+**C++ templates:**
+
+**C macros:** 
+
+
+
+
+
+### Math constants
+
+**C++:**
+
+**C:** 
+
+
+
+### Numeric, Math, Floating point Utils
+
+C++:
+
+C:
+
+
+
+### Memory Operations
+
+C++:
+
+C:
+
+
+
+### Others:
+
+1. iterator macros:
+
+2. contains:
+
+3. erase_vector:
+
+4. (UB, unsafe) bit_cast:
+
+
+
+---------
+
+### <Base.h>
+
+1. Get compiler type and version:
+2. Get CPU architecture, bit width, features and endian type:
+3. Get OS Type:
+4. Get C and C++ Language standard:
+5. Get if build mode is Debug or Release (`NDEBUG` should be defined):
+
+6. Overload C macros:
+
+
+
+--------
+
+## <External/ScopeGuard.h>
+
+refers to:   https://github.com/ricab/scope_guard
+
+
+
+
+
+
+
+--------
+
+## <External/Span.h>
+
+refers to: https://github.com/tcbrindle/span
+
+
+
+
+
+
+
+---------
+
+## <External/StringUtil.h>
+
+refers to: https://github.com/Shot511/strutil
+
+
+
+**additional functions added:**
+
+1. Sanitize Filename
+2. convert std::string to numbers
+
+
+
 
 
 
 ---
 
-### <ConsoleUtil.h>:
+## <ConsoleUtil.h>:
 ```c++
 #include <ConsoleUtil/ConsoleUtil.h> // already wrapped in <ConsoleUtil/ConsoleUtil.h>
 ```
