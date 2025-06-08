@@ -2,13 +2,15 @@
 
 A **HEADER FILE** project with useful macros and template functions for C/C++.
 
+**一个只有头文件的，有许多实用宏和函数的 C++ 轮子库**
+
 
 
 **Homepage**:  https://github.com/BH2WFR/ConsoleUtil
 
 **author**: 	BH2WFR
 
-**LICENSE**: 	**MIT** License
+**LICENSE**: 	**MIT** License (except extern codes)
 
 Reference of Ansi Escape Codes:
 
@@ -20,32 +22,29 @@ Reference of Ansi Escape Codes:
 
 ### Included Following External Header-Only Libraries & credits to:
 
-| name        | author         | link                                     | path                      | license    |
-| :---------- | :------------- | :--------------------------------------- | ------------------------- | :--------- |
-| scope_guard | ricab          | https://github.com/ricab/scope_guard     | `External/ScopeGuard.h`   | Unlicense  |
-| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | `External/Xorstr.h`       | Apache 2.0 |
-| yamc        | yohhoy         | https://github.com/yohhoy/yamc           | `include/LegacyUtil/yamc` | MIT        |
-| span        | tcbrindle      | https://github.com/tcbrindle/span        | `External/Span.h`         | BSL 1.0    |
-| strutil     | Shot511        | https://github.com/Shot511/strutil       | `External/StrUtil.h`      | MIT        |
-
+| name        | author         | link                                     | path                    | license    |
+| :---------- | :------------- | :--------------------------------------- | ----------------------- | :--------- |
+| scope_guard | ricab          | https://github.com/ricab/scope_guard     | `External/ScopeGuard.h` | Unlicense  |
+| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | `External/Xorstr.h`     | Apache 2.0 |
+| span        | tcbrindle      | https://github.com/tcbrindle/span        | `External/Span.h`       | BSL 1.0    |
+| strutil     | Shot511        | https://github.com/Shot511/strutil       | `External/StrUtil.h`    | MIT        |
+| yamc        | yohhoy         | https://github.com/yohhoy/yamc           | `include/LegacyUtil/yamc` | MIT
 
 
 ----------
 
 ### WARNING:
 
-- features using Ansi Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
+- features using ANSI Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
     - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
 - C language version `≥ C99`, C++ language `≥ C++14`, with `##__VA_ARGS__` extension support.
 
     (**MSVC supports `##__VA_ARGS__` since VS2015 Update 3**. if your MSVC or VS version is older, pls delete "`##`", MSVC eats trailing comma before `__VA_ARGS__` by default without `/Zc::preprocessor` command)
 
-- Pls #include the header file <`ConsoleUtil/ConsoleUtil.h`> after other header files, especially those from libraries such as Qt/fmtlib. DO NOT #include <`ConsoleUtil/ConsoleUtil.h`> in header files.
+- Pls #include this header **after other header files,** especially those from libraries such as Qt/fmtlib, or OS API headers like `<windows.h>/<unistd.h>`. DO NOT #include <`ConsoleUtil/ConsoleUtil.h`> in header files.
 
-- You can include <`ConsoleUtil/CppUtil.h`> in header files.  No need to include <`ConsoleUtil/CppUtil.h`> in source files if you already included <`ConsoleUtil/ConsoleUtil.h`>, because it has been included in <`ConsoleUtil/ConsoleUtil.h`>.
-
-- DO NOT use macros with name starting with underscore `_` externally, such as `_CUTIL_EXPAND_MSVC()`.
+- `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` **BEFORE** include of this header may turn off all the features with ANSI Escape Code.
 
 
 
@@ -65,7 +64,7 @@ Reference of Ansi Escape Codes:
 
 **C++ templates:**
 
-**C macros:** 
+**C macros:**
 
 
 
@@ -75,7 +74,7 @@ Reference of Ansi Escape Codes:
 
 **C++:**
 
-**C:** 
+**C:**
 
 
 
@@ -207,6 +206,7 @@ refers to: https://github.com/Shot511/strutil
     printf(CForward(2)); // move thr cursor 2 characters right, equals to `CRight(2)` or `CFwd(2)`.
     printf(CCursorPos(15, 20)); // move the text cursor to (15, 20) position
     CUTIL_CONSOLE_CURSOR_POS(15, 20); // equivalent, calls SetConsoleCursorPosition() in win32.
+    
     ```
 
     
@@ -290,68 +290,92 @@ refers to: https://github.com/Shot511/strutil
     ```c++
     int main(int argc, char* argv[]){
     CUTIL_PRINT_ARGV(argc, argv);// print all argc and argv[n] of main() function
-		return 0;
+    	return 0;
     }
     ```
-    
+
     <img src="./assets/image-20240224195512767.png" alt="image-20240224195512767" style="zoom:67%;" />
+
     
-    
-    
+
 7. **Print custom Error Message** with filename, line number and function name
 
     打印错误信息，并输出当前文件名、行号、函数名
 
     
 
-    
+8. **EXAMPLES for C**:
 
+    ```c
+    #include <locale.h>
+    #include <stdio.h>
+    #include <windows.h>		// include other headers first
+    #include <fmt/core.h>		// include other headers first
+    	
+    #include <ConsoleUtil/ConsoleUtil.h> 	// include this header at last
+    	
+    int main(int argc, char* argv[]){
+    	CUTIL_CHCP_ENCODING_UTF8(); 		// switch console encoding to UTF-8 (windows)
+    	CUTIL_LOCALE_UTF8_PRINT();			// set locale to UTF-8, and print the current locale
+    	CUTIL_ENABLE_VIRTUAL_TERMINAL(); 	// enable virtual terminal processing in Windows console, so that ANSI escape codes can be used.
+    	CUTIL_CONSOLE_TITLE(_TEXT("MyProject")); 	// set console window title
+    	CUTIL_CONSOLE_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
+    	CUTIL_CONSOLE_CLEAR();				// clear console (system("cls"))
+    	
+    	CUTIL_PRINT_ARGV(argc, argv);		// print all argc and argv[n] of main() function
+    	
+    	printf(FLGreen "Hello World!\n" CRst);   	// print "Hello World" with light yellow console color formatting
+    													you should put "CRst" at the end of string to RESET console font color to DEFAULT
+    	printf(CStyle(FLGreen, "Hello World!\n")); 	// Equivalent
+    	
+    	fprintf(stderr, FLRed "ERROR\n" CRst);  	// print "ERROR" with font color light red, "CRst" is also needed to revert font color to default
+    	fprintf(stderr, CStyle(FLRed, "ERROR\n"));	// Equivalent
+    	
+    	printf(BRed FGreen CQFlash "test\n" CRst);  // Print text with green font and red background, and quickly flashing
+    	printf(CStyle(BRed FGreen CQFlash, "test\n"));// Equivalent
+    	
+    	printf(CForward(2)); 					// move thr cursor 2 characters right, equals to `CRight(2)` or `CFwd(2)`.
+    	
+    	CUTIL_ERROR_MESSAGE("error occured!"); 	// print an error message with filename, function name and line number ATTACHED.
+    	
+    	CUTIL_CONSOLE_PAUSE(); 			 		// system("pause");
+    	return 0;
+    }
+    ```
 
----
+9. **EXAMPLES for C++**:
 
-### Example 使用样例:
+   ```c++
+   #include <clocale>
+   #include <iostream>
+   #include <fmt/core.h> // optional
+   #include <windows.h>  // windows only
+   #include <ConsoleUtil/ConsoleUtil.h> 	// include this header at last
+   	
+   int main(int argc, char* argv[]){
+   	cutil::console::set_locale_utf8(); 			// set locale to UTF-8
+   	cutil::console::set_chcp_encoding(cutil::console::Encodings::UTF8); // set console encoding to UTF-8, you can also use `set_chcp_encoding_utf8()`
+   	cutil::console::enable_virtual_terminal();	// enable virtual terminal processing in Windows console, so that ANSI escape codes can be used.
+   	cutil::console::set_title("MyProject"); 	// set console window title
+   	cutil::console::set_size(100, 30); 			// set console window size to with of 30 chars and height of 30 lines.
+   	cutil::console::clear(); 					// clear console (system("cls"))
+   	
+   	cutil::console::print_argv(argc, argv); 	// print all argc and argv[n] of main() function
+   	
+   	fmt::println(FLGreen "Hello World!" CRst); 	// print "Hello World" with light green console color formatting
+   	fmt::println(stderr, FLRed "ERROR" CRst); 	// print "ERROR" with font color light red
+   	
+   	fmt::println(BRed FGreen CQFlash "test" CRst); // Print text with green font and red background, and quickly flashing
+   	
+   	cutil::console::pause(); 					// system("pause");
+   	return 0;
+   }
+   ```
 
-```cpp
-#include <print.h>			// C++23
-#include <windows.h>		// include other headers first
-#include <fmt/core.h>		// include other headers first
-	
-#include <ConsoleUtil/ConsoleUtil.h> 	// include this header at last
-	
-int main(int argc, char* argv[]){
-	CUTIL_CHCP_ENCODING_UTF8(); 	// switch console encoding to UTF-8 (windows)
-	CUTIL_CONSOLE_TITLE("MyProject"); // set console window title
-	CUTIL_CONSOLE_SIZE(100, 30);		// set console window size to with of 30 chars and height of 30 lines.
-	CUTIL_CONSOLE_CLEAR();			// clear console (system("cls"))
-	
-	CUTIL_PRINT_ARGV(argc, argv);	// print all argc and argv[n] of main() function
-	
-	printf(FLGreen "Hello World!\n" CReset);   // print "Hello World" with light yellow console color formatting
-													you should put "CReset" at the end of string to RESET console font color to DEFAULT
-	printf(CStyle(FLGreen, "Hello World!\n")); // Equivalent
-	
-	std::cout << FLRed "ERROR\n" CReset;  // print "ERROR" with font color light red, "CReset" is also needed to revert font color to default
-	std::cout << CStyle(FLRed, "ERROR\n");// Equivalent
-	
-	printf(BRed FGreen CQFlash "test\n" CReset);  // Print text with green font and red background, and quickly flashing
-	printf(CStyle(BRed FGreen CQFlash, "test\n"));// Equivalent
-	
-	
-	printf(CForward(2)); // move thr cursor 2 characters right
-	
-	
-	CUTIL_ERROR_MESSAGE("error occurred!"); // print an error message with filename, function name and line number ATTACHED.
-	
-	CUTIL_CONSOLE_PAUSE(); 			 // system("pause");
-	
-	return 0;
-}
-```
+   
 
+10. **Console Effects 控制台效果** :
 
-
-**Console Effects 控制台效果** :
-
-![image-20231205152753735](./assets/Example Effects.png)
+<img src="./assets/Example Effects.png" alt="image-20231205152753735" style="zoom:67%;" />
 
 <img src="./assets/Color Effect.png" alt="image-20240218101655956" style="zoom:67%;" />

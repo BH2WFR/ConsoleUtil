@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		2 JAN 2025
+Updated:		8 JUN 2025
   License:		MIT License
 * You can include this header in header files.
 */
@@ -410,18 +410,20 @@
 #ifndef CUTIL_PARAM_USE_SHORTEN_NAMESPACE
 	#define CUTIL_PARAM_USE_SHORTEN_NAMESPACE 1	//* use shorter namespace `cu::` instead of `cutil::`
 #endif // CUTIL_PARAM_USE_SHORTEN_NAMESPACE
-#ifdef __cplusplus
-	#if (CUTIL_PARAM_USE_SHORTEN_NAMESPACE)
-		#define _CUTIL_REDIFINE_SHORTER_NAMESPACE	namespace cu = cutil;
-	#else
-		#define _CUTIL_REDIFINE_SHORTER_NAMESPACE
-	#endif
-	#define _CUTIL_NAMESPACE_BEGIN					namespace cutil {
-	#define _CUTIL_NAMESPACE_END					} _CUTIL_REDIFINE_SHORTER_NAMESPACE
+#ifdef __cplusplus // C++
+	#define _CUTIL_NAMESPACE						cutil
+	#define _CUTIL_NAMESPACE_SHORT					cu
+	#define _CUTIL_NAMESPACE_BEGIN					namespace _CUTIL_NAMESPACE {
+	#define _CUTIL_NAMESPACE_END					}
 	#define _CUTIL_NAMESPACE_BEGIN_NAME(_NAME)		namespace _NAME {
 	#define _CUTIL_NAMESPACE_END_NAME(_NAME)		}
+	#if CUTIL_PARAM_USE_SHORTEN_NAMESPACE == 1
+		_CUTIL_NAMESPACE_BEGIN
+		_CUTIL_NAMESPACE_END
+		namespace _CUTIL_NAMESPACE_SHORT = _CUTIL_NAMESPACE;
+	#endif // CUTIL_PARAM_USE_SHORTEN_NAMESPACE
 #else  // C
-	#define _CUTIL_REDIFINE_SHORTER_NAMESPACE
+	#define _CUTIL_NAMESPACE_ALIAS
 	#define _CUTIL_NAMESPACE_BEGIN
 	#define _CUTIL_NAMESPACE_END
 	#define _CUTIL_NAMESPACE_BEGIN_NAME(_NAME)
@@ -458,9 +460,9 @@
 //* `__FUNCTION__`(not standard, but supported by MSVC/GCC/Clang) or `__func__`(C99/C++11)
 #if defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER) \
 || defined(__CUDA_ARCH__) || defined(__CC_ARM)
-	#define CUTIL_FUNC_NAME		__FUNCTION__
+	#define _CUTIL_FUNC_NAME		__FUNCTION__
 #else
-	#define CUTIL_FUNC_NAME		__func__
+	#define _CUTIL_FUNC_NAME		__func__
 #endif
 
 
@@ -487,6 +489,13 @@
 	#endif
 #endif
 
+//* check if headers are included
+#if defined(__cplusplus) && defined(FMT_VERSION)
+	#define CUTIL_FMT_INCLUDED 1
+#endif
+#if (CUTIL_OS_WINDOWS == 1) && (defined(_WINDOWS_) || defined(WINAPI))
+	#define CUTIL_WINAPI_INCLUDED 1
+#endif
 
 
 //===================== Basic Macros =========================

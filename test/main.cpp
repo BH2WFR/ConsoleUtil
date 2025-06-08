@@ -1,8 +1,5 @@
 #include <iostream>
 
-#include "ConsoleUtil/All.h"
-
-#include <gtest/gtest.h>
 
 #include <vector>
 #include <map>
@@ -18,24 +15,39 @@
 #include <algorithm>
 #include <execution>
 
-#ifdef CUTIL_OS_WINDOWS
+
+#if defined(_WIN32) || defined(_WIN64)
 	#include <windows.h>
 #endif
 
+// #define CUTIL_ANSI_ESCAPE_UNSUPPORTED	1
+#include "ConsoleUtil/All.h"
+
+#include <gtest/gtest.h>
+
+
 int main(int argc, char* argv[])
 {
-	CUTIL_CHCP_ENCODING_UTF8();
-	CUTIL_CONSOLE_TITLE("ConsoleUtil Test");
-	CUTIL_CONSOLE_SIZE(100, 30);
-	CUTIL_CONSOLE_CLEAR();
+	cutil::console::set_locale_utf8();
+	cutil::console::set_chcp_encoding(cutil::console::Encodings::UTF8);
+	cutil::console::enable_virtual_terminal();
+	cutil::console::set_title("ConsoleUtil Test");
+	// cutil::console::set_size(70, 50);
+	// cutil::console::flush_input_buffer();
+	cutil::console::clear();
+	cutil::console::print_argv(argc, argv);
+	// cutil::console::set_cursor_pos(0, 0);
+	cutil::console::move_cursor_next_line(3);
+	printf(FLGreen "Hello" FLMagenta " World!" CRst "  -> UTF-8 Test: 中文 한글 🤣\n");
+	// std::getchar();
 	
-	CUTIL_PRINT_ARGV(argc, argv);
-	constexpr auto zzz = -10 % 8;
 	
-	printf(FLGreen "Hello World!\n" CReset);
-	std::cout << FLRed "ERROR\n" CReset;
+	// std::cout << FLRed "ERROR\n" CReset;
 	
-	std::atexit([]{printf("cpp lang=%d\n", CUTIL_CPP_LANG);});
+	std::atexit([]{
+		printf(FLYellow "EXIT! cpp lang=%d\n" CRst, CUTIL_CPP_LANG);
+		// cutil::console::pause();
+	});
 	testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
 }
@@ -86,6 +98,19 @@ TEST(Basic, macros)
 	}
 	EXPECT_EQ(vec, (std::vector<int>{2, 3, 4}));
 	vec.clear();
+	
+	int num {4};
+	switch(num){
+		CUTIL_CASE(1):
+			EXPECT_EQ(1, 2);
+			break;
+		CUTIL_CASE(2, 3, 4):
+			EXPECT_EQ(1, 1);
+			break;
+		CUTIL_CASE(5, 6, 7, 8, 9, 10):
+			EXPECT_EQ(1, 2);
+			break;
+	}
 }
 
 TEST(Compare, equal_any)

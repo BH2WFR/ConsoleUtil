@@ -24,7 +24,7 @@ _CUTIL_NAMESPACE_BEGIN_NAME(cuda)
 			FRed "    file: " FCyan  __FILE__ "\n" 			\
 			FRed "    func: " FCyan "%s\n" 					\
 			FRed "    line: " FCyan "%d\n" 					\
-			CRst "\n" , (_CUDA_ERROR), CUTIL_FUNC_NAME, __LINE__ 	\
+			CRst "\n" , (_CUDA_ERROR), _CUTIL_FUNC_NAME, __LINE__ 	\
 	)
 
 #define CUTIL_CUDA_WARNING_MESSAGE(_CUDA_ERROR, _REASON) 	\
@@ -32,7 +32,7 @@ _CUTIL_NAMESPACE_BEGIN_NAME(cuda)
 			FYellow "    file: " FCyan  __FILE__ "\n" 		\
 			FYellow "    func: " FCyan "%s\n" 				\
 			FYellow "    line: " FCyan "%d\n" 				\
-			CRst "\n" , (_CUDA_ERROR), CUTIL_FUNC_NAME, __LINE__ 	\
+			CRst "\n" , (_CUDA_ERROR), _CUTIL_FUNC_NAME, __LINE__ 	\
 	)
 
 

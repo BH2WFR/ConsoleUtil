@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		2 JAN 2025
+Updated:		8 JUN 2025
   License:		MIT License
 * You can include this header in header files.
 */
@@ -134,7 +134,7 @@
 #define _CUTIL_UNEQUAL_ALL_24(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_23(_var, __VA_ARGS__))
 #define _CUTIL_UNEQUAL_ALL_25(_var, _1, ...)  CUTIL_EXPAND((_var) != (_1) && _CUTIL_UNEQUAL_ALL_24(_var, __VA_ARGS__)) // recurse upwards
 
-//* generate codes for checkingif all of the params are mutually equal, up to 25 params
+//* generate codes for checking if all of the params are mutually equal, up to 25 params
 #define CUTIL_EQUAL_MUTUALLY(...)			CUTIL_EXPAND(CUTIL_EQUAL_ALL(__VA_ARGS__))
 
 //* generate codes for checking if all of the params are mutually nonequal, up to 25 params
@@ -552,6 +552,44 @@
 */
 
 
+//* generate case labels for switch statement up to 25 loops
+#define CUTIL_CASE(...)			CUTIL_EXPAND(CUTIL_OVERLOAD_AMOUNT(_CUTIL_CASE_, __VA_ARGS__)(__VA_ARGS__))
+	// The following macro definitions are private, DO NOT call them EXTERNALLY.
+#define _CUTIL_CASE_1(_1st)				case (_1st)
+#define _CUTIL_CASE_2(_1st, _2nd)		case (_1st): case (_2nd)
+#define _CUTIL_CASE_3(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_2(__VA_ARGS__))
+#define _CUTIL_CASE_4(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_3(__VA_ARGS__))
+#define _CUTIL_CASE_5(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_4(__VA_ARGS__))
+#define _CUTIL_CASE_6(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_5(__VA_ARGS__))
+#define _CUTIL_CASE_7(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_6(__VA_ARGS__))
+#define _CUTIL_CASE_8(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_7(__VA_ARGS__))
+#define _CUTIL_CASE_9(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_8(__VA_ARGS__))
+#define _CUTIL_CASE_10(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_9(__VA_ARGS__))
+#define _CUTIL_CASE_11(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_10(__VA_ARGS__))
+#define _CUTIL_CASE_12(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_11(__VA_ARGS__))
+#define _CUTIL_CASE_13(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_12(__VA_ARGS__))
+#define _CUTIL_CASE_14(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_13(__VA_ARGS__))
+#define _CUTIL_CASE_15(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_14(__VA_ARGS__))
+#define _CUTIL_CASE_16(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_15(__VA_ARGS__))
+#define _CUTIL_CASE_17(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_16(__VA_ARGS__))
+#define _CUTIL_CASE_18(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_17(__VA_ARGS__))
+#define _CUTIL_CASE_19(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_18(__VA_ARGS__))
+#define _CUTIL_CASE_20(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_19(__VA_ARGS__))
+#define _CUTIL_CASE_21(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_20(__VA_ARGS__))
+#define _CUTIL_CASE_22(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_21(__VA_ARGS__))
+#define _CUTIL_CASE_23(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_22(__VA_ARGS__))
+#define _CUTIL_CASE_24(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_23(__VA_ARGS__))
+#define _CUTIL_CASE_25(_1st, ...)		case (_1st): CUTIL_EXPAND(_CUTIL_CASE_24(__VA_ARGS__)) // recurse upwards
+/* Instruction:
+	switch(x){
+		CUTIL_CASE(1, 2, 3, 4, 5): // case 1: case 2: case 3: case 4: case 5:
+			break;
+		CUTIL_CASE(10, 20, 30):    // case 10: case 20: case 30:
+			break;
+	}
+*/
+
+
 
 
 
@@ -592,7 +630,7 @@
 /*
 	uint16_t num {0};
 	
-	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
+	// operate bit by index, starts at 0. use them in a separate line, and returns nothing
 	num = CUTIL_BIT_SET_IDX(num, 0);    // equals to {num = num |  (1u << 0));}
 	num = CUTIL_BIT_CLEAR_IDX(num, 2);  // equals to {num = num & ~(1u << 2));}
 	num = CUTIL_BIT_FLIP_IDX(num, 3);   // equals to {num = num ^  (1u << 3));}
@@ -614,7 +652,7 @@
 		printf("%x\n", num);
 	}
 
-	// rotate bits. use them in a seperate line, and returns nothing
+	// rotate bits. use them in a separate line, and returns nothing
 	uint16_t var{0x1234};           // 0b0001'0010'0011'0100
 	var = CUTIL_BIT_ROTATE_LEFT(var, 1);  -> 0b0010'0100'0110'1000
 	var = CUTIL_BIT_ROTATE_RIGHT(var, 1); -> 0b0001'0010'0011'0100

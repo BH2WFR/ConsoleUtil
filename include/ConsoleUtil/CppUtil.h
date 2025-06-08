@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		7 JUN 2025
+  Updated:		8 JUN 2025
   License:		MIT License
 * You can include this header in header files.
 * C++14 or later is required.
@@ -236,7 +236,7 @@ inline constexpr bool equal_all(T&& compared, U&& a1, E&&... a) noexcept {
 }
 
 //* bool statement: `(compared != arg1 || compared != arg2 || compared != arg3 || ...)`
-//  if 1st param `compared` is NOT equal to Any of the following arguments, return `true`
+//  if 1st param `compared` is NOT equal to ANY of the following arguments, return `true`
 template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
 inline constexpr bool unequal_any(T&& compared, U&& a1, E&&... a) noexcept {
 	return ((std::forward<T>(compared) != std::forward<U>(a1))
@@ -251,7 +251,7 @@ inline constexpr bool unequal_all(T&& compared, U&& a1, E&&... a) noexcept {
 			&& cutil::compare::unequal_all(std::forward<T>(compared), std::forward<E>(a)...));
 }
 
-//* check if all of the variables are mutually nonequal, not recommanded for large amount of arguments
+//* check if all of the variables are mutually nonequal, not recommended for large amount of arguments
 // if you want to compare more arguments, pls use `std::set` or `std::unordered_set` (hashset)
 template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
 inline constexpr bool unequal_mutually(T&& a1, U&& a2, E&&... a) noexcept {
@@ -626,7 +626,7 @@ inline namespace bit { // inline
 	}
 /*
 	uint16_t num {0};
-	// operate bit by index, starts at 0. use them in a seperate line, and returns nothing
+	// operate bit by index, starts at 0. use them in a separate line, and returns nothing
 	num = cutil::bit::set_bit_by_idx(num, 1);   // equals to {num = num |  (1u << 0));}
 	num = cutil::bit::clear_bit_by_idx(num, 2); // equals to {num = num & ~(1u << 2));}
 	num = cutil::bit::flip_bit_by_idx(num, 3);  // equals to {num = num ^  (1u << 3));}
@@ -651,7 +651,7 @@ inline namespace bit { // inline
 		printf("%x\n", num);
 	}
 	
-	// rotate bits. use them in a seperate line, and returns nothing
+	// rotate bits. use them in a separate line, and returns nothing
 	uint16_t var {0b0001'0010'0011'0100};
 	var = cutil::bit::rotate_bit_left(var, 1);	-> 0b0010'0100'0110'1000
 	var = cutil::bit::rotate_bit_right(var, 1);	-> 0b0001'0010'0011'0100
@@ -663,7 +663,7 @@ inline namespace bit { // inline
 	var2 = cutil::bit::insert_bit_left(var2, true);	  -> 0b1000'1001'0001'1010
 	var2 = cutil::bit::insert_bit_right(var2, false); -> 0b0001'0010'0011'0100
 	
-	// get msb and lsb (liftmost and rightmost bit)
+	// get msb and lsb (leftmost and rightmost bit)
 	var = cutil::bit::get_msb(0xFFFF); // get msb -> 0x8000
 	var = cutil::bit::get_lsb(0xFFFF); // get lsb -> 0x0001
 	
@@ -806,7 +806,7 @@ inline namespace numbers { // inline
 	constexpr float egamma_f 		= cutil::Numbers<float>::egamma;
 	
 	constexpr float inf_f 			= cutil::Numbers<float>::inf;
-	constexpr float neg_inf_f 	= cutil::Numbers<float>::neg_inf;
+	constexpr float neg_inf_f 		= cutil::Numbers<float>::neg_inf;
 	constexpr float nan_f 			= cutil::Numbers<float>::nan;
 	
 	//* long double versions
