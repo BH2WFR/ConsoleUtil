@@ -457,6 +457,19 @@ Updated:		8 JUN 2025
 	#define _CUTIL_UNLIKELY
 #endif // C++20
 
+//* `static` inline function
+// #define CUTIL_FORCE_FUNCTION_STATIC 1
+#ifdef __cplusplus // C++
+	#if (CUTIL_FORCE_FUNCTION_STATIC == 1)
+		#define _CUTIL_FUNC_STATIC static
+	#else
+		#define _CUTIL_FUNC_STATIC
+	#endif
+#else // C
+	#define _CUTIL_FUNC_STATIC	static
+#endif // __cplusplus
+
+
 //* `__FUNCTION__`(not standard, but supported by MSVC/GCC/Clang) or `__func__`(C99/C++11)
 #if defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__) || defined(__INTEL_COMPILER) \
 || defined(__CUDA_ARCH__) || defined(__CC_ARM)

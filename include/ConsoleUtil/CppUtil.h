@@ -221,7 +221,7 @@ template<typename T> inline constexpr bool decreasing_equal(T&& a1) noexcept {
 
 //* bool statement: `(compared == arg1 || compared == arg2 || compared == arg3 || ...)`
 //  if 1st param `compared` is equal to ANY of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool equal_any(T&& compared, U&& a1, E&&... a) noexcept {
 	return (std::forward<T>(compared) == std::forward<U>(a1))
 			|| cutil::compare::equal_any(std::forward<T>(compared), std::forward<E>(a)...);
@@ -229,7 +229,7 @@ inline constexpr bool equal_any(T&& compared, U&& a1, E&&... a) noexcept {
 
 //* bool statement: `(compared == arg1 && compared == arg2 && compared == arg3 && ...)`
 //  if 1st param `compared` is equal to ALL of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool equal_all(T&& compared, U&& a1, E&&... a) noexcept {
 	return ((std::forward<T>(compared) == std::forward<U>(a1))
 			&& cutil::compare::equal_all(std::forward<T>(compared), std::forward<E>(a)...));
@@ -237,7 +237,7 @@ inline constexpr bool equal_all(T&& compared, U&& a1, E&&... a) noexcept {
 
 //* bool statement: `(compared != arg1 || compared != arg2 || compared != arg3 || ...)`
 //  if 1st param `compared` is NOT equal to ANY of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool unequal_any(T&& compared, U&& a1, E&&... a) noexcept {
 	return ((std::forward<T>(compared) != std::forward<U>(a1))
 			|| cutil::compare::unequal_any(std::forward<T>(compared), std::forward<E>(a)...));
@@ -245,7 +245,7 @@ inline constexpr bool unequal_any(T&& compared, U&& a1, E&&... a) noexcept {
 
 //* bool statement: `(compared != arg1 && compared != arg2 && compared != arg3 && ...)`
 //  if 1st param `compared` is NOT equal to ALL of the following arguments, return `true`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool unequal_all(T&& compared, U&& a1, E&&... a) noexcept {
 	return ((std::forward<T>(compared) != std::forward<U>(a1))
 			&& cutil::compare::unequal_all(std::forward<T>(compared), std::forward<E>(a)...));
@@ -253,42 +253,42 @@ inline constexpr bool unequal_all(T&& compared, U&& a1, E&&... a) noexcept {
 
 //* check if all of the variables are mutually nonequal, not recommended for large amount of arguments
 // if you want to compare more arguments, pls use `std::set` or `std::unordered_set` (hashset)
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, !=)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool unequal_mutually(T&& a1, U&& a2, E&&... a) noexcept {
 	return (cutil::unequal_all(std::forward<T>(a1), std::forward<U>(a2), std::forward<E>(a)...)
 			&& cutil::compare::unequal_mutually(std::forward<T>(a2), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually equal `(a1 == a2 && a2 == a3 && ...)`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, ==)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool equal_mutually(T&& a1, U&& a2, E&&... a) noexcept {
 	return ((std::forward<T>(a1) == std::forward<U>(a2))
 			&& cutil::compare::equal_mutually(std::forward<T>(a2), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually increasing, `(a1 < a2 && a2 < a3 && ...)`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, <)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, <)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool increasing(T&& a1, U&& a2, E&&... a) noexcept {
 	return ((std::forward<T>(a1) < std::forward<U>(a2))
 			&& cutil::compare::increasing(std::forward<T>(a2), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually increasing or equal, `(a1 <= a2 && a2 <= a3 && ...)`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, <=)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, <=)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool increasing_equal(T&& a1, U&& a2, E&&... a) noexcept {
 	return ((std::forward<T>(a1) <= std::forward<U>(a2))
 			&& cutil::compare::increasing_equal(std::forward<T>(a2), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually decreasing, `(a1 > a2 && a2 > a3 && ...)`
-template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, >)> _CUTIL_NODISCARD
+template<typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, >)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool decreasing(T&& a1, U&& a2, E&&... a) noexcept {
 	return ((std::forward<T>(a1) > std::forward<U>(a2))
 			&& cutil::compare::decreasing(std::forward<T>(a2), std::forward<E>(a)...));
 }
 
 //* check if all of the variables are mutually decreasing or equal, `(a1 >= a2 && a2 >= a3 && ...)`
-template <typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, >=)> _CUTIL_NODISCARD
+template <typename T, typename U, typename... E, _CUTIL_CONCEPT_COMPARABLE(T, U, >=)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline constexpr bool decreasing_equal(T&& a1, U&& a2, E&&... a) noexcept {
 	return ((std::forward<T>(a1) >= std::forward<U>(a2))
 			&& cutil::compare::decreasing_equal(std::forward<T>(a2), std::forward<E>(a)...));
@@ -357,7 +357,7 @@ inline namespace range {
 
 //* get if specified value is contained in the container, uses std::find() to compare as .end() iterator
 //  unavailable for std::queue, std::priority_queue, std::deque
-template<typename T, typename V, _CUTIL_CONCEPT_HAS_ITERATOR(T)> _CUTIL_NODISCARD
+template<typename T, typename V, _CUTIL_CONCEPT_HAS_ITERATOR(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline bool contains(const T& container, const V& value)
 { // value in std::find is const T&, no need to use std::forward<>()
 	return (std::find(container.begin(), container.end(), value) != container.end());
@@ -365,7 +365,7 @@ inline bool contains(const T& container, const V& value)
 
 //* get if specified value by predicate is contained in the container
 template<typename T, typename Pred, typename V = typename T::value_type, _CUTIL_CONCEPT_HAS_ITERATOR(T)
-	, _CUTIL_CONCEPT_INVOKABLE_RET(Pred, bool, std::declval<V>())> _CUTIL_NODISCARD
+	, _CUTIL_CONCEPT_INVOKABLE_RET(Pred, bool, std::declval<V>())> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline bool contains_if(const T& container, Pred pred) {
 	return (std::find_if(container.begin(), container.end(), pred) != container.end());
 }
@@ -384,7 +384,7 @@ inline bool contains_if(const T& container, Pred pred) {
 
 // C++17 executionPolicy version
 template<typename ExecutionPolicy, typename T, typename Pred, typename V = typename T::value_type, _CUTIL_CONCEPT_HAS_ITERATOR(T)
-	, _CUTIL_CONCEPT_INVOKABLE_RET(Pred, bool, std::declval<V>())> _CUTIL_NODISCARD
+	, _CUTIL_CONCEPT_INVOKABLE_RET(Pred, bool, std::declval<V>())> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline bool contains_if(ExecutionPolicy&& policy, const T& container, Pred pred) {
 #ifdef CUTIL_CPP17_SUPPORTED
 	return (std::find_if(std::forward<ExecutionPolicy>(policy), container.begin(), container.end(), pred) != container.end());
@@ -393,7 +393,7 @@ inline bool contains_if(ExecutionPolicy&& policy, const T& container, Pred pred)
 #endif
 }
 
-template<typename ExecutionPolicy, typename T, typename V, _CUTIL_CONCEPT_HAS_ITERATOR(T)>  _CUTIL_NODISCARD
+template<typename ExecutionPolicy, typename T, typename V, _CUTIL_CONCEPT_HAS_ITERATOR(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline bool contains(ExecutionPolicy&& policy, const T& container, const V& value) {
 #ifdef CUTIL_CPP17_SUPPORTED
 	return (std::find(std::forward<ExecutionPolicy>(policy), container.begin(), container.end(), value) != container.end());
@@ -405,7 +405,7 @@ inline bool contains(ExecutionPolicy&& policy, const T& container, const V& valu
 
 
 //* erase all elements with specific value of `std::vector`/`std::deque`
-template<typename T, typename V = typename T::value_type, _CUTIL_CONCEPT_HAS_ITERATOR(T), _CUTIL_CONCEPT_MEMBER(T, shrink_to_fit())>
+template<typename T, typename V = typename T::value_type, _CUTIL_CONCEPT_HAS_ITERATOR(T), _CUTIL_CONCEPT_MEMBER(T, shrink_to_fit())> _CUTIL_FUNC_STATIC
 inline size_t erase_vector(T& container, const V& value) {
 // #ifdef CUTIL_CPP20_SUPPORTED
 	// return std::erase(container, value); // compiled with error
@@ -419,7 +419,7 @@ inline size_t erase_vector(T& container, const V& value) {
 
 //* erase all elements by predicate of `std::vector`/`std::deque`
 template <typename T, typename Pred, typename V = typename T::value_type, _CUTIL_CONCEPT_HAS_ITERATOR(T), _CUTIL_CONCEPT_MEMBER(T, shrink_to_fit())
-	, _CUTIL_CONCEPT_INVOKABLE_RET(Pred, bool, std::declval<V>())> _CUTIL_NODISCARD
+	, _CUTIL_CONCEPT_INVOKABLE_RET(Pred, bool, std::declval<V>())> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 inline size_t erase_if_vector(T& container, Pred pred) {
 // #ifdef CUTIL_CPP20_SUPPORTED
 	// return std::erase_if(container, pred); // compiled with error
@@ -447,37 +447,37 @@ inline size_t erase_if_vector(T& container, Pred pred) {
 //======================= Bit Operations ============================
 inline namespace bit { // inline
 	//* get bits filtered by mask, `(num & mask)`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T get_bit_by_mask(T num, T bit_mask) noexcept {
 		return (num & bit_mask);
 	}
 	//* set bits specified by mask, `(num | mask)`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T set_bit_by_mask(T num, T bit_mask) noexcept {
 		return (num | bit_mask);
 	}
 	//* clear bits specified by mask, `(num & ~mask)`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T clear_bit_by_mask(T num, T bit_mask) noexcept {
 		return (num & (~bit_mask));
 	}
 	//* flip bits specified by mask, `(num ^ mask)`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T flip_bit_by_mask(T num, T bit_mask) noexcept {
 		return (num ^ bit_mask);
 	}
 	//* check if bits filtered by mask are zero or not, `(bool)(num & mask)`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool check_bit_by_mask(T num, T bit_mask) noexcept {
 		return static_cast<bool>(cutil::bit::get_bit_by_mask(num, bit_mask));
 	}
 	
 	//* get the bit filtered by nth bit, `(num & (1<<bit_idx))`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T get_bit_by_idx(T num, size_t bit_idx) noexcept {
 		return cutil::bit::get_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T get_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
 		T mask = static_cast<T>(0);
 		for(auto idx : bit_idx) {
@@ -487,11 +487,11 @@ inline namespace bit { // inline
 	}
 	
 	//* set the bit specified by nth bit, `(num | (1<<bit_idx))`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T set_bit_by_idx(T num, size_t bit_idx) noexcept {
 		return cutil::bit::set_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T set_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
 		T mask = static_cast<T>(0);
 		for(auto idx : bit_idx) {
@@ -501,11 +501,11 @@ inline namespace bit { // inline
 	}
 	
 	//* clear the bit specified by nth bit, `(num & ~(1<<bit_idx))`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T clear_bit_by_idx(T num, size_t bit_idx) noexcept {
 		return cutil::bit::clear_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T clear_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
 		T mask = static_cast<T>(0);
 		for(auto idx : bit_idx) {
@@ -515,11 +515,11 @@ inline namespace bit { // inline
 	}
 	
 	//* flip the bit specified by nth bit, `(num ^ (1<<bit_idx))`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T flip_bit_by_idx(T num, size_t bit_idx) noexcept {
 		return cutil::bit::flip_bit_by_mask(num, static_cast<T>(static_cast<T>(1u) << (bit_idx % std::numeric_limits<T>::digits)));
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T flip_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
 		T mask = static_cast<T>(0);
 		for(auto idx : bit_idx) {
@@ -529,11 +529,11 @@ inline namespace bit { // inline
 	}
 	
 	//* check if the bit filtered by nth bit is zero or not, `(bool)(num & (1<<bit_idx))`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool check_bit_by_idx(T num, size_t bit_idx) noexcept {
 		return static_cast<bool>(cutil::bit::get_bit_by_idx(num, bit_idx));
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool check_bit_by_idx(T num, std::initializer_list<size_t> bit_idx) noexcept {
 		return static_cast<bool>(cutil::bit::get_bit_by_idx(num, bit_idx));
 	}
@@ -542,7 +542,7 @@ inline namespace bit { // inline
 	//  use std::rotl() since C++20
 	//  if /O2 is enabled, this will be optimized to a single instruction on x86 and ARM
 	//  also, you can use `_rotl()` `_rotl64()` in MSVC
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotate_bit_left(T num, int step = 1) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::rotl(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
@@ -557,7 +557,7 @@ inline namespace bit { // inline
 		return num; // step == 0, no rotation needed
 	#endif
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotl(T num, int step = 1) noexcept {
 		return cutil::bit::rotate_bit_left(num, step);
 	}
@@ -566,7 +566,7 @@ inline namespace bit { // inline
 	//  use std::rotr() since C++20
 	//  if /O2 is enabled, this will be optimized to a single instruction on x86 and ARM
 	//  also, you can use `_rotr()` `_rotr64()` in MSVC
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotate_bit_right(T num, int step = 1) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::rotr(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
@@ -581,37 +581,37 @@ inline namespace bit { // inline
 		return num; // step == 0, no rotation needed
 	#endif
 	}
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotr(T num, int step = 1) noexcept {
 		return cutil::bit::rotate_bit_right(num, step);
 	}
 	
 	//* insert bit to the left, then shift others to right. `(bit >> 1) | (inserted << (bitSize - 1))`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T insert_bit_left(T num, bool inserted = true) noexcept {
 		return (num >> 1) | (static_cast<T>(inserted) << (std::numeric_limits<T>::digits - 1));
 	}
 	
 	//* insert bit to the right, then shift others to left. `(bit << 1) | inserted`
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T insert_bit_right(T num, bool inserted = true) noexcept {
 		return (num << 1) | static_cast<T>(inserted);
 	}
 	
 	//* get lsb (least significant bit, the rightmost bit)
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T get_lsb(T num) noexcept {
 		return (num & 1);
 	}
 	
 	//* get msb (most significant bit, the leftmost bit)
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T get_msb(T num) noexcept {
 		return (num & (1u << (std::numeric_limits<T>::digits - 1)));
 	}
 	
 	//* has_single_bit, check if the number is power of 2 ({1, 2, 4, 8...})
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool has_single_bit(T num) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::has_single_bit(num);
@@ -620,7 +620,7 @@ inline namespace bit { // inline
 	#endif
 	}
 	// check if the number is power of 2 ({1, 2, 4, 8...})
-	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool is_power_of_2(T num) noexcept {
 		return cutil::bit::has_single_bit(num);
 	}
@@ -674,18 +674,20 @@ inline namespace bit { // inline
 
 	//* get low byte and high byte of a word (16-bit unsigned integer)
 	//  regardless of the endianness, the low byte is always the rightmost byte
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	uint8_t get_word_low(uint16_t word) {
 		return (uint8_t)(word & 0xFF);
 	}
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	uint8_t get_word_high(uint16_t word) {
 		return (uint8_t)(word >> 8u);
 	}
-	inline void set_word_low(uint16_t& word, uint8_t val) {
+	_CUTIL_FUNC_STATIC inline
+	void set_word_low(uint16_t& word, uint8_t val) {
 		word = ((word & 0xFF00) | val);
 	}
-	inline void set_word_high(uint16_t& word, uint8_t val) {
+	_CUTIL_FUNC_STATIC inline
+	void set_word_high(uint16_t& word, uint8_t val) {
 		word = ((word & 0x00FF) | ((uint16_t)val << 8u));
 	}
 /*
@@ -849,7 +851,7 @@ inline namespace numbers { // inline
 inline namespace math { // inline
 	//* limit the numeric variable to the range [_MIN, _MAX], same as `std::clamp(var, min, max)` in C++17
 	//  by default, comp == std::less<T>()
-	template<typename T> _CUTIL_NODISCARD
+	template<typename T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T clamp(T var, T min, T max) noexcept {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::clamp(var, min, max);
@@ -859,7 +861,7 @@ inline namespace math { // inline
 	#endif
 	}
 	template<typename T, typename Comp
-		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true> _CUTIL_NODISCARD
+		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T clamp(T var, T min, T max, Comp comp) noexcept {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::clamp(var, min, max, comp);
@@ -871,24 +873,24 @@ inline namespace math { // inline
 	
 	//* limit the numeric variable to the range [_MIN, _MAX], same as `var = std::clamp(var, min, max)` in C++17
 	//  by default, comp == std::less<T>()
-	template<typename T, typename R = T, _CUTIL_CONCEPT_CONVERTIBLE(R, T)>
+	template<typename T, typename R = T, _CUTIL_CONCEPT_CONVERTIBLE(R, T)> _CUTIL_FUNC_STATIC
 	inline void limit(T& var, R min, R max) noexcept {
 		var = cutil::math::clamp(var, static_cast<T>(min), static_cast<T>(max));
 	}
 	template<typename T, typename Comp, typename R = T, _CUTIL_CONCEPT_CONVERTIBLE(R, T)
-		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true>
+		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true> _CUTIL_FUNC_STATIC
 	inline void limit(T& var, R min, R max, Comp comp) noexcept {
 		var = cutil::math::clamp(var, static_cast<T>(min), static_cast<T>(max), comp);
 	}
 	
 	//* get if a numeric variable is within the interval [_MIN, _MAX]
-	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD
+	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool num_in_interval(T var, R min, R max) noexcept {
 		assert((min < max) && "`min` should be less than `max`");
 		return (var >= min) && (var <= max);
 	}
 	//* get if a numeric variable is within the interval (_MIN, _MAX)
-	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD
+	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool num_in_open_interval(T var, R min, R max) noexcept {
 		assert((min < max) && "`min` should be less than `max`");
 		return (var > min) && (var < max);
@@ -897,7 +899,7 @@ inline namespace math { // inline
 #ifdef CUTIL_CPP17_SUPPORTED //* >= C++17
 	//* Comparison function to check if a value is within a specified interval
 	template <bool LeftClosed, bool RightClosed, typename T, typename R = T
-			, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD
+			, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool num_in_interval(T var, R min, R max) noexcept {
 		assert((min < max) && "`min` should be less than `max`");
 		if constexpr (LeftClosed && RightClosed) {
@@ -933,7 +935,7 @@ inline namespace math { // inline
 
 	//* increase the value of variable, but if the result exceeds the limit(>=), it will not be increased
 	//  if exceeded, returns true.
-	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
+	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)> _CUTIL_FUNC_STATIC
 	inline bool increase_under_limit(T& var, L max, int inc = 1) noexcept {
 		assert(var <= max);
 		if((var + static_cast<T>(inc)) <= static_cast<T>(max)) {
@@ -944,7 +946,7 @@ inline namespace math { // inline
 	}
 	// increase the value of variable, but if the result exceeds the limit(>=), it will be clamped to the limit
 	// if clamped, returns true.
-	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
+	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)> _CUTIL_FUNC_STATIC
 	inline bool increase_under_limit_clamp(T& var, L max, int inc = 1) noexcept {
 		if(cutil::math::increase_under_limit(var, max, inc)) {
 			var = static_cast<T>(max);
@@ -955,7 +957,7 @@ inline namespace math { // inline
 	
 	//* decrease the value of variable, but if the result is less than the limit(<=), it will not be decreased
 	//  if exceeded, returns true.
-	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
+	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)> _CUTIL_FUNC_STATIC
 	inline bool decrease_above_limit(T& var, L min, int dec = 1) noexcept {
 		assert(var >= min);
 		if((var - static_cast<T>(dec)) >= static_cast<T>(min)){
@@ -966,7 +968,7 @@ inline namespace math { // inline
 	}
 	// decrease the value of variable, but if the result is less than the limit(<=), it will be clamped to the limit
 	// if clamped, returns true.
-	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)>
+	template<typename T, typename L = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(L, T)> _CUTIL_FUNC_STATIC
 	inline bool decrease_above_limit_clamp(T& var, L min, int dec = 1) noexcept {
 		if(cutil::math::decrease_above_limit(var, min, dec)){
 			var = static_cast<T>(min);
@@ -977,7 +979,7 @@ inline namespace math { // inline
 	
 	//* increase the value of variable, and rolling within the range [_MIN, _MAX]
 	//  if rolled, returns true.
-	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)>
+	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_FUNC_STATIC
 	inline bool increase_rolling(T& var, R min, R max, int inc = 1) noexcept {
 		assert(min < max && cutil::num_in_interval(var, min, max));
 		if((var + static_cast<T>(inc)) <= max){
@@ -990,7 +992,7 @@ inline namespace math { // inline
 	
 	//* decrease the value of variable, and rolling within the range [_MIN, _MAX]
 	//  if rolled, returns true.
-	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)>
+	template<typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(R, T)> _CUTIL_FUNC_STATIC
 	inline bool decrease_rolling(T& var, R min, R max, int dec = 1) noexcept {
 		assert(min < max && cutil::num_in_interval(var, min, max));
 		if((var - static_cast<T>(dec)) >= min){
@@ -1003,14 +1005,14 @@ inline namespace math { // inline
 	
 	//* increase the value of variable, and prevent overflowing,
 	// if it is near to be overflowed, it will not increased any more and return true.
-	template<typename T, _CUTIL_CONCEPT_ARITHMETIC(T)>
+	template<typename T, _CUTIL_CONCEPT_ARITHMETIC(T)> _CUTIL_FUNC_STATIC
 	inline bool increase_no_overflow(T& var, int inc = 1) noexcept {
 		assert(inc > 0);
 		return (static_cast<T>(var + inc) > var) ? (var += inc, false) : (true);
 	}
 	//* decrease the value of variable, and prevent underflowing,
 	// if it is near to be underflowed, it will not decreased any more and return true.
-	template<typename T, _CUTIL_CONCEPT_ARITHMETIC(T)>
+	template<typename T, _CUTIL_CONCEPT_ARITHMETIC(T)> _CUTIL_FUNC_STATIC
 	inline bool decrease_no_underflow(T& var, int dec = 1) noexcept {
 		assert(dec > 0);
 		return (static_cast<T>(var - dec) < var) ? (var -= dec, false) : (true);
@@ -1037,7 +1039,7 @@ inline namespace math { // inline
 */
 
 	//* constexpr abs() of an number, overloaded for unsigned integer types
-	template<typename T, _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T)> _CUTIL_NODISCARD
+	template<typename T, _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T abs(T num) noexcept { // for signed intergers and `float`, `double`, `long double`
 	#ifdef CUTIL_CPP20_SUPPORTED
 		if (!std::is_constant_evaluated()){
@@ -1046,14 +1048,14 @@ inline namespace math { // inline
 	#endif // C++20
 		return (num < 0) ? -num : num; // in C++14/17/20, std::abs() is not constexpr
 	}
-	template<typename U, _CUTIL_CONCEPT_UNSIGNED(U)> _CUTIL_NODISCARD
+	template<typename U, _CUTIL_CONCEPT_UNSIGNED(U)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline U constexpr abs(U num) noexcept { // for `uint8_t`, `uint16_t`, `uint32_t`, `uint64_t`, `size_t`
 		return num;
 	}
 	
 	//* constexpr isInf()
 	// there are CPU instructions to check for infinity, but they are not portable
-	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD
+	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool isinf(F num) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		if (!std::is_constant_evaluated()){
@@ -1062,14 +1064,14 @@ inline namespace math { // inline
 	#endif // C++20
 		return (num == std::numeric_limits<F>::infinity() || num == -std::numeric_limits<F>::infinity());
 	}
-	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD
+	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool isinf(I) noexcept {
 		return false;
 	}
 	
 	//* constexpr isNaN()
 	// there are CPU instructions to check for NaN, but they are not portable
-	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD
+	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool isnan(F num) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		if (!std::is_constant_evaluated()){
@@ -1078,13 +1080,13 @@ inline namespace math { // inline
 	#endif // C++20
 		return (num != num); // NaN is not equal to anything, including itself
 	}
-	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD
+	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool isnan(I num) noexcept {
 		return false;
 	}
 	
 	//* get gcd (greatest common divisor)
-	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD
+	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr I gcd(I a, I b) noexcept {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::gcd(a, b);
@@ -1100,7 +1102,7 @@ inline namespace math { // inline
 	}
 	
 	//* get lcm (least common multiple)
-	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD
+	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr I lcm(I a, I b) noexcept {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::lcm(a, b);
@@ -1115,21 +1117,21 @@ inline namespace math { // inline
 	//* get midpoint of two integer or floating point numbers
 	// if a and b are integers, the result is also truncated to an integer
 	// eg. midpoint(6, 9) -> 7.
-	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD
+	template<typename I, _CUTIL_CONCEPT_INTEGRAL(I)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr I midpoint(I a, I b) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::midpoint(a, b);
 	#else
 		using uint_t = std::make_unsigned_t<I>;
 		int k = 1;
-		if(a < b) _CUTIL_LIKELY {
+		if(a < b) {
 			return a + static_cast<I>(static_cast<uint_t>(b - a) / 2);
 		}else{
 			return b - static_cast<I>(static_cast<uint_t>(a - b) / 2);
 		}
 	#endif
 	}
-	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD
+	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr F midpoint(F a, F b) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::midpoint(a, b);
@@ -1138,7 +1140,7 @@ inline namespace math { // inline
 		constexpr auto min = std::numeric_limits<F>::min() * 2;
 		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
 			return std::numeric_limits<F>::quiet_NaN(); // NaN, return NaN
-		}else if(cutil::math::abs(a) < max && cutil::math::abs(b) < max) _CUTIL_LIKELY { // normal case
+		}else if(cutil::math::abs(a) < max && cutil::math::abs(b) < max) { // normal case
 			return ((a + b) / 2);
 		}else if(cutil::math::abs(a) < min){ // a < min and b >= max
 			return (a + (b / 2));
@@ -1150,7 +1152,7 @@ inline namespace math { // inline
 	#endif
 	}
 	//* get midpoint of two pointers
-	template<typename T> _CUTIL_NODISCARD
+	template<typename T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T* midpoint(T* a, T* b) noexcept { // for pointers
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::midpoint(a, b);
@@ -1164,7 +1166,7 @@ inline namespace math { // inline
 	//  size_t ret = cutil::pow<int, size_t>(2, 3); // return as size_t
 	//  int ret = cutil::pow<3>(2); // 2^3 = 8, >=C++17
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
-	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD
+	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R pow(const T base, const size_t exp) noexcept {
 		// assert((exp >= 0) && "The exponent should be greater than or equal to 0");
 		if(exp == 0){
@@ -1190,7 +1192,7 @@ inline namespace math { // inline
 	//* factorial function
 	//  int ret = cutil::factorial(3); // 3! = 6
 	//  size_t ret = cutil::factorial<int, size_t>(3); // return as size_t
-	template <typename T, typename R = T, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD
+	template <typename T, typename R = T, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R factorial(const T base) noexcept {
 		assert(cutil::math::num_in_interval(base, 0, 40) && "`base` should be in [0, 40]");
 		if (base <= 1) {
@@ -1211,7 +1213,7 @@ inline namespace math { // inline
 	//* int ret = cutil::pow<3>(2); // 2^3 = 8, >=C++17
 	//  size_t ret = cutil::pow<3, int, size_t>(2); // return as size_t
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
-	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD
+	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R pow(const T base) noexcept {
 		if constexpr (exp == 0) {
 			return static_cast<R>(1);
@@ -1232,7 +1234,7 @@ inline namespace math { // inline
 	
 	//* int ret = cutil::factorial<3>(); // 3! = 6
 	//  size_t ret = cutil::factorial<3, size_t>(); // return as size_t
-	template <const size_t base, typename R = size_t, _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD
+	template <const size_t base, typename R = size_t, _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R factorial() noexcept {
 		if constexpr (base <= 1) {
 			return static_cast<R>(1);
@@ -1246,12 +1248,12 @@ inline namespace math { // inline
 	}
 	
 #else
-	template <const size_t exp, typename T, typename R = T> _CUTIL_NODISCARD
+	template <const size_t exp, typename T, typename R = T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R pow(const T base) noexcept {
 		return cutil::math::pow(base, exp);
 	}
 	
-	template <const size_t base, typename R = size_t> _CUTIL_NODISCARD
+	template <const size_t base, typename R = size_t> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R factorial() noexcept {
 		return cutil::math::factorial<R>(base);
 	}
@@ -1260,7 +1262,7 @@ inline namespace math { // inline
 
 	
 	namespace float_internal{
-		template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD
+		template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 		inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
 			if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
 				return false; // NaN is not equal to anything, including itself
@@ -1271,7 +1273,7 @@ inline namespace math { // inline
 			return (cutil::math::abs(a - b) <= cutil::math::abs(epsilon)); // overloaded abs() for floating number in <cstdlib>
 		}
 		
-		template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD
+		template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 		inline constexpr T lerp(T a, T b, T t) noexcept {
 		#ifdef CUTIL_CPP20_SUPPORTED
 			return std::lerp((a), (b), t);
@@ -1297,15 +1299,15 @@ inline namespace math { // inline
 	
 	
 	//* Compares two floating-point numbers for equality within a specified epsilon.
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	bool fequal(float a, float b, float epsilon = std::numeric_limits<float>::epsilon()) noexcept {
 		return cutil::math::float_internal::fequal(a, b, epsilon);
 	}
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	bool fequal(double a, double b, double epsilon = std::numeric_limits<double>::epsilon()) noexcept {
 		return cutil::math::float_internal::fequal(a, b, epsilon);
 	}
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	bool fequal(long double a, long double b, long double epsilon = std::numeric_limits<long double>::epsilon()) noexcept {
 		return cutil::math::float_internal::fequal(a, b, epsilon);
 	}
@@ -1319,15 +1321,15 @@ inline namespace math { // inline
 	//  t should be in the range [0, 1]. if t = 0, returns a; if t == 1, returns b.
 	//
 	//  use std::lerp() since C++20
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	float lerp(float a, float b, float t) noexcept {
 		return cutil::math::float_internal::lerp(a, b, t);
 	}
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	double lerp(double a, double b, double t) noexcept {
 		return cutil::math::float_internal::lerp(a, b, t);
 	}
-	_CUTIL_NODISCARD inline constexpr
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	long double lerp(long double a, long double b, long double t) noexcept {
 		return cutil::math::float_internal::lerp(a, b, t);
 	}
@@ -1335,7 +1337,7 @@ inline namespace math { // inline
 
 	//* convert degrees to radians, (degree * M_PI / 180.0)
 	// `cutil::fequal(cutil::numbers::pi_3, cutil::math::deg2rad(60.0)) == true`
-	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD
+	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr F deg2rad(F degree) noexcept {
 		// if(cutil::math::isnan(degree) || cutil::math::isinf(degree)) {
 		// 	return degree; // NaN or inf, return as is
@@ -1345,7 +1347,7 @@ inline namespace math { // inline
 	
 	//* convert radians to degrees, (radian * 180.0 / M_PI)
 	// `cutil::fequal(60.0, cutil::math::rad2deg(cutil::numbers::pi_3)) == true`
-	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD
+	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr F rad2deg(F radian) noexcept {
 		// if(cutil::math::isnan(radian) || cutil::math::isinf(radian)) {
 		// 	return radian; // NaN or inf, return as is
@@ -1363,7 +1365,7 @@ inline namespace math { // inline
 inline namespace type {
 	//* cast bitwise, `(reinterpret_cast<volatile Out*>(&in))`
 	// is not constexpr in C++14/17, but constexpr in C++20
-	template<typename Out, typename In> _CUTIL_NODISCARD
+	template<typename Out, typename In> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr Out bit_cast(In&& in) noexcept {
 		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
 	#ifdef CUTIL_CPP20_SUPPORTED
@@ -1374,7 +1376,7 @@ inline namespace type {
 	}
 	
 	//* assign bitwise, `(memcpy(&out, &in, sizeof(T)))`
-	template<typename Out, typename In>
+	template<typename Out, typename In> _CUTIL_FUNC_STATIC
 	inline void bitwise_memcpy(Out& out, In&& in) {
 		// static_assert(std::is_trivially_copyable_v<Out>, "Out and In must be a trivially copyable type");
 		// static_assert(std::is_trivially_copyable_v<std::decay_t<In>>, "In must be a trivially copyable type");
@@ -1397,7 +1399,7 @@ inline namespace type {
 			, _CUTIL_CONCEPT_POINTER_SAME_ATTRIBUTES(PDerived, PBase)
 			, _CUTIL_CONCEPT_POINTER_DIFFERENT_TYPES(PDerived, PBase)
 			, _CUTIL_CONCEPT_POINTER_IS_BASE_OF(PBase, PDerived)
-			> _CUTIL_NODISCARD
+			> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr PDerived safe_cast(PBase in) {
 	#ifdef CUTIL_DEBUG_BUILD
 		PDerived out = dynamic_cast<PDerived>(in);
@@ -1429,19 +1431,19 @@ inline namespace type {
 inline namespace memory {
 	
 	//* get midpoint of two pointers
-	template<typename P> _CUTIL_NODISCARD
+	template<typename P> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr P* midpoint(P* a, P* b) noexcept {
 		return cutil::math::midpoint(a, b);
 	}
 	
 	//* get offset of two pointers in bytes
-	template <typename T, typename U> _CUTIL_NODISCARD
+	template <typename T, typename U> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline ptrdiff_t get_ptr_offset(T* higher, U* lower){
 		return reinterpret_cast<uintptr_t>(higher) - reinterpret_cast<uintptr_t>(lower);
 	}
 	
 	// get offset of the struct member to the struct base address
-	template <typename U, typename T> _CUTIL_NODISCARD
+	template <typename U, typename T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline ptrdiff_t get_member_offset(T U::* member){
 		return static_cast<ptrdiff_t>(reinterpret_cast<uintptr_t>(&(reinterpret_cast<U*>(0)->*member)));
 	}
@@ -1455,13 +1457,13 @@ inline namespace memory {
 */
 
 	// (UB) get value from the memory address in the specific type
-	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> _CUTIL_NODISCARD [[deprecated]] _CUTIL_MAYBE_UNUSED
+	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> _CUTIL_NODISCARD [[deprecated]] _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T& read_memory(P ptr) {
 		return *reinterpret_cast<T*>(ptr);
 	}
 	
 	// (UB) set memory at the specific location in the specific type
-	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> [[deprecated]] _CUTIL_MAYBE_UNUSED
+	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> [[deprecated]] _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline void write_memory(P ptr, T&& val) {
 		static_assert(sizeof(T) == sizeof(*ptr), "Size of T must be equal to the size of the memory at ptr");
 		*reinterpret_cast<T*>(ptr) = val;
@@ -1474,51 +1476,51 @@ inline namespace memory {
 
 	
 	//* wrapper for C memory functions, but specify amount of elements, not bytes
-	template<typename T> _CUTIL_MAYBE_UNUSED
+	template<typename T> _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T* memcpy_type(T* out, const T* in, size_t amount = 1) {
 		return memcpy(out, in, sizeof(T) * amount);
 	}
-	template<typename T> _CUTIL_MAYBE_UNUSED
+	template<typename T> _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T* memmove_type(T* out, const T* in, size_t amount = 1) {
 		return memmove(out, in, sizeof(T) * amount);
 	}
-	template<typename T> _CUTIL_MAYBE_UNUSED
+	template<typename T> _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T* memset_type(T& out, int value, size_t amount = 1) {
 		return memset(&out, value, sizeof(T) * amount);
 	}
-	template<typename T> _CUTIL_MAYBE_UNUSED
+	template<typename T> _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline int memcmp_type(const T* ptr1, const T* ptr2, size_t amount = 1) {
 		return memcmp(ptr1, ptr2, sizeof(T) * amount);
 	}
-	template<typename T> _CUTIL_MAYBE_UNUSED
+	template<typename T> _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T* malloc_type(size_t amount = 1) {
 		return static_cast<T*>(std::malloc(sizeof(T) * amount));
 	}
-	template <typename T> _CUTIL_MAYBE_UNUSED
+	template <typename T> _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T* calloc_type(size_t amount = 1) {
 		return static_cast<T*>(std::calloc(amount, sizeof(T)));
 	}
-	template<typename T> _CUTIL_MAYBE_UNUSED
+	template<typename T> _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T* realloc_type(T* ptr, size_t amount = 1) {
 		return static_cast<T*>(std::realloc(ptr, sizeof(T) * amount));
 	}
 	
 	//* delete heap pointer and set it to nullptr
-	template<typename T>
+	template<typename T> _CUTIL_FUNC_STATIC
 	inline void free_ptr(T*& ptr) {
 		if(ptr != nullptr){
 			std::free(ptr);
 			ptr = nullptr;
 		}
 	}
-	template<typename T>
+	template<typename T> _CUTIL_FUNC_STATIC
 	inline void delete_ptr(T*& p) {
 		if(p != nullptr){
 			delete p;
 			p = nullptr;
 		}
 	}
-	template<typename T>
+	template<typename T> _CUTIL_FUNC_STATIC
 	inline void delete_array(T*& p) {
 		if(p != nullptr){
 			delete[] p;

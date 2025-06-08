@@ -46,6 +46,8 @@ Reference of Ansi Escape Codes:
 
 - `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` **BEFORE** include of this header may turn off all the features with ANSI Escape Code.
 
+- `#define CUTIL_FORCE_FUNCTION_STATIC 1` **BEFORE** include of `CppUtil.h` may let all the inline functions to be `static inline`
+
 
 
 ----------

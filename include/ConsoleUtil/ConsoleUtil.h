@@ -20,6 +20,7 @@ Updated:		8 JUN 2025
 #endif
 
 #if defined(__cplusplus)
+	#include <iostream>
 	#include <string>
 #endif
 
@@ -491,26 +492,26 @@ namespace console {
 		Win1252 	= 1252		//  windows 1252, western European
 	};
 	//* set console title, encoding, size, and other properties
-	inline void set_title(const std::string& title) {
-		CUTIL_CONSOLE_TITLE(title.data());
+	_CUTIL_FUNC_STATIC inline void set_title(const std::string& title) {
+		CUTIL_CONSOLE_TITLE_A(title.data());
 	}
-	inline void set_title(const std::wstring& title) {
+	_CUTIL_FUNC_STATIC inline void set_title(const std::wstring& title) {
 		CUTIL_CONSOLE_TITLE_W((title.data()));
 	}
 	
 	
-	inline void set_attr(uint16_t attr) {
+	_CUTIL_FUNC_STATIC inline void set_attr(uint16_t attr) {
 		CUTIL_CONSOLE_ATTR(attr);
 	}
-	inline void reset_style() {
+	_CUTIL_FUNC_STATIC inline void reset_style() {
 		CUTIL_CONSOLE_RESET_STYLE();
 	}
-	inline void enable_virtual_terminal() {
+	_CUTIL_FUNC_STATIC inline void enable_virtual_terminal() {
 		CUTIL_ENABLE_VIRTUAL_TERMINAL();
 	}
 	
 	//* set console encoding by "chcp" command in Windows
-	inline void set_chcp_encoding(uint16_t codepage) {
+	_CUTIL_FUNC_STATIC inline void set_chcp_encoding(uint16_t codepage) {
 	#if CUTIL_OS_WINDOWS == 1
 		#if CUTIL_WINAPI_INCLUDED == 1
 			SetConsoleCP(codepage);
@@ -523,15 +524,15 @@ namespace console {
 	#endif
 	// in Linux/MacOS, do nothing
 	}
-	inline void set_chcp_encoding(Encodings encoding) {
+	_CUTIL_FUNC_STATIC inline void set_chcp_encoding(Encodings encoding) {
 		cutil::console::set_chcp_encoding(static_cast<uint32_t>(encoding));
 	}
-	inline void set_chcp_encoding_utf8() {
+	_CUTIL_FUNC_STATIC inline void set_chcp_encoding_utf8() {
 		cutil::console::set_chcp_encoding(cutil::console::Encodings::UTF8);
 	}
 	
 	//* set size of console window in Windows
-	inline void set_size(uint16_t cols, uint16_t rows) {
+	_CUTIL_FUNC_STATIC inline void set_size(uint16_t cols, uint16_t rows) {
 	#if CUTIL_OS_WINDOWS == 1
 		#if CUTIL_WINAPI_INCLUDED == 1
 			CONSOLE_SCREEN_BUFFER_INFO bufInfo;
@@ -551,17 +552,17 @@ namespace console {
 	}
 	
 	//* clear console screen
-	inline void clear() {
+	_CUTIL_FUNC_STATIC inline void clear() {
 		CUTIL_CONSOLE_CLEAR();
 	}
 	
 	//* pause the program by `getchar()` or `system::pause()`
-	inline void pause() {
+	_CUTIL_FUNC_STATIC inline void pause() {
 		CUTIL_CONSOLE_PAUSE();
 	}
 	
 	//* flush input buffer
-	inline void flush_input_buffer() {
+	_CUTIL_FUNC_STATIC inline void flush_input_buffer() {
 		int c;
 		while((c = getchar()) != '\n' && c != EOF) continue;
 		if(std::cin.fail()) {
@@ -571,7 +572,7 @@ namespace console {
 	}
 	
 	//* set locale (and print if succeed)
-	inline void set_locale(const std::string& locale, bool isPrint = true) {
+	_CUTIL_FUNC_STATIC inline void set_locale(const std::string& locale, bool isPrint = true) {
 		char* pLocale = std::setlocale(LC_ALL, locale.data());
 		if(isPrint) {
 			if(pLocale == nullptr) {
@@ -582,10 +583,10 @@ namespace console {
 			printf("\n");
 		}
 	}
-	inline void set_locale_utf8(bool isPrint = true) {
+	_CUTIL_FUNC_STATIC inline void set_locale_utf8(bool isPrint = true) {
 		cutil::console::set_locale(".UTF-8", isPrint);
 	}
-	inline void set_locale_default() {
+	_CUTIL_FUNC_STATIC inline void set_locale_default() {
 		cutil::console::set_locale("", false);
 	}
 	
@@ -596,11 +597,11 @@ namespace console {
 		In Linux, the top-left corner of the console is (0, 0)
 	*/
 	//* move cursor to (col, row)
-	inline void set_cursor_pos(uint16_t col, uint16_t row) {
+	_CUTIL_FUNC_STATIC inline void set_cursor_pos(uint16_t col, uint16_t row) {
 		CUTIL_CONSOLE_CURSOR_POS(col, row);
 	}
 	
-	inline void move_cursor_col(int16_t d_col) {
+	_CUTIL_FUNC_STATIC inline void move_cursor_col(int16_t d_col) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		if(d_col == 0) return;
 		if(d_col > 0){
@@ -610,7 +611,7 @@ namespace console {
 		}
 		fflush(stdout);
 	}
-	inline void move_cursor_row(int16_t d_row) {
+	_CUTIL_FUNC_STATIC inline void move_cursor_row(int16_t d_row) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		if(d_row == 0) return;
 		if(d_row > 0){
@@ -620,20 +621,20 @@ namespace console {
 		}
 		fflush(stdout);
 	}
-	inline void move_cursor_pos(int16_t d_col, int16_t d_row) {
+	_CUTIL_FUNC_STATIC inline void move_cursor_pos(int16_t d_col, int16_t d_row) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		cutil::console::move_cursor_col(d_col);
 		cutil::console::move_cursor_row(d_row);
 	}
 	
 	//* move cursor to next/previous line
-	inline void move_cursor_next_line(int16_t n = 1) {
+	_CUTIL_FUNC_STATIC inline void move_cursor_next_line(int16_t n = 1) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		if(n == 0) return;
 		printf("\033[%dE", n); // move cursor to next line
 		fflush(stdout);
 	}
-	inline void move_cursor_prev_line(int16_t n = 1) {
+	_CUTIL_FUNC_STATIC inline void move_cursor_prev_line(int16_t n = 1) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		if(n == 0) return;
 		printf("\033[%dF", n); // move cursor to previous line
@@ -641,59 +642,59 @@ namespace console {
 	}
 	
 	//* move cursor to horizontal position
-	inline void move_cursor_horz_pos(uint16_t col) {
+	_CUTIL_FUNC_STATIC inline void move_cursor_horz_pos(uint16_t col) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[%dG", col); // move cursor to horizontal position
 		fflush(stdout);
 	}
 	
 	//* clear text
-	inline void clear_after_cursor() {
+	_CUTIL_FUNC_STATIC inline void clear_after_cursor() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[0J"); // clear from cursor to end of screen
 		fflush(stdout);
 	}
-	inline void clear_before_cursor() {
+	_CUTIL_FUNC_STATIC inline void clear_before_cursor() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[1J"); // clear from cursor to beginning of screen
 		fflush(stdout);
 	}
-	inline void clear_screen_and_cursor() {
+	_CUTIL_FUNC_STATIC inline void clear_screen_and_cursor() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[2J"); // clear screen(console), and moves cursor to upper left on DOS ANSI.SYS.
 		fflush(stdout);
 	}
-	inline void clear_screen() {
+	_CUTIL_FUNC_STATIC inline void clear_screen() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[3J"); // erase screen(console), and delete all lines saved in the scrollback buffer
 		fflush(stdout);
 	}
 	
 	//* clear line
-	inline void clear_line_after_cursor() {
+	_CUTIL_FUNC_STATIC inline void clear_line_after_cursor() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[0K"); // clear from cursor to end of line
 		fflush(stdout);
 	}
-	inline void clear_line_before_cursor() {
+	_CUTIL_FUNC_STATIC inline void clear_line_before_cursor() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[1K"); // clear from cursor to beginning of line
 		fflush(stdout);
 	}
-	inline void clear_line() {
+	_CUTIL_FUNC_STATIC inline void clear_line() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[2K"); // clear entire line
 		fflush(stdout);
 	}
 
 	//* scroll control
-	inline void scroll_up(int16_t n = 1) {
+	_CUTIL_FUNC_STATIC inline void scroll_up(int16_t n = 1) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		if(n <= 0) return;
 		printf("\033[%dS", n); // scroll up
 		fflush(stdout);
 	}
-	inline void scroll_down(int16_t n = 1) {
+	_CUTIL_FUNC_STATIC inline void scroll_down(int16_t n = 1) {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		if(n <= 0) return;
 		printf("\033[%dT", n); // scroll down
@@ -701,19 +702,19 @@ namespace console {
 	}
 	
 	//* save and restore cursor position
-	inline void save_cursor_pos() {
+	_CUTIL_FUNC_STATIC inline void save_cursor_pos() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[s"); // save cursor position
 		fflush(stdout);
 	}
-	inline void restore_cursor_pos() {
+	_CUTIL_FUNC_STATIC inline void restore_cursor_pos() {
 		_CUTIL_RETURN_IF_ANSI_ESCAPE_UNSUPPORTED();
 		printf("\033[u"); // restore cursor position
 		fflush(stdout);
 	}
 	
 	//* print all argc and argv[n] arguments for main(int argc, char* argv[]) function
-	inline void print_argv(int argc, char* argv[]) {
+	 _CUTIL_FUNC_STATIC inline void print_argv(int argc, char* argv[]) {
 		CUTIL_PRINT_ARGV(argc, argv);
 	}
 	
