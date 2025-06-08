@@ -38,6 +38,7 @@
 #endif
 #ifdef CUTIL_CPP17_SUPPORTED
 	#include <optional>
+	#include <charconv>
 #endif
 
 
@@ -53,6 +54,15 @@ namespace str
 			std::sort(vec.begin(), vec.end(), comp);
 		#endif
 		}
+		
+		template <typename T>
+		struct is_arithmetic : std::integral_constant<bool, std::is_arithmetic<T>::value && !std::is_same<T, bool>::value> {};
+		
+		template <typename T>
+		struct is_integral : std::integral_constant<bool, std::is_integral<T>::value && !std::is_same<T, bool>::value> {};
+		
+		template <typename T>
+		struct is_floating_point : std::integral_constant<bool, std::is_floating_point<T>::value> {};
 	}
 	
 	
@@ -913,86 +923,113 @@ namespace str
 	//  if failed, it throws exception
 	//  these functions are only the wrappers of std::stoi, std::stol, std::stof, etc.
 	//  if you want to use std::stringstream, use `cutil::str::parse_string()`
-	//  do not support `uint8_t`, `int8_t`, `uint16_t`, `int16_t` and other non-arithmetic types
-	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline Ret convert_to(const std::string& str){ // for `uint8_t`, `int8_t`, `uint16_t`, `int16_t`
-		int32_t ret = std::stol(str);
+	//  do not support non-arithmetic types
+	//  2nd param `base` is not available for `float`, `double`, `long double`
+	template<typename Ret, typename std::enable_if<cutil::str::internal::is_arithmetic<Ret>::value, bool>::type = false>
+		_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline
+	Ret to_number(const std::string& str, int base = 10){ // for `uint8_t`, `int8_t`, `uint16_t`, `int16_t`, `unsigned int`
+		int64_t ret = std::stoll(str, nullptr, base);
 		if(ret < std::numeric_limits<Ret>::min() || ret > std::numeric_limits<Ret>::max()){
-			throw std::out_of_range("convert_to: value out of range for type " + std::string(typeid(Ret).name()));
+			throw std::out_of_range("to_number: value out of range for type " + std::string(typeid(Ret).name()));
 		}
 		return static_cast<Ret>(ret);
 	}
 	template<> _CUTIL_NODISCARD
-	inline int16_t convert_to<int16_t>(const std::string& str){
-		return static_cast<int16_t>(std::stoi(str));
+	inline int to_number<int>(const std::string& str, int base){
+		return std::stoi(str, nullptr, base); // `int` is 16-bit in some 8bit or 16 bit embedded systems
 	}
 	template<> _CUTIL_NODISCARD
-	inline int convert_to<int>(const std::string& str){
-		return std::stoi(str);
+	inline long to_number<long>(const std::string& str, int base){
+		return std::stol(str, nullptr, base); // `long` is 32-bit in Windows x64, but 64-bit in Linux x64
 	}
 	template<> _CUTIL_NODISCARD
-	inline unsigned int convert_to<unsigned int>(const std::string& str){
-		return std::stoul(str);
+	inline unsigned long to_number<unsigned long>(const std::string& str, int base){
+		return std::stoul(str, nullptr, base);
 	}
 	template<> _CUTIL_NODISCARD
-	inline long convert_to<long>(const std::string& str){
-		return std::stol(str);
+	inline int64_t to_number<int64_t>(const std::string& str, int base){
+		return std::stoll(str, nullptr, base);
 	}
 	template<> _CUTIL_NODISCARD
-	inline unsigned long convert_to<unsigned long>(const std::string& str){
-		return std::stoul(str);
+	inline uint64_t to_number<uint64_t>(const std::string& str, int base){
+		return std::stoull(str, nullptr, base);
 	}
 	template<> _CUTIL_NODISCARD
-	inline int64_t convert_to<int64_t>(const std::string& str){
-		return std::stoll(str);
-	}
-	template<> _CUTIL_NODISCARD
-	inline uint64_t convert_to<uint64_t>(const std::string& str){
-		return std::stoull(str);
-	}
-	template<> _CUTIL_NODISCARD
-	inline float convert_to<float>(const std::string& str){
+	inline float to_number<float>(const std::string& str, int base){
 		return std::stof(str);
 	}
 	template<> _CUTIL_NODISCARD
-	inline double convert_to<double>(const std::string& str){
+	inline double to_number<double>(const std::string& str, int base){
 		return std::stod(str);
 	}
 	template<> _CUTIL_NODISCARD
-	inline long double convert_to<long double>(const std::string& str){
+	inline long double to_number<long double>(const std::string& str, int base){
 		return std::stold(str);
 	}
 	
 	
 	//* convert string to the specified type, like int, float, double, etc.
 	//  if failed, it returns default_value
-	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline Ret convert_to(const std::string& str, Ret default_value){
+	template<typename Ret, typename std::enable_if<cutil::str::internal::is_arithmetic<Ret>::value, bool>::type = false>
+		_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline
+	Ret to_number(const std::string& str, Ret default_value, int base = 10){
 		try {
-			return convert_to<Ret>(str);
+			return to_number<Ret>(str, base);
 		} catch (...) {
 			return default_value;
 		}
 	}
-	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline auto convert_to_pair(const std::string& str) -> std::pair<bool, Ret>
+	template<typename Ret, typename std::enable_if<cutil::str::internal::is_arithmetic<Ret>::value, bool>::type = false>
+		_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline
+	auto to_number_pair(const std::string& str, int base = 10) -> std::pair<bool, Ret>
 	{
 		try {
-			return {true, convert_to<Ret>(str)};
+			return {true, to_number<Ret>(str, base)};
 		} catch (...) {
 			return {false, Ret()};
 		}
 	}
 #ifdef CUTIL_CPP17_SUPPORTED
-	template<typename Ret, typename std::enable_if<std::is_arithmetic<Ret>::value, bool>::type = false> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline auto convert_to_opt(const std::string& str) -> std::optional<Ret>
+	//* convert string to the specified type, like int, float, double, etc.
+	//  if failed, it returns std::nullopt
+	//  `std::from_chars()` is more recommended for C++17 and later
+	template<typename Ret, typename std::enable_if<cutil::str::internal::is_arithmetic<Ret>::value, bool>::type = false>
+		_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline
+	auto to_number_opt_legacy(const std::string& str, int base = 10) -> std::optional<Ret>
 	{
 		try {
-			return convert_to<Ret>(str);
+			return to_number<Ret>(str, base);
 		} catch (...) {
 			return std::nullopt;
 		}
 	}
+	
+	//* convert string to the specified type, like int, float, double, etc.
+	//  if failed, it returns std::nullopt
+	//  this function uses `std::from_chars()` for C++17 and later
+	template<typename Ret, typename std::enable_if<cutil::str::internal::is_integral<Ret>::value, bool>::type = false>
+		_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline
+	auto to_number_opt(std::string_view str, int base = 10) -> std::optional<Ret>
+	{
+		Ret ret;
+		const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), ret, base);
+		if(ec == std::errc() /*&& ptr == str.data() + str.size()*/){
+			return ret;
+		}
+		return std::nullopt;
+	}
+	template<typename Ret, typename std::enable_if<cutil::str::internal::is_floating_point<Ret>::value, bool>::type = false>
+		_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline
+	auto to_number_opt(std::string_view str) -> std::optional<Ret>
+	{
+		Ret ret;
+		const auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), ret);
+		if(ec == std::errc() /*&& ptr == str.data() + str.size()*/){
+			return ret;
+		}
+		return std::nullopt;
+	}
+	
 #endif
 	
 	
