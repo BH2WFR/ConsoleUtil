@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-Updated:		8 JUN 2025
+Updated:		10 JUN 2025
   License:		MIT License
 * You can include this header in header files.
 */
@@ -408,7 +408,7 @@ Updated:		8 JUN 2025
 
 //* C++ namespace
 #ifndef CUTIL_PARAM_USE_SHORTEN_NAMESPACE
-	#define CUTIL_PARAM_USE_SHORTEN_NAMESPACE 1	//* use shorter namespace `cu::` instead of `cutil::`
+	#define CUTIL_PARAM_USE_SHORTEN_NAMESPACE 	1	//* use shorter namespace `cu::` instead of `cutil::`
 #endif // CUTIL_PARAM_USE_SHORTEN_NAMESPACE
 #ifdef __cplusplus // C++
 	#define _CUTIL_NAMESPACE						cutil
@@ -457,8 +457,10 @@ Updated:		8 JUN 2025
 	#define _CUTIL_UNLIKELY
 #endif // C++20
 
-//* `static` inline function
-// #define CUTIL_FORCE_FUNCTION_STATIC 1
+//* add `static` decoration for inline functions
+#ifndef CUTIL_FORCE_FUNCTION_STATIC
+	#define CUTIL_FORCE_FUNCTION_STATIC 0	// default is 0
+#endif // CUTIL_FORCE_FUNCTION_STATIC
 #ifdef __cplusplus // C++
 	#if (CUTIL_FORCE_FUNCTION_STATIC == 1)
 		#define _CUTIL_FUNC_STATIC static
@@ -466,7 +468,11 @@ Updated:		8 JUN 2025
 		#define _CUTIL_FUNC_STATIC
 	#endif
 #else // C
-	#define _CUTIL_FUNC_STATIC	static
+	#if (CUTIL_FORCE_FUNCTION_STATIC == 1)
+		#define _CUTIL_FUNC_STATIC static
+	#else
+		#define _CUTIL_FUNC_STATIC
+	#endif
 #endif // __cplusplus
 
 
@@ -504,10 +510,28 @@ Updated:		8 JUN 2025
 
 //* check if headers are included
 #if defined(__cplusplus) && defined(FMT_VERSION)
-	#define CUTIL_FMT_INCLUDED 1
+	#define CUTIL_FMT_INCLUDED		1
 #endif
 #if (CUTIL_OS_WINDOWS == 1) && (defined(_WINDOWS_) || defined(WINAPI))
-	#define CUTIL_WINAPI_INCLUDED 1
+	#define CUTIL_WINAPI_INCLUDED	1
+#endif
+
+
+//* check if the literal encoding is UTF-8
+#ifndef CUTIL_FORCE_UTF8
+	#define CUTIL_FORCE_UTF8	1	// default is 0, not force UTF-8
+#endif // CUTIL_FORCE_UTF8
+#ifdef __cplusplus
+	_CUTIL_NAMESPACE_BEGIN
+		enum {
+			is_utf8_enabled = ("\u00A7"[1] == '\xA7')
+		};
+	_CUTIL_NAMESPACE_END
+	#if(CUTIL_FORCE_UTF8 == 1)
+		static_assert(cutil::is_utf8_enabled
+			, "UTF-8 encoding is not enabled. Please add `/utf-8` to compiler options if you are using MSVC."
+		);
+	#endif // CUTIL_FORCE_UTF8
 #endif
 
 

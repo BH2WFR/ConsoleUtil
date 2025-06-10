@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-  Updated:		8 JUN 2025
+  Updated:		10 JUN 2025
   License:		MIT License
 * You can include this header in header files.
 * C++14 or later is required.
@@ -136,7 +136,8 @@ namespace internal {
 	using is_invocable = std::is_invocable<F, Args...>;
 #endif
 } // internal
-
+#define _CUTIL_CONCEPT(_TYPE) 				\
+			typename std::enable_if_t<_TYPE, bool> = false
 #define _CUTIL_CONCEPT_UNSIGNED(T) 			\
 			typename std::enable_if_t<cutil::internal::is_uint<T>::value, bool> = false
 #define _CUTIL_CONCEPT_INTEGRAL(T) 			\
@@ -1258,58 +1259,55 @@ inline namespace math { // inline
 		return cutil::math::factorial<R>(base);
 	}
 #endif // C++17
-	
-
-	
-	namespace float_internal{
-		template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-		inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
-			if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
-				return false; // NaN is not equal to anything, including itself
-			}
-			if(cutil::math::isinf(a) || cutil::math::isinf(b)) {
-				return (a == b); // +inf == +inf, -inf == -inf, but +inf != -inf, inf != non-inf
-			}
-			return (cutil::math::abs(a - b) <= cutil::math::abs(epsilon)); // overloaded abs() for floating number in <cstdlib>
+} // math
+namespace internal{
+	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
+		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
+			return false; // NaN is not equal to anything, including itself
 		}
-		
-		template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-		inline constexpr T lerp(T a, T b, T t) noexcept {
-		#ifdef CUTIL_CPP20_SUPPORTED
-			return std::lerp((a), (b), t);
-		#else
-			constexpr T one = static_cast<T>(1);
-			constexpr T zero = static_cast<T>(0);
-			if(cutil::math::isnan(a) || cutil::math::isnan(b) || cutil::math::isnan(t)) {
-				return std::numeric_limits<T>::quiet_NaN(); // NaN, return NaN
-			}else if((a <= zero && b >= zero) || (a >= zero && b <= zero)){
-				return ((t * b) + ((one - t) * a));
-			}else if(t == one){
-				return b;
-			}
-			const T x = (a + (t * (b - a))); // calculate interpolation value
-			if((t > one) == (b > a)){
-				return std::max(b, x); // if t > 1, return b if x > b, else return x
-			}else{
-				return std::min(b, x); // if t < 1, return b if x < b, else return x
-			}
-		#endif
+		if(cutil::math::isinf(a) || cutil::math::isinf(b)) {
+			return (a == b); // +inf == +inf, -inf == -inf, but +inf != -inf, inf != non-inf
 		}
-	} // float_internal
+		return (cutil::math::abs(a - b) <= cutil::math::abs(epsilon)); // overloaded abs() for floating number in <cstdlib>
+	}
 	
-	
+	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr T lerp(T a, T b, T t) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::lerp((a), (b), t);
+	#else
+		constexpr T one = static_cast<T>(1);
+		constexpr T zero = static_cast<T>(0);
+		if(cutil::math::isnan(a) || cutil::math::isnan(b) || cutil::math::isnan(t)) {
+			return std::numeric_limits<T>::quiet_NaN(); // NaN, return NaN
+		}else if((a <= zero && b >= zero) || (a >= zero && b <= zero)){
+			return ((t * b) + ((one - t) * a));
+		}else if(t == one){
+			return b;
+		}
+		const T x = (a + (t * (b - a))); // calculate interpolation value
+		if((t > one) == (b > a)){
+			return std::max(b, x); // if t > 1, return b if x > b, else return x
+		}else{
+			return std::min(b, x); // if t < 1, return b if x < b, else return x
+		}
+	#endif
+	}
+} // float_internal
+namespace math{
 	//* Compares two floating-point numbers for equality within a specified epsilon.
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	bool fequal(float a, float b, float epsilon = std::numeric_limits<float>::epsilon()) noexcept {
-		return cutil::math::float_internal::fequal(a, b, epsilon);
+		return cutil::internal::fequal(a, b, epsilon);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	bool fequal(double a, double b, double epsilon = std::numeric_limits<double>::epsilon()) noexcept {
-		return cutil::math::float_internal::fequal(a, b, epsilon);
+		return cutil::internal::fequal(a, b, epsilon);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	bool fequal(long double a, long double b, long double epsilon = std::numeric_limits<long double>::epsilon()) noexcept {
-		return cutil::math::float_internal::fequal(a, b, epsilon);
+		return cutil::internal::fequal(a, b, epsilon);
 	}
 /*
 	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
@@ -1323,15 +1321,15 @@ inline namespace math { // inline
 	//  use std::lerp() since C++20
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	float lerp(float a, float b, float t) noexcept {
-		return cutil::math::float_internal::lerp(a, b, t);
+		return cutil::internal::lerp(a, b, t);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	double lerp(double a, double b, double t) noexcept {
-		return cutil::math::float_internal::lerp(a, b, t);
+		return cutil::internal::lerp(a, b, t);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	long double lerp(long double a, long double b, long double t) noexcept {
-		return cutil::math::float_internal::lerp(a, b, t);
+		return cutil::internal::lerp(a, b, t);
 	}
 	
 

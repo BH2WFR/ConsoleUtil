@@ -48,6 +48,7 @@ Reference of Ansi Escape Codes:
 
 - `#define CUTIL_FORCE_FUNCTION_STATIC 1` **BEFORE** include of `CppUtil.h` may let all the inline functions to be `static inline`
 
+- `#define CUTIL_FORCE_UTF8  0` **BEFORE** include may turn off UTF-8 literal encoding checking (C++ Only). By Default, **if you are using MSVC, `/UTF-8` compiler param is REQUIRED**.
 
 
 ----------
