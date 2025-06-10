@@ -34,21 +34,34 @@ _CUTIL_NAMESPACE_BEGIN
 //===============  concepts ================
 namespace internal {
 	template <typename T>
-	struct is_uint : std::integral_constant<bool, std::is_integral<T>::value && std::is_unsigned<T>::value && !std::is_same<T, bool>::value> {};
+	struct is_uint : std::integral_constant<bool
+					, std::is_integral<T>::value
+					&& std::is_unsigned<T>::value
+					&& !std::is_same<std::remove_cv_t<T>, bool>::value
+			> {};
 	
 	template <typename T>
-	struct is_signed_or_float : std::integral_constant<bool, (std::is_signed<T>::value && !std::is_same<T, bool>::value) || std::is_floating_point<T>::value> {};
+	struct is_signed_or_float : std::integral_constant<bool
+					, (std::is_signed<T>::value && !std::is_same<std::remove_cv_t<T>, bool>::value)
+					|| std::is_floating_point<T>::value
+			> {};
 	
 	template <typename From, typename To = From>
 	struct is_arithmetic_and_convertible : std::integral_constant<bool
-				, std::is_arithmetic<From>::value && std::is_arithmetic<To>::value && std::is_convertible<From, To>::value
-				&& !std::is_same<From, bool>::value && !std::is_same<To, bool>::value
+				, std::is_arithmetic<From>::value
+				&& std::is_arithmetic<To>::value
+				&& std::is_convertible<From, To>::value
+				&& !std::is_same<std::remove_cv_t<From>, bool>::value
+				&& !std::is_same<std::remove_cv_t<To>, bool>::value
 			>{};
 	
 	template <typename From, typename To = From>
 	struct is_integral_and_convertible : std::integral_constant<bool
-				, std::is_integral<From>::value && std::is_integral<To>::value && std::is_convertible<From, To>::value
-				&& !std::is_same<From, bool>::value && !std::is_same<To, bool>::value
+				, std::is_integral<From>::value
+				&& std::is_integral<To>::value
+				&& std::is_convertible<From, To>::value
+				&& !std::is_same<std::remove_cv_t<From>, bool>::value
+				&& !std::is_same<std::remove_cv_t<To>, bool>::value
 			>{};
 	
 	template <typename T>
@@ -141,13 +154,13 @@ namespace internal {
 #define _CUTIL_CONCEPT_UNSIGNED(T) 			\
 			typename std::enable_if_t<cutil::internal::is_uint<T>::value, bool> = false
 #define _CUTIL_CONCEPT_INTEGRAL(T) 			\
-			typename std::enable_if_t<std::is_integral<T>::value && !std::is_same<T, bool>::value, bool> = false
+			typename std::enable_if_t<std::is_integral<T>::value && !std::is_same<std::remove_cv_t<T>, bool>::value, bool> = false
 #define _CUTIL_CONCEPT_FLOAT(T) 			\
 			typename std::enable_if_t<std::is_floating_point<T>::value, bool> = false
 #define _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T) 	\
 			typename std::enable_if_t<cutil::internal::is_signed_or_float<T>::value, bool> = false
 #define _CUTIL_CONCEPT_ARITHMETIC(T)		\
-			typename std::enable_if_t<std::is_arithmetic<T>::value && !std::is_same<T, bool>::value, bool> = false
+			typename std::enable_if_t<std::is_arithmetic<T>::value && !std::is_same<std::remove_cv_t<T>, bool>::value, bool> = false
 #define _CUTIL_CONCEPT_ARITHMETIC_CONVERTIBLE(From, To) \
 			typename std::enable_if_t<cutil::internal::is_arithmetic_and_convertible<From, To>::value, bool> = true
 // #define _CUTIL_CONCEPT_INTEGRAL_CONVERTIBLE(From, To) 	\
