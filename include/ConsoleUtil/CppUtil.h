@@ -105,7 +105,9 @@ namespace internal {
 											, typename cutil::internal::remove_const_pointer_to_type<PDerived>::type
 										>::value
 									>{};
+	
 
+	
 #ifndef CUTIL_CPP17_SUPPORTED // C++14
 	namespace detail {
 		// SFINAE辅助模板
@@ -151,12 +153,16 @@ namespace internal {
 } // internal
 #define _CUTIL_CONCEPT(_TYPE) 				\
 			typename std::enable_if_t<_TYPE, bool> = false
+#define _CUTIL_CONCEPT_SAME_REMOVE_CV(T1, T2) 	\
+			typename std::enable_if_t<std::is_same<std::remove_cv_t<T1>, std::remove_cv_t<T2>>::value, bool> = true
 #define _CUTIL_CONCEPT_UNSIGNED(T) 			\
 			typename std::enable_if_t<cutil::internal::is_uint<T>::value, bool> = false
 #define _CUTIL_CONCEPT_INTEGRAL(T) 			\
 			typename std::enable_if_t<std::is_integral<T>::value && !std::is_same<std::remove_cv_t<T>, bool>::value, bool> = false
 #define _CUTIL_CONCEPT_FLOAT(T) 			\
 			typename std::enable_if_t<std::is_floating_point<T>::value, bool> = false
+#define _CUTIL_CONCEPT_FLOAT_WITHOUT_LONGDOUBLE(T) \
+			typename std::enable_if_t<std::is_floating_point<T>::value && !std::is_same<std::remove_cv_t<T>, long double>::value, bool> = false
 #define _CUTIL_CONCEPT_SIGNED_OR_FLOAT(T) 	\
 			typename std::enable_if_t<cutil::internal::is_signed_or_float<T>::value, bool> = false
 #define _CUTIL_CONCEPT_ARITHMETIC(T)		\
@@ -716,47 +722,58 @@ inline namespace bit { // inline
 
 
 //======================= Math Constants =========================
+/* instructions:
+	float 		pi 		= cutil::numbers::pi_f;
+	double 		pi 		= cutil::numbers::pi;
+	long double pi_ld 	= cutil::numbers::pi_ld
+	
+	float 		pi 		= cutil::Numbers<float>::pi;
+	double 		pi 		= cutil::Numbers<double>::pi;
+	long double pi_ld 	= cutil::Numbers<long double>::pi
+*/
 template <typename T, _CUTIL_CONCEPT_FLOAT(T)>
 struct Numbers {
-	static constexpr T e 			= static_cast<T>(2.71828182845904523536); // e
-	static constexpr T log2e 		= static_cast<T>(1.44269504088896340736); // log2(e)
-	static constexpr T log10e 		= static_cast<T>(0.43429448190325182765); // log10(e)
-	static constexpr T ln2 			= static_cast<T>(0.69314718055994530942); // ln(2)
-	static constexpr T ln10 		= static_cast<T>(2.30258509299404568402); // ln(10)
+	// defined as long double type.
+	//* mathematical constants
+	static constexpr T e 			= static_cast<T>(2.718281828459045235360287471352662498L); //*  e
+	static constexpr T log2e 		= static_cast<T>(1.442695040888963407359924681001892137L); //*  log2(e)
+	static constexpr T log10e 		= static_cast<T>(0.434294481903251827651128918916605082L); //*  log10(e)
+	static constexpr T ln2 			= static_cast<T>(0.693147180559945309417232121458176568L); //*  ln(2)
+	static constexpr T ln10 		= static_cast<T>(2.302585092994045684017991454684364208L); //*  ln(10)
 
-	static constexpr T pi 			= static_cast<T>(3.14159265358979323846); // pi
-	static constexpr T two_pi 		= static_cast<T>(6.28318530717958647692); // 2 * pi
-	static constexpr T three_pi 	= static_cast<T>(9.42477796076937971538); // 3 * pi
-	static constexpr T pi_2 		= static_cast<T>(1.57079632679489661923); // pi / 2
-	static constexpr T pi_3 		= static_cast<T>(1.04719755119659774615); // pi / 3
-	static constexpr T pi_4 		= static_cast<T>(0.78539816339744830962); // pi / 4
-	static constexpr T inv_pi 		= static_cast<T>(0.31830988618379067154); // 1 / pi
-	static constexpr T inv_sqrt_pi 	= static_cast<T>(0.56418958354775628694); // 1 / sqrt(pi)
-	static constexpr T two_inv_pi 	= static_cast<T>(0.63661977236758134308); // 2 / pi
-	static constexpr T two_sqrt_pi 	= static_cast<T>(1.12837916709551257390); // 2 / sqrt(pi)
+	static constexpr T pi 			= static_cast<T>(3.141592653589793238462643383279502884L); //*  pi
+	static constexpr T two_pi 		= static_cast<T>(6.283185307179586476925286766559005768L); //*  2 * pi
+	static constexpr T three_pi 	= static_cast<T>(9.424777960769379715387930149838508653L); //*  3 * pi
+	static constexpr T pi_half 		= static_cast<T>(1.570796326794896619231321691639751442L); //*  pi / 2
+	static constexpr T pi_third 	= static_cast<T>(1.047197551196597746154214461093167628L); //*  pi / 3
+	static constexpr T pi_quarter 	= static_cast<T>(0.7853981633974483096156608458198757210L);//*  pi / 4
+	static constexpr T inv_pi 		= static_cast<T>(0.3183098861837906715377675267450287241L);//*  1 / pi
+	static constexpr T inv_sqrt_pi 	= static_cast<T>(0.5641895835477562869480794515607725858L);//*  1 / sqrt(pi)
+	static constexpr T two_inv_pi 	= static_cast<T>(0.6366197723675813430755350534900574481L);//*  2 / pi
+	static constexpr T two_sqrt_pi 	= static_cast<T>(1.128379167095512573896158903121545172L); //*  2 / sqrt(pi)
 
-	static constexpr T sqrt2 		= static_cast<T>(1.41421356237309504880); // sqrt(2)
-	static constexpr T inv_sqrt2 	= static_cast<T>(0.70710678118654752440); // 1 / sqrt(2)
-	static constexpr T sqrt3 		= static_cast<T>(1.73205080756887729353); // sqrt(3)
-	static constexpr T inv_sqrt3 	= static_cast<T>(0.57735026918962576451); // 1 / sqrt(3)
+	static constexpr T sqrt2 		= static_cast<T>(1.414213562373095048801688724209698079L); //*  sqrt(2)
+	static constexpr T inv_sqrt2 	= static_cast<T>(0.7071067811865475244008443621048490393L);//*  1 / sqrt(2)
+	static constexpr T sqrt3 		= static_cast<T>(1.732050807568877293527446341505872367L); //*  sqrt(3)
+	static constexpr T inv_sqrt3 	= static_cast<T>(0.577350269189625764509148780501957456L); //*  1 / sqrt(3)
 
-	static constexpr T phi 			= static_cast<T>(1.61803398874989484820); // (1 + sqrt(5)) / 2, golden ratio
-	static constexpr T inv_phi 		= static_cast<T>(0.61803398874989484820); // 2 / (1 + sqrt(5)), inverted golden ratio
+	static constexpr T phi 			= static_cast<T>(1.618033988749894848204586834365638118L); //*  (1 + sqrt(5)) / 2, golden ratio
+	static constexpr T inv_phi 		= static_cast<T>(0.6180339887498948482045868343656381177L);//*  2 / (1 + sqrt(5)), inverted golden ratio
 
-	static constexpr T egamma 		= static_cast<T>(0.57721566490153286060); // Euler-Mascheroni constant
+	static constexpr T egamma 		= static_cast<T>(0.5772156649015328606065120900824024310L);//*  Euler-Mascheroni constant
 	
-	// special values of floating point types
-	static constexpr T inf 			= std::numeric_limits<T>::infinity();  // infinity
-	static constexpr T neg_inf 		= -std::numeric_limits<T>::infinity(); // minus infinity
-	static constexpr T nan 			= std::numeric_limits<T>::quiet_NaN(); // NaN (not a number)
+	//* special values of floating point types
+	static constexpr T inf 			= std::numeric_limits<T>::infinity();  //* infinity
+	static constexpr T neg_inf 		= -std::numeric_limits<T>::infinity(); //* minus infinity
+	static constexpr T nan 			= std::numeric_limits<T>::quiet_NaN(); //* NaN (not a number)
 	
-	// limits of the type T
-	static constexpr T epsilon 		= std::numeric_limits<T>::epsilon(); // machine epsilon, the smallest value that can be added to 1.0 to get a different value
-	static constexpr T min 			= std::numeric_limits<T>::min(); // minimum positive value
-	static constexpr T max 			= std::numeric_limits<T>::max(); // maximum value
-	static constexpr T lowest 		= std::numeric_limits<T>::lowest(); // lowest value, the most negative value
-	static constexpr T denorm_min 	= std::numeric_limits<T>::denorm_min(); // minimum denormalized value, the smallest positive value that can be represented as a denormalized number
-	static constexpr T round_error 	= std::numeric_limits<T>::round_error(); // the maximum error due to rounding
+	//* limits of the type T
+	static constexpr T epsilon 		= std::numeric_limits<T>::epsilon(); 	//* machine epsilon, the smallest value that can be added to 1.0 to get a different value
+	static constexpr T min 			= std::numeric_limits<T>::min(); 		//* minimum positive value
+	static constexpr T max 			= std::numeric_limits<T>::max(); 		//* maximum value
+	static constexpr T lowest 		= std::numeric_limits<T>::lowest(); 	//* lowest value, the most negative value
+	static constexpr T denorm_min 	= std::numeric_limits<T>::denorm_min(); //* minimum denormalized value, the smallest positive value that can be represented as a denormalized number
+	static constexpr T round_error 	= std::numeric_limits<T>::round_error();//* the maximum error due to rounding
 };
 
 inline namespace numbers { // inline
@@ -771,9 +788,9 @@ inline namespace numbers { // inline
 	constexpr double pi 			= cutil::Numbers<double>::pi;
 	constexpr double two_pi 		= cutil::Numbers<double>::two_pi;
 	constexpr double three_pi 		= cutil::Numbers<double>::three_pi;
-	constexpr double pi_2 			= cutil::Numbers<double>::pi_2;
-	constexpr double pi_3 			= cutil::Numbers<double>::pi_3;
-	constexpr double pi_4 			= cutil::Numbers<double>::pi_4;
+	constexpr double pi_half 		= cutil::Numbers<double>::pi_half;
+	constexpr double pi_third 		= cutil::Numbers<double>::pi_third;
+	constexpr double pi_quarter 	= cutil::Numbers<double>::pi_quarter;
 	constexpr double inv_pi 		= cutil::Numbers<double>::inv_pi;
 	constexpr double inv_sqrt_pi 	= cutil::Numbers<double>::inv_sqrt_pi;
 	constexpr double two_inv_pi 	= cutil::Numbers<double>::two_inv_pi;
@@ -803,9 +820,9 @@ inline namespace numbers { // inline
 	constexpr float pi_f 			= cutil::Numbers<float>::pi;
 	constexpr float two_pi_f 		= cutil::Numbers<float>::two_pi;
 	constexpr float three_pi_f 		= cutil::Numbers<float>::three_pi;
-	constexpr float pi_2_f 			= cutil::Numbers<float>::pi_2;
-	constexpr float pi_3_f 			= cutil::Numbers<float>::pi_3;
-	constexpr float pi_4_f 			= cutil::Numbers<float>::pi_4;
+	constexpr float pi_half_f 		= cutil::Numbers<float>::pi_half;
+	constexpr float pi_third_f 		= cutil::Numbers<float>::pi_third;
+	constexpr float pi_quarter_f 	= cutil::Numbers<float>::pi_quarter;
 	constexpr float inv_pi_f 		= cutil::Numbers<float>::inv_pi;
 	constexpr float inv_sqrt_pi_f 	= cutil::Numbers<float>::inv_sqrt_pi;
 	constexpr float two_inv_pi_f 	= cutil::Numbers<float>::two_inv_pi;
@@ -835,9 +852,9 @@ inline namespace numbers { // inline
 	constexpr long double pi_ld 			= cutil::Numbers<long double>::pi;
 	constexpr long double two_pi_ld 		= cutil::Numbers<long double>::two_pi;
 	constexpr long double three_pi_ld 		= cutil::Numbers<long double>::three_pi;
-	constexpr long double pi_2_ld 			= cutil::Numbers<long double>::pi_2;
-	constexpr long double pi_3_ld 			= cutil::Numbers<long double>::pi_3;
-	constexpr long double pi_4_ld 			= cutil::Numbers<long double>::pi_4;
+	constexpr long double pi_half_ld 		= cutil::Numbers<long double>::pi_half;
+	constexpr long double pi_third_ld 		= cutil::Numbers<long double>::pi_third;
+	constexpr long double pi_quarter_ld 	= cutil::Numbers<long double>::pi_quarter;
 	constexpr long double inv_pi_ld 		= cutil::Numbers<long double>::inv_pi;
 	constexpr long double inv_sqrt_pi_ld 	= cutil::Numbers<long double>::inv_sqrt_pi;
 	constexpr long double two_inv_pi_ld 	= cutil::Numbers<long double>::two_inv_pi;
@@ -1175,14 +1192,85 @@ inline namespace math { // inline
 	#endif
 	}
 	
-	//* power function with integer exponent
-	//  int ret = cutil::pow(2, 3); // 2^3 = 8
-	//  size_t ret = cutil::pow<int, size_t>(2, 3); // return as size_t
-	//  int ret = cutil::pow<3>(2); // 2^3 = 8, >=C++17
-	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
+
+} // namespace math
+
+namespace internal{
+	template<typename T>
+	struct float_to_int;
+	template<>
+	struct float_to_int<float> {
+		using type = int32_t;
+	};
+	template<>
+	struct float_to_int<double> {
+		using type = int64_t;
+	};
+
+	template<typename T, _CUTIL_CONCEPT_FLOAT_WITHOUT_LONGDOUBLE(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC _CUTIL_CONSTEXPR_CPP20
+	inline bool fequal_ulp_impl(T a, T b, int maxUlpDiff = 4) noexcept {
+		using intType_t = typename cutil::internal::float_to_int<std::remove_cv_t<T>>::type;
+		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
+			return false; // NaN is not equal to anything, including itself
+		}
+		if(cutil::math::isinf(a) || cutil::math::isinf(b)) {
+			return (a == b); // +inf == +inf, -inf == -inf, but +inf != -inf, inf != non-inf
+		}
+		const size_t size = sizeof(intType_t);
+		intType_t intA;
+		intType_t intB;
+	#ifdef CUTIL_CPP20_SUPPORTED
+		intA = std::bit_cast<intType_t>(a);
+		intB = std::bit_cast<intType_t>(b);
+	#else // C++14/17, not constexpr
+		memcpy(&intA, &a, size);
+		memcpy(&intB, &b, size);
+		// intA = *reinterpret_cast<volatile intType_t*>(&intA); // UB
+		// intB = *reinterpret_cast<volatile intType_t*>(&intB); // UB
+	#endif
+		if((intA < 0) != (intB < 0)) {
+			return (intA == intB); // one is negative, the other is positive
+		}
+		intType_t diff = cutil::math::abs(intA - intB);
+		return (diff <= maxUlpDiff); // check if the difference is within the allowed ULP (Units in the Last Place)
+	}
+	
+	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr bool fequal_eps_impl(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
+		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
+			return false; // NaN is not equal to anything, including itself
+		}
+		if(cutil::math::isinf(a) || cutil::math::isinf(b)) {
+			return (a == b); // +inf == +inf, -inf == -inf, but +inf != -inf, inf != non-inf
+		}
+		return (cutil::math::abs(a - b) <= cutil::math::abs(epsilon)); // overloaded abs() for floating number in <cstdlib>
+	}
+	
+	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr T lerp_impl(T a, T b, T t) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::lerp((a), (b), t);
+	#else
+		constexpr T one = static_cast<T>(1);
+		constexpr T zero = static_cast<T>(0);
+		if(cutil::math::isnan(a) || cutil::math::isnan(b) || cutil::math::isnan(t)) {
+			return std::numeric_limits<T>::quiet_NaN(); // NaN, return NaN
+		}else if((a <= zero && b >= zero) || (a >= zero && b <= zero)){
+			return ((t * b) + ((one - t) * a));
+		}else if(t == one){
+			return b;
+		}
+		const T x = (a + (t * (b - a))); // calculate interpolation value
+		if((t > one) == (b > a)){
+			return std::max(b, x); // if t > 1, return b if x > b, else return x
+		}else{
+			return std::min(b, x); // if t < 1, return b if x < b, else return x
+		}
+	#endif
+	}
+	
 	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline constexpr R pow(const T base, const size_t exp) noexcept {
-		// assert((exp >= 0) && "The exponent should be greater than or equal to 0");
+	inline constexpr R pow_impl(const T base, const size_t exp) noexcept { // `base` should != 0
 		if(exp == 0){
 			return static_cast<R>(1);
 		}
@@ -1195,12 +1283,54 @@ inline namespace math { // inline
 		if(exp == 3){
 			return static_cast<R>(base * base * base);
 		}
-		int tmp = cutil::math::pow(base, exp/2);
+		int tmp = cutil::internal::pow_impl(base, exp/2);
 		if (exp % 2 == 0){
 			return static_cast<R>(tmp * tmp);
 		}else{
 			return static_cast<R>(base * tmp * tmp);
 		}
+	}
+	
+#ifdef CUTIL_CPP17_SUPPORTED
+	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr R pow_impl(const T base) noexcept { // `base` should != 0
+		if constexpr (exp == 0) {
+			return static_cast<R>(1);
+		}else if constexpr (exp == 1) {
+			return static_cast<R>(base);
+		}else if constexpr (exp == 2) {
+			return static_cast<R>(base * base);
+		}else if constexpr (exp == 3) {
+			return static_cast<R>(base * base * base);
+		}
+		R tmp = cutil::internal::pow_impl<exp / 2, T, R>(base);
+		if (exp % 2 == 0){
+			return static_cast<R>(tmp * tmp);
+		}else{
+			return static_cast<R>(base * tmp * tmp);
+		}
+	}
+#endif // C++17
+
+} // namespace internal
+
+inline namespace math { // inline
+	//* power function with unsigned integer exponent
+	//  int ret = cutil::pow(2, 3); // 2^3 = 8
+	//  size_t ret = cutil::pow<int, size_t>(2, 3); // return as size_t
+	//  int ret = cutil::pow<3>(2); // 2^3 = 8, >=C++17
+	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
+	//  specially, pow(3, 0) == 1, pow(0, 0) == 1, pow(0, 3) == 0
+	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr R pow(const T base, const size_t exp) noexcept {
+		if(base == static_cast<T>(0)) {
+			if(exp > 0){
+				return static_cast<R>(0); // 0^exp = 0 for exp > 0
+			}else{ // exp == 0, 0^0 is usually defined as 1
+				return static_cast<R>(1); // 0^0 is usually defined as 1
+			}
+		}
+		return cutil::internal::pow_impl<T, R>(base, exp); // call the implementation
 	}
 	
 	//* factorial function
@@ -1224,29 +1354,25 @@ inline namespace math { // inline
 	}
 	
 #ifdef CUTIL_CPP17_SUPPORTED
-	//* int ret = cutil::pow<3>(2); // 2^3 = 8, >=C++17
+	//* power function with unsigned integer exponent (C++17)
+	//  int ret = cutil::pow<3>(2); // 2^3 = 8, >=C++17
 	//  size_t ret = cutil::pow<3, int, size_t>(2); // return as size_t
 	//  from https://stackoverflow.com/questions/1505675/power-of-an-integer-in-c
+	//  specially, pow<0>(3) == 1, pow<0>(0) == 1, pow<3>(0) == 0
 	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R pow(const T base) noexcept {
-		if constexpr (exp == 0) {
-			return static_cast<R>(1);
-		}else if constexpr (exp == 1) {
-			return static_cast<R>(base);
-		}else if constexpr (exp == 2) {
-			return static_cast<R>(base * base);
-		}else if constexpr (exp == 3) {
-			return static_cast<R>(base * base * base);
+		if(base == 0){
+			if constexpr (exp > 0) {
+				return static_cast<R>(0); // 0^exp = 0 for exp > 0
+			}else{ // exp == 0
+				return static_cast<R>(1); // 0^0 is usually defined as 1
+			}
 		}
-		R tmp = cutil::math::pow<exp / 2, T, R>(base);
-		if (exp % 2 == 0){
-			return static_cast<R>(tmp * tmp);
-		}else{
-			return static_cast<R>(base * tmp * tmp);
-		}
+		return cutil::internal::pow_impl<exp, T, R>(base); // call the implementation
 	}
 	
-	//* int ret = cutil::factorial<3>(); // 3! = 6
+	//* factorial function (C++17)
+	//  int ret = cutil::factorial<3>(); // 3! = 6
 	//  size_t ret = cutil::factorial<3, size_t>(); // return as size_t
 	template <const size_t base, typename R = size_t, _CUTIL_CONCEPT_INTEGRAL(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R factorial() noexcept {
@@ -1261,7 +1387,7 @@ inline namespace math { // inline
 		}
 	}
 	
-#else
+#else // C++14
 	template <const size_t exp, typename T, typename R = T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R pow(const T base) noexcept {
 		return cutil::math::pow(base, exp);
@@ -1272,59 +1398,36 @@ inline namespace math { // inline
 		return cutil::math::factorial<R>(base);
 	}
 #endif // C++17
-} // math
-namespace internal{
-	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline constexpr bool fequal(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
-		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
-			return false; // NaN is not equal to anything, including itself
-		}
-		if(cutil::math::isinf(a) || cutil::math::isinf(b)) {
-			return (a == b); // +inf == +inf, -inf == -inf, but +inf != -inf, inf != non-inf
-		}
-		return (cutil::math::abs(a - b) <= cutil::math::abs(epsilon)); // overloaded abs() for floating number in <cstdlib>
-	}
 	
-	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline constexpr T lerp(T a, T b, T t) noexcept {
-	#ifdef CUTIL_CPP20_SUPPORTED
-		return std::lerp((a), (b), t);
-	#else
-		constexpr T one = static_cast<T>(1);
-		constexpr T zero = static_cast<T>(0);
-		if(cutil::math::isnan(a) || cutil::math::isnan(b) || cutil::math::isnan(t)) {
-			return std::numeric_limits<T>::quiet_NaN(); // NaN, return NaN
-		}else if((a <= zero && b >= zero) || (a >= zero && b <= zero)){
-			return ((t * b) + ((one - t) * a));
-		}else if(t == one){
-			return b;
-		}
-		const T x = (a + (t * (b - a))); // calculate interpolation value
-		if((t > one) == (b > a)){
-			return std::max(b, x); // if t > 1, return b if x > b, else return x
-		}else{
-			return std::min(b, x); // if t < 1, return b if x < b, else return x
-		}
-	#endif
-	}
-} // float_internal
-namespace math{
 	//* Compares two floating-point numbers for equality within a specified epsilon.
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
-	bool fequal(float a, float b, float epsilon = std::numeric_limits<float>::epsilon()) noexcept {
-		return cutil::internal::fequal(a, b, epsilon);
+	bool fequal_eps(float a, float b, float epsilon = std::numeric_limits<float>::epsilon()) noexcept {
+		return cutil::internal::fequal_eps_impl(a, b, epsilon);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
-	bool fequal(double a, double b, double epsilon = std::numeric_limits<double>::epsilon()) noexcept {
-		return cutil::internal::fequal(a, b, epsilon);
+	bool fequal_eps(double a, double b, double epsilon = std::numeric_limits<double>::epsilon()) noexcept {
+		return cutil::internal::fequal_eps_impl(a, b, epsilon);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
-	bool fequal(long double a, long double b, long double epsilon = std::numeric_limits<long double>::epsilon()) noexcept {
-		return cutil::internal::fequal(a, b, epsilon);
+	bool fequal_eps(long double a, long double b, long double epsilon = std::numeric_limits<long double>::epsilon()) noexcept {
+		return cutil::internal::fequal_eps_impl(a, b, epsilon);
+	}
+	//* Compares two floating-point numbers for equality within a specified ULP (Units in the Last Place).
+	//  not constexpr in C++14/17, but constexpr in C++20
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline _CUTIL_CONSTEXPR_CPP20
+	bool fequal_ulp(float a, float b, int maxUlpDiff = 4) {
+		return cutil::internal::fequal_ulp_impl(a, b, maxUlpDiff);
+	}
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline _CUTIL_CONSTEXPR_CPP20
+	bool fequal_ulp(double a, double b, int maxUlpDiff = 4) {
+		return cutil::internal::fequal_ulp_impl(a, b, maxUlpDiff);
 	}
 /*
-	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
-	bool isEqual5 = cutil::math::fequal(c, d, 0.0001); // equivalent
+	bool isEqual4 = cutil::math::fequal_eps(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
+	bool isEqual5 = cutil::math::fequal_eps(c, d, 0.0001); // equivalent
+	
+	bool isEqual6 = cutil::math::fequal_ulp(a, b); // (abs(a - b) <= 4 ULP)
+	bool isEqual7 = cutil::math::fequal_ulp(c, d, 2); // equivalent, 2 ULP
 */
 
 	
@@ -1334,20 +1437,20 @@ namespace math{
 	//  use std::lerp() since C++20
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	float lerp(float a, float b, float t) noexcept {
-		return cutil::internal::lerp(a, b, t);
+		return cutil::internal::lerp_impl(a, b, t);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	double lerp(double a, double b, double t) noexcept {
-		return cutil::internal::lerp(a, b, t);
+		return cutil::internal::lerp_impl(a, b, t);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	long double lerp(long double a, long double b, long double t) noexcept {
-		return cutil::internal::lerp(a, b, t);
+		return cutil::internal::lerp_impl(a, b, t);
 	}
 	
 
 	//* convert degrees to radians, (degree * M_PI / 180.0)
-	// `cutil::fequal(cutil::numbers::pi_3, cutil::math::deg2rad(60.0)) == true`
+	// `cutil::fequal_eps(cutil::numbers::pi_3, cutil::math::deg2rad(60.0)) == true`
 	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr F deg2rad(F degree) noexcept {
 		// if(cutil::math::isnan(degree) || cutil::math::isinf(degree)) {
@@ -1357,7 +1460,7 @@ namespace math{
 	}
 	
 	//* convert radians to degrees, (radian * 180.0 / M_PI)
-	// `cutil::fequal(60.0, cutil::math::rad2deg(cutil::numbers::pi_3)) == true`
+	// `cutil::fequal_eps(60.0, cutil::math::rad2deg(cutil::numbers::pi_3)) == true`
 	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr F rad2deg(F radian) noexcept {
 		// if(cutil::math::isnan(radian) || cutil::math::isinf(radian)) {
@@ -1376,13 +1479,13 @@ namespace math{
 inline namespace type {
 	//* cast bitwise, `(reinterpret_cast<volatile Out*>(&in))`
 	// is not constexpr in C++14/17, but constexpr in C++20
-	template<typename Out, typename In> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline constexpr Out bit_cast(In&& in) noexcept {
+	template<typename Out, typename In> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC _CUTIL_CONSTEXPR_CPP20
+	inline Out bit_cast(In&& in) noexcept {
 		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::bit_cast<Out>(in);
 	#else
-		return *reinterpret_cast<volatile Out*>(&in);
+		return *reinterpret_cast<volatile Out*>(&in); // UB, but works in practice
 	#endif
 	}
 	
@@ -1410,7 +1513,7 @@ inline namespace type {
 			, _CUTIL_CONCEPT_POINTER_SAME_ATTRIBUTES(PDerived, PBase)
 			, _CUTIL_CONCEPT_POINTER_DIFFERENT_TYPES(PDerived, PBase)
 			, _CUTIL_CONCEPT_POINTER_IS_BASE_OF(PBase, PDerived)
-			> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+		> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr PDerived safe_cast(PBase in) {
 	#ifdef CUTIL_DEBUG_BUILD
 		PDerived out = dynamic_cast<PDerived>(in);
@@ -1470,7 +1573,7 @@ inline namespace memory {
 	// (UB) get value from the memory address in the specific type
 	template<typename T, typename P, _CUTIL_CONCEPT_POINTER(P)> _CUTIL_NODISCARD [[deprecated]] _CUTIL_MAYBE_UNUSED _CUTIL_FUNC_STATIC
 	inline T& read_memory(P ptr) {
-		return *reinterpret_cast<T*>(ptr);
+		return *reinterpret_cast<T*>(ptr); // add volatile might cause error
 	}
 	
 	// (UB) set memory at the specific location in the specific type

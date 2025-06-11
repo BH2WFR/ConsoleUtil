@@ -612,9 +612,13 @@ Updated:		8 JUN 2025
 			((_TYPE)((_STEP == 0) ? (_BIT) : ((_BIT) << (_STEP)) | ((_BIT) >> ((8 * sizeof(_TYPE)) - (_STEP)))))
 #define CUTIL_BIT_ROTATE_RIGHT_TYPE(_TYPE, _BIT, _STEP)	\
 			((_TYPE)((_STEP == 0) ? (_BIT) : ((_BIT) >> (_STEP)) | ((_BIT) << ((8 * sizeof(_TYPE)) - (_STEP)))))
+#define CUTIL_BIT_ROTL_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_TYPE(_TYPE, _BIT, _STEP)
+#define CUTIL_BIT_ROTR_TYPE(_TYPE, _BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_TYPE(_TYPE, _BIT, _STEP)
 
 #define CUTIL_BIT_ROTATE_LEFT(_BIT, _STEP)		CUTIL_BIT_ROTATE_LEFT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
 #define CUTIL_BIT_ROTATE_RIGHT(_BIT, _STEP)		CUTIL_BIT_ROTATE_RIGHT_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
+#define CUTIL_BIT_ROTL(_BIT, _STEP)				CUTIL_BIT_ROTL_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
+#define CUTIL_BIT_ROTR(_BIT, _STEP)				CUTIL_BIT_ROTR_TYPE(CUTIL_TYPEOF(_BIT), _BIT, _STEP)
 
 //* insert bit to one side, then shift others to the another side.
 #define CUTIL_BIT_INSERT_LEFT(_NUM, _BIT_VALUE)		((_NUM) >> 1 | (_BIT_VALUE) << (8 * sizeof(_NUM) - 1))
@@ -687,32 +691,33 @@ Updated:		8 JUN 2025
 //======================= Math Constants =========================
 
 //* Mathematical Constants:
-#define CUTIL_E				2.71828182845904523536	// e
-#define CUTIL_LOG2E			1.44269504088896340736	// log2(e)
-#define CUTIL_LOG10E		0.43429448190325182765	// log10(e)
-#define CUTIL_LN2			0.69314718055994530942	// ln(2)
-#define CUTIL_LN10			2.30258509299404568402	// ln(10)
+// double versions of mathematical constants:
+#define CUTIL_E				2.71828182845904523536	//*  e
+#define CUTIL_LOG2E			1.44269504088896340736	//*  log2(e)
+#define CUTIL_LOG10E		0.43429448190325182765	//*  log10(e)
+#define CUTIL_LN2			0.69314718055994530942	//*  ln(2)
+#define CUTIL_LN10			2.30258509299404568402	//*  ln(10)
 
-#define CUTIL_PI			3.14159265358979323846	// pi
-#define CUTIL_2_PI			6.28318530717958647692	// 2*pi
-#define CUTIL_3_PI			9.42477796076937971538	// 3*pi
-#define CUTIL_PI_2			1.57079632679489661923	// pi/2
-#define CUTIL_PI_3			1.04719755119659774615	// pi/3
-#define CUTIL_PI_4			0.78539816339744830962	// pi/4
-#define CUTIL_INV_PI		0.31830988618379067154	// 1/pi
-#define CUTIL_INV_SQRT_PI	0.56418958354775628694	// 1/sqrt(pi)
-#define CUTIL_2_INV_PI		0.63661977236758134308	// 2/pi
-#define CUTIL_2_SQRT_PI		1.12837916709551257390	// 2/sqrt(pi)
+#define CUTIL_PI			3.14159265358979323846	//*  pi
+#define CUTIL_2_PI			6.28318530717958647692	//*  2*pi
+#define CUTIL_3_PI			9.42477796076937971538	//*  3*pi
+#define CUTIL_PI_HALF		1.57079632679489661923	//*  pi/2
+#define CUTIL_PI_THIRD		1.04719755119659774615	//*  pi/3
+#define CUTIL_PI_QUARTER	0.78539816339744830962	//*  pi/4
+#define CUTIL_INV_PI		0.31830988618379067154	//*  1/pi
+#define CUTIL_INV_SQRT_PI	0.56418958354775628694	//*  1/sqrt(pi)
+#define CUTIL_2_INV_PI		0.63661977236758134308	//*  2/pi
+#define CUTIL_2_SQRT_PI		1.12837916709551257390	//*  2/sqrt(pi)
 
-#define CUTIL_SQRT_2		1.41421356237309504880	// sqrt(2)
-#define CUTIL_INV_SQRT_2	0.70710678118654752440	// 1/sqrt(2)
-#define CUTIL_SQRT_3		1.73205080756887729353	// sqrt(3)
-#define CUTIL_INV_SQRT_3	0.57735026918962576451	// 1/sqrt(3)
+#define CUTIL_SQRT_2		1.41421356237309504880	//*  sqrt(2)
+#define CUTIL_INV_SQRT_2	0.70710678118654752440	//*  1/sqrt(2)
+#define CUTIL_SQRT_3		1.73205080756887729353	//*  sqrt(3)
+#define CUTIL_INV_SQRT_3	0.57735026918962576451	//*  1/sqrt(3)
 
-#define CUTIL_PHI			1.61803398874989484820	// (1 + sqrt(5)) / 2, golden ratio
-#define CUTIL_INV_PHI		0.61803398874989484820	// 2 / (1 + sqrt(5)), inversed golden ratio
+#define CUTIL_PHI			1.61803398874989484820	//*  (1 + sqrt(5)) / 2, golden ratio
+#define CUTIL_INV_PHI		0.61803398874989484820	//*  2 / (1 + sqrt(5)), inversed golden ratio
 
-#define CUTIL_EGAMMA		0.57721566490153286060	// Euler-Mascheroni constant
+#define CUTIL_EGAMMA		0.57721566490153286060	//*  Euler-Mascheroni constant
 
 // float versions of mathematical constants:
 #define CUTIL_E_F			2.71828182845904523536f	// e
@@ -724,9 +729,9 @@ Updated:		8 JUN 2025
 #define CUTIL_PI_F			3.14159265358979323846f	// pi
 #define CUTIL_2_PI_F		6.28318530717958647692f	// 2*pi
 #define CUTIL_3_PI_F		9.42477796076937971538f	// 3*pi
-#define CUTIL_PI_2_F		1.57079632679489661923f	// pi/2
-#define CUTIL_PI_3_F		1.04719755119659774615f	// pi/3
-#define CUTIL_PI_4_F		0.78539816339744830962f	// pi/4
+#define CUTIL_PI_HALF_F		1.57079632679489661923f	// pi/2
+#define CUTIL_PI_THIRD_F	1.04719755119659774615f	// pi/3
+#define CUTIL_PI_QUARTER_F	0.78539816339744830962f	// pi/4
 #define CUTIL_INV_PI_F		0.31830988618379067154f	// 1/pi
 #define CUTIL_INV_SQRT_PI_F	0.56418958354775628694f	// 1/sqrt(pi)
 #define CUTIL_2_INV_PI_F	0.63661977236758134308f	// 2/pi
@@ -861,10 +866,10 @@ Updated:		8 JUN 2025
 
 //* determine if two float/double numbers are regarded as equal (within epsilon)
 // 	<float.h> must be included
-#define CUTIL_EQUAL(_F1, _F2, _EPSILON)		(( CUTIL_ABS((_F1) - (_F2)) < CUTIL_ABS((_EPSILON)) ) ? 1 : 0) // diff within (-epsilon, +epsilon)
-#define CUTIL_EQUAL_F(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, FLT_EPSILON)	// float, using epsilon values defined in <float.h>
-#define CUTIL_EQUAL_D(_F1, _F2)				CUTIL_EQUAL(_F1, _F2, DBL_EPSILON)	// double
-#define CUTIL_EQUAL_LD(_F1, _F2)			CUTIL_EQUAL(_F1, _F2, LDBL_EPSILON) // long double
+#define CUTIL_EQUAL_EPS(_F1, _F2, _EPSILON)		(( CUTIL_ABS((_F1) - (_F2)) < CUTIL_ABS((_EPSILON)) ) ? 1 : 0) // diff within (-epsilon, +epsilon)
+#define CUTIL_EQUAL_F(_F1, _F2)				CUTIL_EQUAL_EPS(_F1, _F2, FLT_EPSILON)	// float, using epsilon values defined in <float.h>
+#define CUTIL_EQUAL_D(_F1, _F2)				CUTIL_EQUAL_EPS(_F1, _F2, DBL_EPSILON)	// double
+#define CUTIL_EQUAL_LD(_F1, _F2)			CUTIL_EQUAL_EPS(_F1, _F2, LDBL_EPSILON) // long double
 /*
 	// include <float.h> first
 	float a = -1.00000f, b = -0.99999f; // they can regarded as equal
@@ -872,19 +877,20 @@ Updated:		8 JUN 2025
 
 	bool isEqual1 = CUTIL_EQUAL_F(a, b); // fabs(a-b) within (-epsilon, +epsilon), epsilon == FLT_EPSILON in <float.h>
 	bool isEqual2 = CUTIL_EQUAL_D(c, d); // epsilon == DBL_EPSILON in <float.h>
-	bool isEqual3 = CUTIL_EQUAL(c, d, 0.0001); // custom epsilon value
+	bool isEqual3 = CUTIL_EQUAL_EPS(c, d, 0.0001); // custom epsilon value
 	
-	bool isEqual4 = cutil::math::fequal(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
-	bool isEqual5 = cutil::math::fequal(c, d, 0.0001); // equivalent
+	bool isEqual4 = cutil::math::fequal_eps(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
+	bool isEqual5 = cutil::math::fequal_eps(c, d, 0.0001); // equivalent
 */
 
 
 //* convert degrees to radians, (degree * M_PI / 180.0)
 #define CUTIL_DEG_TO_RAD(_DEG)				((_DEG) * CUTIL_PI / 180.0)
+#define CUTIL_DEG_TO_RAD_F(_DEG)			((_DEG) * CUTIL_PI_F / 180.0f)
 
 //* convert radians to degrees, (radian * 180.0 / M_PI)
 #define CUTIL_RAD_TO_DEG(_RAD)				((_RAD) * 180.0 / CUTIL_PI)
-
+#define CUTIL_RAD_TO_DEG_F(_RAD)			((_RAD) * 180.0f / CUTIL_PI_F)
 
 //* linear interpolation, (a + (b - a) * t)
 //  t should be in the range [0, 1]. if t = 0, returns a; if t == 1, returns b.
@@ -895,38 +901,38 @@ Updated:		8 JUN 2025
 #define CUTIL_MIDPOINT(_A, _B)				(((_A) + (_B)) / 2)
 
 //* get power of an integer.
-// example: int ret = CUTIL_INTPOW(2, 3); 	// 2^3 = 8; generates `(2 * 2 * 2)`; arg `exp` must be an constexpr.
-//			ret = CUTIL_INTPOW(ret, 2); 	// 8^2 = 64; generates `(ret * ret)`
-//			ret = CUTIL_INTPOW_2(ret);		// 64^2 = 4096; equivalent to `CUTIL_INTPOW(ret, 2)`
-//			//ret = CUTIL_INTPOW(ret, ret);	// ERROR! 2nd param `exp` must be a constexpr integer!
+// example: int ret = CUTIL_POW(2, 3); 	// 2^3 = 8; generates `(2 * 2 * 2)`; arg `exp` must be an constexpr.
+//			ret = CUTIL_POW(ret, 2); 	// 8^2 = 64; generates `(ret * ret)`
+//			ret = CUTIL_POW_2(ret);		// 64^2 = 4096; equivalent to `CUTIL_POW(ret, 2)`
+//			//ret = CUTIL_POW(ret, ret);	// ERROR! 2nd param `exp` must be a constexpr integer!
 // notice:  std::pow(base, exp) in `<cmath>` is for float/double, not for integer.
 // warning: the second parameter `exp` must be a constexpr integer value, not a variable.
-#define CUTIL_INTPOW(_base, exp)	(CUTIL_OVERLOAD_IDX(CUTIL_INTPOW_, exp)(_base))
-#define CUTIL_INTPOW_1(_base) 		(_base)
-#define CUTIL_INTPOW_2(_base) 		((_base) * (_base))
-#define CUTIL_INTPOW_3(_base) 		(CUTIL_INTPOW_2(_base) * (_base))
-#define CUTIL_INTPOW_4(_base) 		(CUTIL_INTPOW_3(_base) * (_base))
-#define CUTIL_INTPOW_5(_base) 		(CUTIL_INTPOW_4(_base) * (_base))
-#define CUTIL_INTPOW_6(_base) 		(CUTIL_INTPOW_5(_base) * (_base))
-#define CUTIL_INTPOW_7(_base) 		(CUTIL_INTPOW_6(_base) * (_base))
-#define CUTIL_INTPOW_8(_base) 		(CUTIL_INTPOW_7(_base) * (_base))
-#define CUTIL_INTPOW_9(_base) 		(CUTIL_INTPOW_8(_base) * (_base))
-#define CUTIL_INTPOW_10(_base) 		(CUTIL_INTPOW_9(_base) * (_base))
-#define CUTIL_INTPOW_11(_base) 		(CUTIL_INTPOW_10(_base) * (_base))
-#define CUTIL_INTPOW_12(_base) 		(CUTIL_INTPOW_11(_base) * (_base))
-#define CUTIL_INTPOW_13(_base) 		(CUTIL_INTPOW_12(_base) * (_base))
-#define CUTIL_INTPOW_14(_base) 		(CUTIL_INTPOW_13(_base) * (_base))
-#define CUTIL_INTPOW_15(_base) 		(CUTIL_INTPOW_14(_base) * (_base))
-#define CUTIL_INTPOW_16(_base) 		(CUTIL_INTPOW_15(_base) * (_base))
-#define CUTIL_INTPOW_17(_base) 		(CUTIL_INTPOW_16(_base) * (_base))
-#define CUTIL_INTPOW_18(_base) 		(CUTIL_INTPOW_17(_base) * (_base))
-#define CUTIL_INTPOW_19(_base) 		(CUTIL_INTPOW_18(_base) * (_base))
-#define CUTIL_INTPOW_20(_base) 		(CUTIL_INTPOW_19(_base) * (_base))
-#define CUTIL_INTPOW_21(_base) 		(CUTIL_INTPOW_20(_base) * (_base))
-#define CUTIL_INTPOW_22(_base) 		(CUTIL_INTPOW_21(_base) * (_base))
-#define CUTIL_INTPOW_23(_base) 		(CUTIL_INTPOW_22(_base) * (_base))
-#define CUTIL_INTPOW_24(_base) 		(CUTIL_INTPOW_23(_base) * (_base))
-#define CUTIL_INTPOW_25(_base) 		(CUTIL_INTPOW_24(_base) * (_base))
+#define CUTIL_POW(_base, exp)	(CUTIL_OVERLOAD_IDX(CUTIL_POW_, exp)(_base))
+#define CUTIL_POW_1(_base) 		(_base)
+#define CUTIL_POW_2(_base) 		((_base) * (_base))
+#define CUTIL_POW_3(_base) 		(CUTIL_POW_2(_base) * (_base))
+#define CUTIL_POW_4(_base) 		(CUTIL_POW_3(_base) * (_base))
+#define CUTIL_POW_5(_base) 		(CUTIL_POW_4(_base) * (_base))
+#define CUTIL_POW_6(_base) 		(CUTIL_POW_5(_base) * (_base))
+#define CUTIL_POW_7(_base) 		(CUTIL_POW_6(_base) * (_base))
+#define CUTIL_POW_8(_base) 		(CUTIL_POW_7(_base) * (_base))
+#define CUTIL_POW_9(_base) 		(CUTIL_POW_8(_base) * (_base))
+#define CUTIL_POW_10(_base) 		(CUTIL_POW_9(_base) * (_base))
+#define CUTIL_POW_11(_base) 		(CUTIL_POW_10(_base) * (_base))
+#define CUTIL_POW_12(_base) 		(CUTIL_POW_11(_base) * (_base))
+#define CUTIL_POW_13(_base) 		(CUTIL_POW_12(_base) * (_base))
+#define CUTIL_POW_14(_base) 		(CUTIL_POW_13(_base) * (_base))
+#define CUTIL_POW_15(_base) 		(CUTIL_POW_14(_base) * (_base))
+#define CUTIL_POW_16(_base) 		(CUTIL_POW_15(_base) * (_base))
+#define CUTIL_POW_17(_base) 		(CUTIL_POW_16(_base) * (_base))
+#define CUTIL_POW_18(_base) 		(CUTIL_POW_17(_base) * (_base))
+#define CUTIL_POW_19(_base) 		(CUTIL_POW_18(_base) * (_base))
+#define CUTIL_POW_20(_base) 		(CUTIL_POW_19(_base) * (_base))
+#define CUTIL_POW_21(_base) 		(CUTIL_POW_20(_base) * (_base))
+#define CUTIL_POW_22(_base) 		(CUTIL_POW_21(_base) * (_base))
+#define CUTIL_POW_23(_base) 		(CUTIL_POW_22(_base) * (_base))
+#define CUTIL_POW_24(_base) 		(CUTIL_POW_23(_base) * (_base))
+#define CUTIL_POW_25(_base) 		(CUTIL_POW_24(_base) * (_base))
 
 
 //* C char conversion and assertion

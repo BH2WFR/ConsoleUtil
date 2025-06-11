@@ -437,6 +437,11 @@ Updated:		10 JUN 2025
 #else
 	#define _CUTIL_CONSTEXPR_CPP17
 #endif
+#ifdef CUTIL_CPP20_SUPPORTED // C++20
+	#define _CUTIL_CONSTEXPR_CPP20	constexpr
+#else
+	#define _CUTIL_CONSTEXPR_CPP20
+#endif
 
 
 //* attributes
