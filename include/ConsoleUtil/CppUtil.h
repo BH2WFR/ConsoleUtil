@@ -1485,7 +1485,10 @@ inline namespace type {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::bit_cast<Out>(in);
 	#else
-		return *reinterpret_cast<volatile Out*>(&in); // UB, but works in practice
+		// return *reinterpret_cast<volatile Out*>(&in); // UB, but works in practice
+		Out out;
+		memcpy(&out, &in, sizeof(Out)); // copy memory
+		return out; // return the casted value
 	#endif
 	}
 	
