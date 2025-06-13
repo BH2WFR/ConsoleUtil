@@ -31,7 +31,7 @@
 #include <type_traits>
 #include <utility>
 
-#if __cplusplus >= 201703L
+#if defined(CUTIL_CPP17_SUPPORTED)
 	#ifdef SG_REQUIRE_NOEXCEPT_IN_CPP17
 		#define SG_REQUIRE_NOEXCEPT
 	#endif
