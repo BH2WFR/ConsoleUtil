@@ -565,8 +565,10 @@ inline namespace bit { // inline
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotate_bit_left(T num, int step = 1) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
-		return std::rotl(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
-	#else
+		if (!std::is_constant_evaluated()){
+			return std::rotl(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
+		}
+	#endif
 		constexpr auto digits = std::numeric_limits<T>::digits;
 		step = step % digits; // ensure step is within range
 		if(step > 0){
@@ -575,7 +577,6 @@ inline namespace bit { // inline
 			return ((num >> -step) | (num << (digits + step))); // rotate left if step is negative
 		}
 		return num; // step == 0, no rotation needed
-	#endif
 	}
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotl(T num, int step = 1) noexcept {
@@ -589,8 +590,10 @@ inline namespace bit { // inline
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotate_bit_right(T num, int step = 1) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
-		return std::rotr(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
-	#else
+		if (!std::is_constant_evaluated()){
+			return std::rotr(num, static_cast<int>(step)); // x86 and ARM have CPU instructions for this
+		}
+	#endif
 		constexpr auto digits = std::numeric_limits<T>::digits;
 		step = step % digits; // ensure step is within range
 		if(step > 0){
@@ -599,7 +602,6 @@ inline namespace bit { // inline
 			return ((num << -step) | (num >> (digits + step))); // rotate right if step is negative
 		}
 		return num; // step == 0, no rotation needed
-	#endif
 	}
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T rotr(T num, int step = 1) noexcept {
@@ -634,16 +636,19 @@ inline namespace bit { // inline
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool has_single_bit(T num) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
-		return std::has_single_bit(num);
-	#else
-		return num != 0 && (num & (num - 1)) == 0;
+		if (!std::is_constant_evaluated()){
+			return std::has_single_bit(num);
+		}
 	#endif
+		return num != 0 && (num & (num - 1)) == 0;
 	}
 	// check if the number is power of 2 ({1, 2, 4, 8...})
 	template<typename T, _CUTIL_CONCEPT_UNSIGNED(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool is_power_of_2(T num) noexcept {
 		return cutil::bit::has_single_bit(num);
 	}
+	
+	//TODO: `popcount`, `countl_zero`, `countr_zero`, `bit_width`, `countl_one`, `countr_one`, `byteswap`
 /*
 	uint16_t num {0};
 	// operate bit by index, starts at 0. use them in a separate line, and returns nothing
@@ -883,7 +888,7 @@ inline namespace math { // inline
 	//* limit the numeric variable to the range [_MIN, _MAX], same as `std::clamp(var, min, max)` in C++17
 	//  by default, comp == std::less<T>()
 	template<typename T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline constexpr T clamp(T var, T min, T max) noexcept {
+	inline constexpr T clamp(const T& var, const T& min, const T& max) noexcept {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::clamp(var, min, max);
 	#else
@@ -892,8 +897,8 @@ inline namespace math { // inline
 	#endif
 	}
 	template<typename T, typename Comp
-		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
-	inline constexpr T clamp(T var, T min, T max, Comp comp) noexcept {
+		, _CUTIL_CONCEPT((cutil::internal::is_invocable_r<bool, Comp, T, T>::value))> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr T clamp(const T& var, const T& min, const T& max, Comp comp) noexcept {
 	#ifdef CUTIL_CPP17_SUPPORTED
 		return std::clamp(var, min, max, comp);
 	#else
@@ -905,12 +910,12 @@ inline namespace math { // inline
 	//* limit the numeric variable to the range [_MIN, _MAX], same as `var = std::clamp(var, min, max)` in C++17
 	//  by default, comp == std::less<T>()
 	template<typename T, typename R = T, _CUTIL_CONCEPT_CONVERTIBLE(R, T)> _CUTIL_FUNC_STATIC
-	inline void limit(T& var, R min, R max) noexcept {
+	inline void limit(T& var, const R& min, const R& max) noexcept {
 		var = cutil::math::clamp(var, static_cast<T>(min), static_cast<T>(max));
 	}
 	template<typename T, typename Comp, typename R = T, _CUTIL_CONCEPT_CONVERTIBLE(R, T)
 		, typename std::enable_if_t<cutil::internal::is_invocable_r<bool, Comp, T, T>::value, bool> = true> _CUTIL_FUNC_STATIC
-	inline void limit(T& var, R min, R max, Comp comp) noexcept {
+	inline void limit(T& var, const R& min, const R& max, Comp comp) noexcept {
 		var = cutil::math::clamp(var, static_cast<T>(min), static_cast<T>(max), comp);
 	}
 	
