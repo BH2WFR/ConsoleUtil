@@ -462,6 +462,13 @@ Updated:		10 JUN 2025
 	#define _CUTIL_UNLIKELY
 #endif // C++20
 
+//* `::` for C++
+#ifdef __cplusplus
+	#define _CUTIL_DBL_COLON ::
+#else // C
+	#define _CUTIL_DBL_COLON
+#endif // __cplusplus
+
 //* add `static` decoration for inline functions
 #ifndef CUTIL_FORCE_FUNCTION_STATIC
 	#define CUTIL_FORCE_FUNCTION_STATIC 0	// default is 0

@@ -181,10 +181,15 @@ _CUTIL_NAMESPACE_BEGIN
 //* macros for console window/application and streams
 #if CUTIL_OS_WINDOWS == 1 // in Windows
 	#if CUTIL_WINAPI_INCLUDED == 1
-		#define CUTIL_CHCP_ENCODING(_NUM)	do {SetConsoleCP(_NUM); SetConsoleOutputCP(_NUM); system("chcp "#_NUM);} while(0)
+		#define CUTIL_CHCP_ENCODING(_NUM)	\
+			do {_CUTIL_DBL_COLON SetConsoleCP(_NUM); _CUTIL_DBL_COLON SetConsoleOutputCP(_NUM); \
+			system("chcp "#_NUM);} while(0)
 		#define CUTIL_CONSOLE_SIZE(COL, ROW)	\
-			do {CONSOLE_SCREEN_BUFFER_INFO bufInfo; GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufInfo); \
-				bufInfo.dwSize.X = (COL); bufInfo.dwSize.Y = (ROW); SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), bufInfo.dwSize);} while(0)
+			do {_CUTIL_DBL_COLON CONSOLE_SCREEN_BUFFER_INFO bufInfo; \
+				_CUTIL_DBL_COLON GetConsoleScreenBufferInfo(_CUTIL_DBL_COLON GetStdHandle(STD_OUTPUT_HANDLE), &bufInfo); \
+				bufInfo.dwSize.X = (COL); bufInfo.dwSize.Y = (ROW); \
+				_CUTIL_DBL_COLON SetConsoleScreenBufferSize(_CUTIL_DBL_COLON GetStdHandle(STD_OUTPUT_HANDLE), bufInfo.dwSize); \
+			} while(0)
 	#else // in windows system, but without <windows.h> winapi
 		#define CUTIL_CHCP_ENCODING(_NUM)	system("chcp "#_NUM)	// custom chcp encoding (number) in Windows
 		#define CUTIL_CONSOLE_SIZE(X, Y) 	system("mode con cols=" #X "lines=" #Y) // set console window size
@@ -205,17 +210,22 @@ _CUTIL_NAMESPACE_BEGIN
 
 //* features with win32api
 #if CUTIL_WINAPI_INCLUDED == 1
-	#define CUTIL_CONSOLE_TITLE(_STR)			SetConsoleTitle(_STR)  // set console title in windows by winapi, (_A/_W?)
-	#define CUTIL_CONSOLE_TITLE_A(_STR)			SetConsoleTitleA(_STR)
-	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		SetConsoleTitleW(_WSTR)
+	#define CUTIL_CONSOLE_TITLE(_STR)			_CUTIL_DBL_COLON SetConsoleTitle(_STR)  // set console title in windows by winapi, (_A/_W?)
+	#define CUTIL_CONSOLE_TITLE_A(_STR)			_CUTIL_DBL_COLON SetConsoleTitleA(_STR)
+	#define CUTIL_CONSOLE_TITLE_W(_WSTR)		_CUTIL_DBL_COLON SetConsoleTitleW(_WSTR)
 	
 	#define CUTIL_CONSOLE_CURSOR_POS(x, y)	\
-		do {COORD pos; pos.X=x; pos.Y=y; SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);} while(0)
-	#define CUTIL_CONSOLE_ATTR(_ATTR)			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR))
+		do {_CUTIL_DBL_COLON COORD pos; pos.X=x; pos.Y=y; \
+			_CUTIL_DBL_COLON SetConsoleCursorPosition(_CUTIL_DBL_COLON GetStdHandle(STD_OUTPUT_HANDLE), pos); \
+		} while(0)
+	#define CUTIL_CONSOLE_ATTR(_ATTR)	\
+		_CUTIL_DBL_COLON SetConsoleTextAttribute(_CUTIL_DBL_COLON GetStdHandle(STD_OUTPUT_HANDLE), (_ATTR))
 	#define CUTIL_CONSOLE_RESET_STYLE()			CUTIL_CONSOLE_ATTR(0)
 	#define CUTIL_ENABLE_VIRTUAL_TERMINAL()	\
-		do {HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE); DWORD mode; GetConsoleMode(handle, &mode); \
-			mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING; SetConsoleMode(handle, mode);} while(0)
+		do {_CUTIL_DBL_COLON HANDLE handle = _CUTIL_DBL_COLON GetStdHandle(STD_OUTPUT_HANDLE); \
+			_CUTIL_DBL_COLON DWORD mode; _CUTIL_DBL_COLON GetConsoleMode(handle, &mode); \
+			mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING; _CUTIL_DBL_COLON SetConsoleMode(handle, mode); \
+		} while(0)
 	//? 据说上面的函数在设置时只需要设置一次就可以自动适配到 STD_OUTPUT_HANDLE(stdout) 和 STD_ERROR_HANDLE(stderr) ?
 	
 #else // without win32api, or in Linux
@@ -514,8 +524,8 @@ namespace console {
 	_CUTIL_FUNC_STATIC inline void set_chcp_encoding(uint16_t codepage) {
 	#if CUTIL_OS_WINDOWS == 1
 		#if CUTIL_WINAPI_INCLUDED == 1
-			SetConsoleCP(codepage);
-			SetConsoleOutputCP(codepage);
+			::SetConsoleCP(codepage);
+			::SetConsoleOutputCP(codepage);
 		#else
 			char buf[32];
 			sprintf(buf, "chcp %u", codepage);
@@ -535,11 +545,11 @@ namespace console {
 	_CUTIL_FUNC_STATIC inline void set_size(uint16_t cols, uint16_t rows) {
 	#if CUTIL_OS_WINDOWS == 1
 		#if CUTIL_WINAPI_INCLUDED == 1
-			CONSOLE_SCREEN_BUFFER_INFO bufInfo;
-			GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufInfo);
+			::CONSOLE_SCREEN_BUFFER_INFO bufInfo;
+			::GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &bufInfo);
 			bufInfo.dwSize.X = (cols);
 			bufInfo.dwSize.Y = (rows);
-			SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), bufInfo.dwSize);
+			::SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), bufInfo.dwSize);
 		#else
 			char buf[64];
 			sprintf(buf, "mode con cols=%u lines=%u", cols, rows);

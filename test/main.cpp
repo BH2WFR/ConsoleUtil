@@ -13,18 +13,23 @@
 #include <stack>
 #include <queue>
 #include <algorithm>
-#include <execution>
 
 
 #if defined(_WIN32) || defined(_WIN64)
 	#include <windows.h>
 #endif
 
+#include <fmt/core.h>
+#include <fmt/format.h>
+
 // #define CUTIL_ANSI_ESCAPE_UNSUPPORTED	1
 #include "ConsoleUtil/All.h"
 
 #include <gtest/gtest.h>
 
+#ifdef CUTIL_CPP17_SUPPORTED
+	#include <execution>
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -38,21 +43,22 @@ int main(int argc, char* argv[])
 	cutil::console::print_argv(argc, argv);
 	// cutil::console::set_cursor_pos(0, 0);
 	cutil::console::move_cursor_next_line(3);
-	printf(FLGreen "Hello" FLMagenta " World!" CRst "  -> UTF-8 Test: 中文 한글 🤣\n");
+	std::cout << FLGreen "Hello" FLMagenta " World!" CRst "  -> UTF-8 Test: 中文 한글 🤣\n";
+	fmt::println(FLCyan "     Test For ConsoleUtil and CppUTil librarys" CRst);
 	// std::getchar();
 	
 	// std::cout << FLRed "ERROR\n" CReset;
 	
 	std::atexit([]{
-		printf(FLYellow "EXIT! cpp lang=%d\n" CRst, CUTIL_CPP_LANG);
+		fmt::println(FLYellow "EXIT! cpp lang={}" CRst, CUTIL_CPP_LANG);
 		// cutil::console::pause();
 	});
 	testing::InitGoogleTest(&argc, argv);
 	int ret = RUN_ALL_TESTS();
 	if(ret != 0){
-		printf(FLRed "Tests failed with code %d\n" CRst, ret);
+		fmt::println(FLRed "Tests failed with code {}" CRst, ret);
 	}else{
-		printf(FLGreen "All tests passed!\n" CRst);
+		fmt::println(FLGreen "All tests passed!" CRst);
 	}
 	return ret;
 }

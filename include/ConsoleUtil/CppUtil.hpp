@@ -180,7 +180,7 @@ namespace internal {
 #define _CUTIL_CONCEPT_CONVERTIBLE(From, To) \
 			typename std::enable_if_t<std::is_convertible<From, To>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER_DIFFERENT_TYPES(P1, P2) \
-			typename std::enable_if_t<!cutil::internal::is_same_pointer_types<P1, P2>::value, bool> = true
+			typename std::enable_if_t< ! cutil::internal::is_same_pointer_types<P1, P2>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER_SAME_ATTRIBUTES(P1, P2) \
 			typename std::enable_if_t<cutil::internal::is_pointer_both_same_attributes<P1, P2>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER_IS_BASE_OF(PBase, PDerived) \
@@ -1477,16 +1477,20 @@ inline namespace math { // inline
 
 //======================= Type Conversions =========================
 inline namespace type {
-	//* cast bitwise, `(reinterpret_cast<volatile Out*>(&in))`
-	// is not constexpr in C++14/17, but constexpr in C++20
-	template<typename Out, typename In> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC _CUTIL_CONSTEXPR_CPP20
+	//* cast bitwise, uses `memcpy()` before C++20, and uses `std::bit_cast()` in C++20
+	// is not constexpr in C++14/17, but constexpr since C++20
+	template<typename Out, typename In
+		, _CUTIL_CONCEPT(!std::is_reference<Out>::value)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC _CUTIL_CONSTEXPR_CPP20
 	inline Out bit_cast(In&& in) noexcept {
-		static_assert(sizeof(Out) == sizeof(In), "Out and In must have same size");
+		static_assert(!std::is_reference<Out>::value, "Out cannot be a reference type");
+		static_assert(sizeof(Out) == sizeof(typename std::remove_reference<In>::type), "Out and In must have same size");
+		static_assert(std::is_trivially_copyable<Out>::value, "Out must be a trivially copyable type");
+		static_assert(std::is_trivially_copyable<typename std::remove_reference_t<In>>::value, "In must be a trivially copyable type");
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::bit_cast<Out>(in);
 	#else
 		// return *reinterpret_cast<volatile Out*>(&in); // UB, but works in practice
-		Out out;
+		typename std::remove_const_t<Out> out;
 		memcpy(&out, &in, sizeof(Out)); // copy memory
 		return out; // return the casted value
 	#endif
@@ -1646,9 +1650,7 @@ inline namespace memory {
 	}
 
 	
-} // namespace
-
-
+} // namespace memory
 
 
 

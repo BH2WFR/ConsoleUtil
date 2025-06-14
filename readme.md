@@ -10,7 +10,7 @@ A **HEADER FILE** project with useful macros and template functions for C/C++.
 
 **author**: 	BH2WFR
 
-**LICENSE**: 	**MIT** License (except extern codes)
+**LICENSE**: 	**MIT** License **(except extern codes)**
 
 Reference of Ansi Escape Codes:
 
@@ -22,13 +22,13 @@ Reference of Ansi Escape Codes:
 
 ### Included Following External Header-Only Libraries & credits to:
 
-| name        | author         | link                                     | path                    | license    |
+| **name**    | **author**     | **link**                                 | **path**                | **license** |
 | :---------- | :------------- | :--------------------------------------- | ----------------------- | :--------- |
-| scope_guard | ricab          | https://github.com/ricab/scope_guard     | `External/ScopeGuard.h` | Unlicense  |
-| xorstr      | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | `External/Xorstr.h`     | Apache 2.0 |
-| span        | tcbrindle      | https://github.com/tcbrindle/span        | `External/Span.h`       | BSL 1.0    |
-| strutil     | Shot511        | https://github.com/Shot511/strutil       | `External/StrUtil.h`    | MIT        |
-| yamc        | yohhoy         | https://github.com/yohhoy/yamc           | `include/LegacyUtil/yamc` | MIT
+| **scope_guard** | ricab      | https://github.com/ricab/scope_guard | `External/ScopeGuard.hpp` | Unlicense |
+| **xorstr**  | JustasMasiulis | https://github.com/JustasMasiulis/xorstr | `External/XorStr.hpp` | Apache 2.0 |
+| **span**    | tcbrindle  | https://github.com/tcbrindle/span    | `External/Span.hpp`   | BSL 1.0 |
+| **strutil** | Shot511    | https://github.com/Shot511/strutil   | `External/StrUtil.h` | MIT    |
+| **magic_enum** | Neargye        | https://github.com/Neargye/magic_enum | `External/MaginEnum/*.h` | MIT|
 
 
 ----------
@@ -46,7 +46,7 @@ Reference of Ansi Escape Codes:
 
 - `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` **BEFORE** include of this header may turn off all the features with ANSI Escape Code.
 
-- `#define CUTIL_FORCE_FUNCTION_STATIC 1` **BEFORE** include of `CppUtil.h` may let all the inline functions to be `static inline`
+- `#define CUTIL_FORCE_FUNCTION_STATIC 1` **BEFORE** include of `CppUtil.hpp` may let all the inline functions to be `static inline`
 
 - `#define CUTIL_FORCE_UTF8  0` **BEFORE** include may turn off UTF-8 literal encoding checking (C++ Only). By Default, **if you are using MSVC, `/UTF-8` compiler param is REQUIRED**.
 
@@ -125,7 +125,7 @@ C:
 
 --------
 
-## <External/ScopeGuard.h>
+## <External/ScopeGuard.hpp>
 
 refers to:   https://github.com/ricab/scope_guard
 
@@ -137,7 +137,7 @@ refers to:   https://github.com/ricab/scope_guard
 
 --------
 
-## <External/Span.h>
+## <External/Span.hpp>
 
 refers to: https://github.com/tcbrindle/span
 
@@ -149,7 +149,7 @@ refers to: https://github.com/tcbrindle/span
 
 ---------
 
-## <External/StringUtil.h>
+## <External/StringUtil.hpp>
 
 refers to: https://github.com/Shot511/strutil
 

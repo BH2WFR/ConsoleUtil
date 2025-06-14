@@ -38,7 +38,7 @@
 #endif
 
 _CUTIL_NAMESPACE_BEGIN
-	namespace detail
+	namespace scope_guard_internal
 	{
 	/* --- Some custom type traits --- */
 
@@ -104,10 +104,10 @@ _CUTIL_NAMESPACE_BEGIN
 	/* --- Now the friend maker --- */
 
 	template<typename Callback>
-	detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
+	scope_guard_internal::scope_guard<Callback> make_scope_guard(Callback&& callback)
 	noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
 	we need this in the inner namespace due to MSVC bugs preventing
-	cutil::detail::scope_guard from befriending a cutil::make_scope_guard
+	cutil::scope_guard_internal::scope_guard from befriending a cutil::make_scope_guard
 	template instance in the parent namespace (see https://is.gd/xFfFhE). */
 
 
@@ -148,18 +148,18 @@ _CUTIL_NAMESPACE_BEGIN
 
 	};
 
-	} // namespace detail
+	} // namespace scope_guard_internal
 
 
 	/* --- Now the single public maker function --- */
 
-	using detail::make_scope_guard; // see comment on declaration above
+	using scope_guard_internal::make_scope_guard; // see comment on declaration above
 
 _CUTIL_NAMESPACE_END
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-cutil::detail::scope_guard<Callback>::scope_guard(Callback&& callback)
+cutil::scope_guard_internal::scope_guard<Callback>::scope_guard(Callback&& callback)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 	: m_callback(std::forward<Callback>(callback)) /* use () instead of {} because
 	of DR 1467 (https://is.gd/WHmWuo), which still impacts older compilers
@@ -170,7 +170,7 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-cutil::detail::scope_guard<Callback>::scope_guard::~scope_guard() noexcept  /*
+cutil::scope_guard_internal::scope_guard<Callback>::scope_guard::~scope_guard() noexcept  /*
 need the extra injected-class-name here to make different compilers happy */
 {
 	if(m_active)
@@ -179,7 +179,7 @@ need the extra injected-class-name here to make different compilers happy */
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-cutil::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
+cutil::scope_guard_internal::scope_guard<Callback>::scope_guard(scope_guard&& other)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 	: m_callback(std::forward<Callback>(other.m_callback)) // idem
 	, m_active{std::move(other.m_active)}
@@ -191,7 +191,7 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 ////////////////////////////////////////////////////////////////////////////////
 //* Dismisses the scope guard, then it will not executed on destruction.
 template<typename Callback>
-inline void cutil::detail::scope_guard<Callback>::dismiss() noexcept
+inline void cutil::scope_guard_internal::scope_guard<Callback>::dismiss() noexcept
 {
 	m_active = false;
 }
@@ -205,11 +205,11 @@ inline void cutil::detail::scope_guard<Callback>::dismiss() noexcept
 //  if there are multiple scope objects, the callback will be invoked in reverse order. (down to up, LIFO)
 //  call `.dismiss()` to dismiss the scope guard, then the callback will not be invoked.
 template<typename Callback> _CUTIL_NODISCARD
-inline auto cutil::detail::make_scope_guard(Callback&& callback)
+inline auto cutil::scope_guard_internal::make_scope_guard(Callback&& callback)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
--> detail::scope_guard<Callback>
+-> scope_guard_internal::scope_guard<Callback>
 {
-	return detail::scope_guard<Callback>{std::forward<Callback>(callback)};
+	return scope_guard_internal::scope_guard<Callback>{std::forward<Callback>(callback)};
 }
 
 

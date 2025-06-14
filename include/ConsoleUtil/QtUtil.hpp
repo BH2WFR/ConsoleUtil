@@ -12,7 +12,7 @@
 
 //* ATTENTION: Include Qt Headers previously!
 #if defined(__cplusplus) && defined(CUTIL_CPP14_SUPPORTED) && defined(QT_VERSION) //* Qt
-// #include <ConsoleUtil/CppUtil.h
+// #include <ConsoleUtil/CppUtil.hpp
 // 宏 QT_CORE_LIB, 只要链接了 Qt 库, 都会定义, 不在这里使用, 因为会导致未包含 Qt 头文件时报错
 _CUTIL_NAMESPACE_BEGIN
 namespace qt{
@@ -41,6 +41,12 @@ namespace qt{
 	
 #endif // QT_VERSION
 
+inline _CUTIL_FUNC_STATIC void set_qt5_high_dpi()
+{
+	CUTIL_QT5_HIGH_DPI();
+}
+
+
 //* Set QTextCodec default encoding to UTF-8,
 //  or cannot correctly print chinese characters via qDebug() if code is saved in UTF-8 encoding;
 //  pls #include<QTextCodec> first before #include of this header.
@@ -59,6 +65,20 @@ namespace qt{
 #define CUTIL_QT5_TEXTCODEC_EUCKR()		CUTIL_QT5_TEXTCODEC_SET("EUC-KR")
 #define CUTIL_QT5_TEXTCODEC_EUCJP()		CUTIL_QT5_TEXTCODEC_SET("EUC-JP")
 #define CUTIL_QT5_TEXTCODEC_JIS()		CUTIL_QT5_TEXTCODEC_SET("Shift-JIS")
+
+inline _CUTIL_FUNC_STATIC void set_qt5_textcodec(const std::string& codecName)
+{
+#if defined(QTEXTCODEC_H)
+	QTextCodec::setCodecForLocale(QTextCodec::codecForName(codecName.c_str()));
+#endif
+}
+inline _CUTIL_FUNC_STATIC void set_qt5_textcodec_utf8() 	{::cutil::qt::set_qt5_textcodec("UTF-8");}
+inline _CUTIL_FUNC_STATIC void set_qt5_textcodec_gbk() 		{::cutil::qt::set_qt5_textcodec("GB18030");}
+inline _CUTIL_FUNC_STATIC void set_qt5_textcodec_big5() 	{::cutil::qt::set_qt5_textcodec("Big5");}
+inline _CUTIL_FUNC_STATIC void set_qt5_textcodec_euckr() 	{::cutil::qt::set_qt5_textcodec("EUC-KR");}
+inline _CUTIL_FUNC_STATIC void set_qt5_textcodec_eucjp() 	{::cutil::qt::set_qt5_textcodec("EUC-JP");}
+inline _CUTIL_FUNC_STATIC void set_qt5_textcodec_jis() 		{::cutil::qt::set_qt5_textcodec("Shift-JIS");}
+
 
 
 //* qDebug() without spaces or quotes
@@ -95,7 +115,7 @@ namespace qt{
 
 //* get all Items in the TreeModel
 template<typename TreeModel_t, typename Item_t>
-static inline auto getTreeModelItemsIter(const TreeModel_t* model) -> std::vector<Item_t>
+static inline auto get_treemodel_item_iter(const TreeModel_t* model) -> std::vector<Item_t>
 {
 	if(model == nullptr){
 		return {};

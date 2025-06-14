@@ -20,14 +20,14 @@
 
 #ifdef __cplusplus
 	//* cpp util
-	#include <ConsoleUtil/CppUtil.h>
-	#include <ConsoleUtil/QtUtil.h>
+	#include <ConsoleUtil/CppUtil.hpp>
+	#include <ConsoleUtil/QtUtil.hpp>
 	
 	//* external headers
-	#include <ConsoleUtil/External/ScopeGuard.h>
-	#include <ConsoleUtil/External/Span.h>
-	#include <ConsoleUtil/External/StringUtil.h>
-	#include <ConsoleUtil/External/XorStr.h>
+	#include <ConsoleUtil/External/ScopeGuard.hpp>
+	#include <ConsoleUtil/External/Span.hpp>
+	#include <ConsoleUtil/External/StringUtil.hpp>
+	#include <ConsoleUtil/External/XorStr.hpp>
 #endif // __cplusplus
 
 

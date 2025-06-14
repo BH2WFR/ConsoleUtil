@@ -30,8 +30,11 @@ else()
 	# pls download from msys2 : "https://packages.msys2.org/packages/mingw-w64-x86_64-gtest"
 endif()
 
-find_package(GTest REQUIRED)
+# fmtlib
+set(fmt_DIR "D:/Projects/3rdlibs/fmt/lib/cmake/fmt")
 
+find_package(GTest REQUIRED)
+find_package(fmt REQUIRED)
 
 
 file(GLOB_RECURSE PROJ_SOURCE_FILES "*.c" "*.cpp")
@@ -43,6 +46,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
 	PRIVATE
 		ConsoleUtil
+		fmt::fmt-header-only
 		GTest::gtest
 		GTest::gtest_main
 )
