@@ -1,7 +1,7 @@
 /* UTF-8 encoding
 * Project URL: 	https://github.com/BH2WFR/ConsoleUtil
   Author:		BH2WFR
-Updated:		8 JUN 2025
+Updated:		13 JUN 2025
   License:		MIT License
 * Do not include this header in header files.
 * If libs like fmtlib or Qt also included in source file, pls #include their headers FIRST, then #include this header.
@@ -20,6 +20,7 @@ Updated:		8 JUN 2025
 #endif
 
 #if defined(__cplusplus)
+	#include <ConsoleUtil/CppBase.hpp>
 	#include <iostream>
 	#include <string>
 #endif

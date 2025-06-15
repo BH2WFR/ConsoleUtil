@@ -5,7 +5,7 @@
 #include <optional>
 #endif
 
-#include "ConsoleUtil/External/StringUtil.hpp"
+#include "ConsoleUtil/CppStringUtil.hpp"
 #include "ConsoleUtil/CppUtil.hpp"
 
 TEST(Compare, compare_ignore_case)

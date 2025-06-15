@@ -8,6 +8,11 @@
 #ifndef CONSOLEUTIL_QT_UTIL_H__
 #define CONSOLEUTIL_QT_UTIL_H__
 #include <ConsoleUtil/Base.h>
+#include <ConsoleUtil/CppBase.hpp>
+
+#ifndef CUTIL_CPP14_SUPPORTED
+	#error ">= C++14 is required"
+#endif
 
 
 //* ATTENTION: Include Qt Headers previously!

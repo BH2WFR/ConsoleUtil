@@ -7,8 +7,9 @@
 
 #ifndef CONSOLEUTIL_EXTERNAL_SCOPE_GUARD_H_
 #define CONSOLEUTIL_EXTERNAL_SCOPE_GUARD_H_
-#include <ConsoleUtil/Base.h>
 
+#include <ConsoleUtil/Base.h>
+#include <ConsoleUtil/CppBase.hpp>
 
 /* Example:
 	std::ofstream out("file.txt");
@@ -25,9 +26,10 @@
 	}
 */
 
+#ifndef CUTIL_CPP14_SUPPORTED
+	#error ">= C++14 is required"
+#endif
 
-
-#if defined(__cplusplus) && defined(CUTIL_CPP14_SUPPORTED)
 #include <type_traits>
 #include <utility>
 
@@ -215,5 +217,4 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 
 
 
-#endif // __cplusplus
 #endif /* CONSOLEUTIL_EXTERNAL_SCOPE_GUARD_H_ */

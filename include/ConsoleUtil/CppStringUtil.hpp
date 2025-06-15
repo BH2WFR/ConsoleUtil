@@ -15,8 +15,13 @@
 #ifndef CONSOLEUTIL_EXTERNAL_STRING_UTIL_H__
 #define CONSOLEUTIL_EXTERNAL_STRING_UTIL_H__
 #include <ConsoleUtil/Base.h>
+#include <ConsoleUtil/CppBase.hpp>
 
-#if defined(__cplusplus) && defined(CUTIL_CPP14_SUPPORTED)
+#ifndef CUTIL_CPP14_SUPPORTED
+	#error ">= C++14 is required"
+#endif
+
+
 #include <cstdint>
 #include <cstdlib>
 #include <type_traits>
@@ -947,11 +952,11 @@ namespace str
 		return std::stoul(str, nullptr, base);
 	}
 	template<> _CUTIL_NODISCARD
-	inline int64_t to_number<int64_t>(const std::string& str, int base){
+	inline long long to_number<long long>(const std::string& str, int base){
 		return std::stoll(str, nullptr, base);
 	}
 	template<> _CUTIL_NODISCARD
-	inline uint64_t to_number<uint64_t>(const std::string& str, int base){
+	inline unsigned long long to_number<unsigned long long>(const std::string& str, int base){
 		return std::stoull(str, nullptr, base);
 	}
 	template<> _CUTIL_NODISCARD
@@ -1031,10 +1036,9 @@ namespace str
 	}
 	
 #endif
-	
-	
+
+
 } // namespace
 
 _CUTIL_NAMESPACE_END
-#endif // __cplusplus
 #endif /* CONSOLEUTIL_EXTERNAL_STRING_UTIL_H__ */

@@ -1,6 +1,6 @@
 # ConsoleUtil
 
-A **HEADER FILE** project with useful macros and template functions for C/C++.
+A **HEADER FILE** project with useful macros and template functions for C++.
 
 **一个只有头文件的，有许多实用宏和函数的 C++ 轮子库**
 
@@ -38,7 +38,7 @@ Reference of Ansi Escape Codes:
 - features using ANSI Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
     - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
-- C language version `≥ C99`, C++ language `≥ C++14`, with `##__VA_ARGS__` extension support.
+- C language version `≥ C99`, C++ language `≥ C++14` (≥C++17 recommanded)  , with `##__VA_ARGS__` extension support.
 
     (**MSVC supports `##__VA_ARGS__` since VS2015 Update 3**. if your MSVC or VS version is older, pls delete "`##`", MSVC eats trailing comma before `__VA_ARGS__` by default without `/Zc::preprocessor` command)
 
@@ -53,47 +53,13 @@ Reference of Ansi Escape Codes:
 
 ----------
 
-## <CppUtils.h> and <CUtils.h>
+## <CppUtils.h>
 
 ### Comparing features
-
-**C++ templates:**
-
-**C macros:**
-
-
-
-### Bit Operations
-
-**C++ templates:**
-
-**C macros:**
-
-
-
-
-
-### Math constants
-
-**C++:**
-
-**C:**
-
-
-
-### Numeric, Math, Floating point Utils
-
-C++:
-
-C:
 
 
 
 ### Memory Operations
-
-C++:
-
-C:
 
 
 
@@ -105,11 +71,67 @@ C:
 
 3. erase_vector:
 
-4. (UB, unsafe) bit_cast:
+4. **bit_cast** for C++14/17 by memcpy:
 
 
 
----------
+-------
+
+## <CppMath.hpp>
+
+- **Mathematical Constants** like `pi` for C++14/17, similar as `std::numbers` in C++20
+
+- **clamp** the value between a range, _(will be redirected to `std::clamp` since C++17)_.
+- **increase or decrease** the number within a **range** (limit), or **increase or decrease rolling** within a **range**
+- **Greatest Common Divisor (GCD)**, and **Lease Common Multiple (LCM)**, _(will be redirected to `std::gcd` and `std::lcm` since C++17)_.
+- **midpoint** of two integer or floating point numbers, _(will be redirected to `std::midpoint` since C++20)_.
+- **compare** if two **floating numbers** are equal by **epsilon** or **ULP**
+- **power of a number, with integer exponent.** _(exponent could be template param since C++17)_
+- **factorial** of an integer
+- **Linear Interpolation** `(a + (b-a) * t)`, _(will be redirected to `std::lerp` since C++20)_.
+- **convert** an angle between **deg** and **rad**
+
+
+
+-------
+
+## <CppBit.hpp>
+
+`<bit>` alternatives for C++14/17
+
+in C++20, some functions will redirect to functions in standard library `<bit>` to get better performence.
+
+
+
+--------
+
+## <CppScopeGuard.hpp>
+
+refers to:   https://github.com/ricab/scope_guard
+
+[namespace modified to `cutil::`]
+
+- execute any lambda expression while the object destructs (RAII defer lock)
+- useful for resource cleaning
+
+
+
+------
+
+## <CppStringUtil.hpp>
+
+refers to: https://github.com/Shot511/strutil
+
+[namespace modified to `cutil::str::`]
+
+**additional functions added:**
+
+1. Sanitize Filename
+2. convert std::string to numbers
+
+
+
+-----
 
 ### <Base.h>
 
@@ -125,40 +147,41 @@ C:
 
 --------
 
-## <External/ScopeGuard.hpp>
-
-refers to:   https://github.com/ricab/scope_guard
-
-
-
-
-
-
-
---------
-
 ## <External/Span.hpp>
 
 refers to: https://github.com/tcbrindle/span
 
+[namespace modified to `cutil::`]
+
+
+
+-------
+
+## <External/XorStr.hpp>
+
+refers to: https://github.com/qis/xorstr
+
+​	**≥ C++17 REAUIRED.** only supports intel x86 and ARM architectures
+
+[namespace modified to `cutil::xorstr::`]
 
 
 
 
 
+-------
 
----------
+## <External/MagicEnum/magic_enum_all.hpp>
 
-## <External/StringUtil.hpp>
+refers to: https://github.com/Neargye/magic_enum
 
-refers to: https://github.com/Shot511/strutil
+​	**≥ C++17 REAUIRED.**
+
+[namespace remained `magic_enum::`]
+
+​	provides **static reflection** for **enums** by special macros provided by MSVC/G++/Clang
 
 
-
-**additional functions added:**
-
-1. Sanitize Filename
-2. convert std::string to numbers
 
 
 
@@ -168,6 +191,9 @@ refers to: https://github.com/Shot511/strutil
 ---
 
 ## <ConsoleUtil.h>:
+
+​	Useful **ANSI Escape code** macros, and some functions for **console output**.
+
 ```c++
 #include <ConsoleUtil/ConsoleUtil.h> // already wrapped in <ConsoleUtil/ConsoleUtil.h>
 ```

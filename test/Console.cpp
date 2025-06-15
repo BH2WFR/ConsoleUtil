@@ -1,8 +1,7 @@
 #include <iostream>
 
-#include "ConsoleUtil/ConsoleUtil.h"
-#include "ConsoleUtil/CppUtil.hpp"
-#include "ConsoleUtil/CUtil.h"
+
+#include "ConsoleUtil/All.h"
 #include <gtest/gtest.h>
 
 

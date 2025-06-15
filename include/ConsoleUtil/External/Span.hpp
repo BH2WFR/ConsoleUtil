@@ -13,9 +13,13 @@ http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/n4820.pdf
 #ifndef CONSOLEUTIL_EXTERNAL_SPAN_H__
 #define CONSOLEUTIL_EXTERNAL_SPAN_H__
 #include <ConsoleUtil/Base.h>
+#include <ConsoleUtil/CppBase.hpp>
+
+#ifndef CUTIL_CPP14_SUPPORTED
+	#error ">= C++14 is required"
+#endif
 
 
-#if defined(__cplusplus) && defined(CUTIL_CPP14_SUPPORTED)
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -603,5 +607,4 @@ public:
 
 } // end namespace std
 
-#endif // __cplusplus
 #endif // CONSOLEUTIL_EXTERNAL_SPAN_H__

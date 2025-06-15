@@ -20,14 +20,30 @@
 
 #ifdef __cplusplus
 	//* cpp util
+	#include <ConsoleUtil/CppBase.hpp>
 	#include <ConsoleUtil/CppUtil.hpp>
+	#include <ConsoleUtil/CppBit.hpp>
+	#include <ConsoleUtil/CppMath.hpp>
+	#include <ConsoleUtil/CppScopeGuard.hpp>
+	#include <ConsoleUtil/CppStringUtil.hpp>
 	#include <ConsoleUtil/QtUtil.hpp>
 	
 	//* external headers
-	#include <ConsoleUtil/External/ScopeGuard.hpp>
 	#include <ConsoleUtil/External/Span.hpp>
-	#include <ConsoleUtil/External/StringUtil.hpp>
-	#include <ConsoleUtil/External/XorStr.hpp>
+	
+	#ifdef CUTIL_CPP17_SUPPORTED
+		#include <ConsoleUtil/External/XorStr.hpp>
+		
+		#include "ConsoleUtil/External/MagicEnum/magic_enum.hpp"
+		// #include "ConsoleUtil/External/MagicEnum/magic_enum_containers.hpp"
+		// #include "ConsoleUtil/External/MagicEnum/magic_enum_flags.hpp"
+		// #include "ConsoleUtil/External/MagicEnum/magic_enum_format.hpp"
+		// #include "ConsoleUtil/External/MagicEnum/magic_enum_fuse.hpp"
+		// #include "ConsoleUtil/External/MagicEnum/magic_enum_iostream.hpp"
+		// #include "ConsoleUtil/External/MagicEnum/magic_enum_switch.hpp"
+		// #include "ConsoleUtil/External/MagicEnum/magic_enum_utility.hpp"
+	#endif // C++17
+	
 #endif // __cplusplus
 
 

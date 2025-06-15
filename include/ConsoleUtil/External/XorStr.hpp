@@ -18,8 +18,13 @@
 #ifndef CONSOLEUTIL_EXTERNAL_XORSTR_H__
 #define CONSOLEUTIL_EXTERNAL_XORSTR_H__
 #include <ConsoleUtil/Base.h>
+#include <ConsoleUtil/CppBase.hpp>
 
-#if defined(__cplusplus) && defined(CUTIL_CPP17_SUPPORTED)
+#ifndef CUTIL_CPP17_SUPPORTED
+	#warning ">= C++17 is required"
+#endif
+#ifdef CUTIL_CPP17_SUPPORTED
+
 #if defined(_M_ARM64) || defined(__aarch64__) || defined(_M_ARM) || defined(__arm__)
 	#include <arm_neon.h>
 #elif defined(_M_X64) || defined(__amd64__) || defined(_M_IX86) || defined(__i386__)
@@ -254,6 +259,5 @@ namespace cutil::xorstr { // C++17
 				std::index_sequence<Indices...>>;
 
 } // namespace cutil::xorstr
-
-#endif // cplusplus
+#endif // C++17
 #endif // include guard

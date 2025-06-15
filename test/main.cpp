@@ -22,6 +22,9 @@
 #include <fmt/core.h>
 #include <fmt/format.h>
 
+#ifdef CUTIL_CPP20_SUPPORTED // C++20 required
+	#include <format>
+#endif
 // #define CUTIL_ANSI_ESCAPE_UNSUPPORTED	1
 #include "ConsoleUtil/All.h"
 
@@ -46,7 +49,6 @@ int main(int argc, char* argv[])
 	std::cout << FLGreen "Hello" FLMagenta " World!" CRst "  -> UTF-8 Test: 中文 한글 🤣\n";
 	fmt::println(FLCyan "     Test For ConsoleUtil and CppUTil librarys" CRst);
 	// std::getchar();
-	
 	// std::cout << FLRed "ERROR\n" CReset;
 	
 	std::atexit([]{
@@ -482,6 +484,7 @@ TEST(Range, contains)
 
 TEST(Bit, simple)
 {
+	EXPECT_EQ(0b10000000, cutil::get_bit_by_mask((uint32_t)0b10101010, (uint32_t)0b10000000));
 	EXPECT_EQ(0b10000000, cutil::get_bit_by_mask((uint8_t)0b10101010, (uint8_t)0b10000000));
 	EXPECT_EQ(0b00000000, cutil::get_bit_by_mask((uint8_t)0b10101010, (uint8_t)0b01000000));
 	EXPECT_EQ(0b10000010, cutil::get_bit_by_mask((uint8_t)0b10101010, (uint8_t)0b11000011));
@@ -570,45 +573,66 @@ TEST(Bit, simple)
 
 TEST(Bit, rotate)
 {
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_left((uint8_t)0b10101010, 0));
-	EXPECT_EQ(0b01010101, cutil::rotate_bit_left((uint8_t)0b10101010, 1));
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_left((uint8_t)0b10101010, 2));
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_left((uint8_t)0b10101010, 10));
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_left((uint8_t)0b10101010, 10));
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_right((uint8_t)0b10101010, -2));
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_right((uint8_t)0b10101010, -10));
-	static_assert(0b10101010 == cutil::rotate_bit_left((uint8_t)0b10101010, 10), "");
+	EXPECT_EQ(0b00010010001101000101011001111000, cutil::rotl((uint32_t)0x12345678, 0));
+	EXPECT_EQ(0b00100100011010001010110011110000, cutil::rotl((uint32_t)0x12345678, 1));
+	EXPECT_EQ(0b01001000110100010101100111100000, cutil::rotl((uint32_t)0x12345678, 2));
+	EXPECT_EQ(0b10010001101000101011001111000000, cutil::rotl((uint32_t)0x12345678, 3));
+	EXPECT_EQ(0b00100011010001010110011110000001, cutil::rotl((uint32_t)0x12345678, 4));
+	EXPECT_EQ(0b00001001000110100010101100111100, cutil::rotl((uint32_t)0x12345678, -1));
+	EXPECT_EQ(0b00000100100011010001010110011110, cutil::rotl((uint32_t)0x12345678, -2));
+	EXPECT_EQ(0b00000010010001101000101011001111, cutil::rotl((uint32_t)0x12345678, -3));
+	EXPECT_EQ(0b10000001001000110100010101100111, cutil::rotl((uint32_t)0x12345678, -4));
+	
+	EXPECT_EQ(0b00010010001101000101011001111000, cutil::rotr((uint32_t)0x12345678, 0));
+	EXPECT_EQ(0b00001001000110100010101100111100, cutil::rotr((uint32_t)0x12345678, 1));
+	EXPECT_EQ(0b00000100100011010001010110011110, cutil::rotr((uint32_t)0x12345678, 2));
+	EXPECT_EQ(0b00000010010001101000101011001111, cutil::rotr((uint32_t)0x12345678, 3));
+	EXPECT_EQ(0b10000001001000110100010101100111, cutil::rotr((uint32_t)0x12345678, 4));
+	EXPECT_EQ(0b00100100011010001010110011110000, cutil::rotr((uint32_t)0x12345678, -1));
+	EXPECT_EQ(0b01001000110100010101100111100000, cutil::rotr((uint32_t)0x12345678, -2));
+	EXPECT_EQ(0b10010001101000101011001111000000, cutil::rotr((uint32_t)0x12345678, -3));
+	EXPECT_EQ(0b00100011010001010110011110000001, cutil::rotr((uint32_t)0x12345678, -4));
+	
+	
+	EXPECT_EQ(0b10101010, cutil::rotl((uint8_t)0b10101010, 0));
+	EXPECT_EQ(0b01010101, cutil::rotl((uint8_t)0b10101010, 1));
+	EXPECT_EQ(0b10101010, cutil::rotl((uint8_t)0b10101010, 2));
+	EXPECT_EQ(0b10101010, cutil::rotl((uint8_t)0b10101010, 10));
+	EXPECT_EQ(0b10101010, cutil::rotl((uint8_t)0b10101010, 10));
+	EXPECT_EQ(0b10101010, cutil::rotr((uint8_t)0b10101010, -2));
+	EXPECT_EQ(0b10101010, cutil::rotr((uint8_t)0b10101010, -10));
+	static_assert(0b10101010 == cutil::rotl((uint8_t)0b10101010, 10), "");
 	
 	// EXPECT_EQ(0b10101010, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b10101010, 0));
 	EXPECT_EQ(0b01010101, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b10101010, 1));
 	EXPECT_EQ(0b10101010, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b10101010, 2));
 	
-	EXPECT_EQ(0b00100100, cutil::rotate_bit_left((uint8_t)0b00100100, 0));
-	EXPECT_EQ(0b01001000, cutil::rotate_bit_left((uint8_t)0b00100100, 1));
-	EXPECT_EQ(0b10010000, cutil::rotate_bit_left((uint8_t)0b00100100, 2));
-	EXPECT_EQ(0b00100001, cutil::rotate_bit_left((uint8_t)0b00100100, 3));
-	EXPECT_EQ(0b01000010, cutil::rotate_bit_left((uint8_t)0b00100100, 4));
-	constexpr auto zzzz = cutil::rotate_bit_left((uint8_t)0b00100100, -1);
-	constexpr auto zzz2 = cutil::rotate_bit_right((uint8_t)0b00100100, 1);
+	EXPECT_EQ(0b00100100, cutil::rotl((uint8_t)0b00100100, 0));
+	EXPECT_EQ(0b01001000, cutil::rotl((uint8_t)0b00100100, 1));
+	EXPECT_EQ(0b10010000, cutil::rotl((uint8_t)0b00100100, 2));
+	EXPECT_EQ(0b00100001, cutil::rotl((uint8_t)0b00100100, 3));
+	EXPECT_EQ(0b01000010, cutil::rotl((uint8_t)0b00100100, 4));
+	constexpr auto zzzz = cutil::rotl((uint8_t)0b00100100, -1);
+	constexpr auto zzz2 = cutil::rotr((uint8_t)0b00100100, 1);
 	// EXPECT_EQ(0b00100100, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b00100100, 0));
 	EXPECT_EQ(0b01001000, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b00100100, 1));
 	EXPECT_EQ(0b10010000, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b00100100, 2));
 	EXPECT_EQ(0b00100001, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b00100100, 3));
 	EXPECT_EQ(0b01000010, CUTIL_BIT_ROTATE_LEFT((uint8_t)0b00100100, 4));
 	
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_right((uint8_t)0b10101010, 0));
-	EXPECT_EQ(0b01010101, cutil::rotate_bit_right((uint8_t)0b10101010, 1));
-	EXPECT_EQ(0b10101010, cutil::rotate_bit_right((uint8_t)0b10101010, 2));
+	EXPECT_EQ(0b10101010, cutil::rotr((uint8_t)0b10101010, 0));
+	EXPECT_EQ(0b01010101, cutil::rotr((uint8_t)0b10101010, 1));
+	EXPECT_EQ(0b10101010, cutil::rotr((uint8_t)0b10101010, 2));
 	
 	EXPECT_EQ(0b10101010, CUTIL_BIT_ROTATE_RIGHT((uint8_t)0b10101010, 0));
 	EXPECT_EQ(0b01010101, CUTIL_BIT_ROTATE_RIGHT((uint8_t)0b10101010, 1));
 	EXPECT_EQ(0b10101010, CUTIL_BIT_ROTATE_RIGHT((uint8_t)0b10101010, 2));
 	
-	EXPECT_EQ(0b00100100, cutil::rotate_bit_right((uint8_t)0b00100100, 0));
-	EXPECT_EQ(0b00010010, cutil::rotate_bit_right((uint8_t)0b00100100, 1));
-	EXPECT_EQ(0b00001001, cutil::rotate_bit_right((uint8_t)0b00100100, 2));
-	EXPECT_EQ(0b10000100, cutil::rotate_bit_right((uint8_t)0b00100100, 3));
-	EXPECT_EQ(0b01000010, cutil::rotate_bit_right((uint8_t)0b00100100, 4));
+	EXPECT_EQ(0b00100100, cutil::rotr((uint8_t)0b00100100, 0));
+	EXPECT_EQ(0b00010010, cutil::rotr((uint8_t)0b00100100, 1));
+	EXPECT_EQ(0b00001001, cutil::rotr((uint8_t)0b00100100, 2));
+	EXPECT_EQ(0b10000100, cutil::rotr((uint8_t)0b00100100, 3));
+	EXPECT_EQ(0b01000010, cutil::rotr((uint8_t)0b00100100, 4));
 	
 	EXPECT_EQ(0b00100100, CUTIL_BIT_ROTATE_RIGHT((uint8_t)0b00100100, 0));
 	EXPECT_EQ(0b00010010, CUTIL_BIT_ROTATE_RIGHT((uint8_t)0b00100100, 1));
@@ -666,6 +690,181 @@ TEST(Bit, Others)
 	EXPECT_EQ(true, CUTIL_HAS_SINGLE_BIT(4u));
 	EXPECT_EQ(false, CUTIL_HAS_SINGLE_BIT(6u));
 	EXPECT_EQ(true, CUTIL_HAS_SINGLE_BIT(8u));
+	
+	// countr_zero
+	EXPECT_EQ(8,  cutil::countr_zero((uint8_t)0b00000000));
+	EXPECT_EQ(7,  cutil::countr_zero((uint8_t)0b10000000));
+	EXPECT_EQ(6,  cutil::countr_zero((uint8_t)0b11000000));
+	EXPECT_EQ(5,  cutil::countr_zero((uint8_t)0b10100000));
+	EXPECT_EQ(4,  cutil::countr_zero((uint8_t)0b11110000));
+	EXPECT_EQ(3,  cutil::countr_zero((uint8_t)0b01111000));
+	EXPECT_EQ(2,  cutil::countr_zero((uint8_t)0b10111100));
+	EXPECT_EQ(1,  cutil::countr_zero((uint8_t)0b11011110));
+	EXPECT_EQ(0,  cutil::countr_zero((uint8_t)0b11100011));
+	EXPECT_EQ(0,  cutil::countr_zero((uint8_t)0b01010111));
+	EXPECT_EQ(0,  cutil::countr_zero((uint8_t)0b00000001));
+	EXPECT_EQ(16, cutil::countr_zero((uint16_t)0b0000000000000000));
+	EXPECT_EQ(15, cutil::countr_zero((uint16_t)0b1000000000000000));
+	EXPECT_EQ(14, cutil::countr_zero((uint16_t)0b1100000000000000));
+	EXPECT_EQ(13, cutil::countr_zero((uint16_t)0b1010000000000000));
+	EXPECT_EQ(2,  cutil::countr_zero((uint16_t)0b1111000000000100));
+	EXPECT_EQ(1,  cutil::countr_zero((uint16_t)0b0111100000000010));
+	EXPECT_EQ(0,  cutil::countr_zero((uint16_t)0b1011110000000001));
+	EXPECT_EQ(32, cutil::countr_zero((uint32_t)0b00000000000000000000000000000000));
+	EXPECT_EQ(31, cutil::countr_zero((uint32_t)0b10000000000000000000000000000000));
+	EXPECT_EQ(30, cutil::countr_zero((uint32_t)0b11000000000000000000000000000000));
+	EXPECT_EQ(29, cutil::countr_zero((uint32_t)0b10100000000000000000000000000000));
+	
+	// countr_one tests
+	EXPECT_EQ(0, cutil::countr_one((uint8_t)0b00000000));
+	EXPECT_EQ(1, cutil::countr_one((uint8_t)0b00000001));
+	EXPECT_EQ(2, cutil::countr_one((uint8_t)0b00000011));
+	EXPECT_EQ(3, cutil::countr_one((uint8_t)0b00000111));
+	EXPECT_EQ(4, cutil::countr_one((uint8_t)0b00001111));
+	EXPECT_EQ(5, cutil::countr_one((uint8_t)0b00011111));
+	EXPECT_EQ(6, cutil::countr_one((uint8_t)0b00111111));
+	EXPECT_EQ(7, cutil::countr_one((uint8_t)0b01111111));
+	EXPECT_EQ(8, cutil::countr_one((uint8_t)0b11111111));
+	EXPECT_EQ(0, cutil::countr_one((uint8_t)0b11111110));
+	EXPECT_EQ(0, cutil::countr_one((uint8_t)0b10101010));
+	EXPECT_EQ(2, cutil::countr_one((uint8_t)0b10101011));
+
+	EXPECT_EQ(0, cutil::countr_one((uint16_t)0b0000000000000000));
+	EXPECT_EQ(5, cutil::countr_one((uint16_t)0b1010101000011111));
+	EXPECT_EQ(6, cutil::countr_one((uint16_t)0b111110000111111));
+	EXPECT_EQ(16, cutil::countr_one((uint16_t)0b1111111111111111));
+
+	EXPECT_EQ(0, cutil::countr_one((uint32_t)0b00000000000000000000000000000000));
+	EXPECT_EQ(12, cutil::countr_one((uint32_t)0b10101010101010101010111111111111));
+	EXPECT_EQ(32, cutil::countr_one((uint32_t)0b11111111111111111111111111111111));
+
+	// countl_zero tests
+	EXPECT_EQ(8, cutil::countl_zero((uint8_t)0b00000000));
+	EXPECT_EQ(7, cutil::countl_zero((uint8_t)0b00000001));
+	EXPECT_EQ(5, cutil::countl_zero((uint8_t)0b00000100));
+	EXPECT_EQ(2, cutil::countl_zero((uint8_t)0b00101000));
+	EXPECT_EQ(0, cutil::countl_zero((uint8_t)0b10010000));
+	EXPECT_EQ(0, cutil::countl_zero((uint8_t)0b10100000));
+	EXPECT_EQ(1, cutil::countl_zero((uint8_t)0b01000000));
+	EXPECT_EQ(0, cutil::countl_zero((uint8_t)0b10000100));
+	EXPECT_EQ(0, cutil::countl_zero((uint8_t)0b11111111));
+	EXPECT_EQ(0, cutil::countl_zero((uint8_t)0b10101010));
+	EXPECT_EQ(1, cutil::countl_zero((uint8_t)0b01010101));
+
+	EXPECT_EQ(16, cutil::countl_zero((uint16_t)0b0000000000000000));
+	EXPECT_EQ(8, cutil::countl_zero((uint16_t)0b0000000011111111));
+	EXPECT_EQ(4, cutil::countl_zero((uint16_t)0b0000111100000000));
+	EXPECT_EQ(0, cutil::countl_zero((uint16_t)0b1111111111111111));
+
+	EXPECT_EQ(32, cutil::countl_zero((uint32_t)0b00000000000000000000000000000000));
+	EXPECT_EQ(16, cutil::countl_zero((uint32_t)0b00000000000000001111111111111111));
+	EXPECT_EQ(0, cutil::countl_zero((uint32_t)0b11111111111111111111111111111111));
+
+	static_assert(8 == cutil::countl_zero((uint8_t)0b00000000), "");
+	static_assert(0 == cutil::countl_zero((uint8_t)0b11111111), "");
+	static_assert(0 == cutil::countr_one((uint8_t)0b00000000), "");
+	static_assert(8 == cutil::countr_one((uint8_t)0b11111111), "");
+	
+	
+	// countl_one
+	EXPECT_EQ(0,  cutil::countl_one((uint8_t)0b00000000));
+	EXPECT_EQ(1,  cutil::countl_one((uint8_t)0b10000000));
+	EXPECT_EQ(2,  cutil::countl_one((uint8_t)0b11000100));
+	EXPECT_EQ(3,  cutil::countl_one((uint8_t)0b11100010));
+	EXPECT_EQ(4,  cutil::countl_one((uint8_t)0b11110001));
+	EXPECT_EQ(5,  cutil::countl_one((uint8_t)0b11111000));
+	EXPECT_EQ(6,  cutil::countl_one((uint8_t)0b11111100));
+	EXPECT_EQ(7,  cutil::countl_one((uint8_t)0b11111110));
+	EXPECT_EQ(8,  cutil::countl_one((uint8_t)0b11111111));
+	EXPECT_EQ(0,  cutil::countl_one((uint16_t)0b0000000000000000));
+	EXPECT_EQ(1,  cutil::countl_one((uint16_t)0b1000000000000000));
+	EXPECT_EQ(2,  cutil::countl_one((uint16_t)0b1100000000000000));
+	EXPECT_EQ(3,  cutil::countl_one((uint16_t)0b1110000010010000));
+	EXPECT_EQ(14, cutil::countl_one((uint16_t)0b1111111111111101));
+	EXPECT_EQ(16, cutil::countl_one((uint16_t)0b1111111111111111));
+	
+	// bit_width
+	EXPECT_EQ(0,  cutil::bit_width((uint8_t)0b00000000));
+	EXPECT_EQ(1,  cutil::bit_width((uint8_t)0b00000001));
+	EXPECT_EQ(2,  cutil::bit_width((uint8_t)0b00000010));
+	EXPECT_EQ(3,  cutil::bit_width((uint8_t)0b00000101));
+	EXPECT_EQ(4,  cutil::bit_width((uint8_t)0b00001000));
+	EXPECT_EQ(5,  cutil::bit_width((uint8_t)0b00011101));
+	EXPECT_EQ(6,  cutil::bit_width((uint8_t)0b00101001));
+	EXPECT_EQ(7,  cutil::bit_width((uint8_t)0b01010000));
+	EXPECT_EQ(8,  cutil::bit_width((uint8_t)0b10000111));
+	EXPECT_EQ(0,   cutil::bit_width((uint32_t)0b00000000'00000000'00000000'00000000));
+	EXPECT_EQ(4,   cutil::bit_width((uint32_t)0b00000000'00000000'00000000'00001000));
+	EXPECT_EQ(5,   cutil::bit_width((uint32_t)0b00000000'00000000'00000000'00011000));
+	EXPECT_EQ(31,  cutil::bit_width((uint32_t)0b01000000'00100000'00000100'00001101));
+	
+	// bit_ceil
+	EXPECT_EQ(1,  cutil::bit_ceil((uint8_t)0b00000000));
+	EXPECT_EQ(1,  cutil::bit_ceil((uint8_t)0b00000001));
+	EXPECT_EQ(2,  cutil::bit_ceil((uint8_t)0b00000010));
+	EXPECT_EQ(8,  cutil::bit_ceil((uint8_t)0b00000101));
+	EXPECT_EQ(8,  cutil::bit_ceil((uint8_t)0b00001000));
+	EXPECT_EQ(32, cutil::bit_ceil((uint8_t)0b00011101));
+	EXPECT_EQ(64, cutil::bit_ceil((uint8_t)0b00101001));
+	EXPECT_EQ(128, cutil::bit_ceil((uint8_t)0b01010000));
+	EXPECT_EQ(1,   cutil::bit_ceil((uint32_t)0b00000000'00000000'00000000'00000000));
+	EXPECT_EQ(16,  cutil::bit_ceil((uint32_t)0b00000000'00000000'00000000'00001010));
+	EXPECT_EQ(16,  cutil::bit_ceil((uint32_t)0b00000000'00000000'00000000'00010000));
+	EXPECT_EQ(32,  cutil::bit_ceil((uint32_t)0b00000000'00000000'00000000'00011000));
+	EXPECT_EQ(0x8000'0000,  cutil::bit_ceil((uint32_t)0b01000000'00100000'00000100'00001101));
+	
+	// bit_floor
+	EXPECT_EQ(0,  cutil::bit_floor((uint8_t)0b00000000));
+	EXPECT_EQ(1,  cutil::bit_floor((uint8_t)0b00000001));
+	EXPECT_EQ(2,  cutil::bit_floor((uint8_t)0b00000010));
+	EXPECT_EQ(4,  cutil::bit_floor((uint8_t)0b00000101));
+	EXPECT_EQ(8,  cutil::bit_floor((uint8_t)0b00001000));
+	EXPECT_EQ(16, cutil::bit_floor((uint8_t)0b00011101));
+	EXPECT_EQ(32, cutil::bit_floor((uint8_t)0b00101001));
+	EXPECT_EQ(32, cutil::bit_floor((uint8_t)0b00100000));
+	EXPECT_EQ(64, cutil::bit_floor((uint8_t)0b01010000));
+	EXPECT_EQ(128, cutil::bit_floor((uint8_t)0b10000111));
+	EXPECT_EQ(0,   cutil::bit_floor((uint32_t)0b00000000'00000000'00000000'00000000));
+	EXPECT_EQ(1,   cutil::bit_floor((uint32_t)0b00000000'00000000'00000000'00000001));
+	EXPECT_EQ(2,   cutil::bit_floor((uint32_t)0b00000000'00000000'00000000'00000010));
+	EXPECT_EQ(4,   cutil::bit_floor((uint32_t)0b00000000'00000000'00000000'00000101));
+	EXPECT_EQ(8,   cutil::bit_floor((uint32_t)0b00000000'00000000'00000000'00001000));
+	EXPECT_EQ(0x4000'0000,  cutil::bit_floor((uint32_t)0b01000000'00100000'00000100'00001101));
+	
+	// popcnt
+	EXPECT_EQ(0,  cutil::popcnt((uint8_t)0b00000000));
+	EXPECT_EQ(1,  cutil::popcnt((uint8_t)0b00000001));
+	EXPECT_EQ(2,  cutil::popcnt((uint8_t)0b00000011));
+	EXPECT_EQ(3,  cutil::popcnt((uint8_t)0b00000111));
+	EXPECT_EQ(4,  cutil::popcnt((uint8_t)0b00001111));
+	EXPECT_EQ(5,  cutil::popcnt((uint8_t)0b00011111));
+	EXPECT_EQ(6,  cutil::popcnt((uint8_t)0b00111111));
+	EXPECT_EQ(7,  cutil::popcnt((uint8_t)0b01111111));
+	EXPECT_EQ(8,  cutil::popcnt((uint8_t)0b11111111));
+	EXPECT_EQ(0,  cutil::popcnt((uint16_t)0b0000000000000000));
+	EXPECT_EQ(1,  cutil::popcnt((uint16_t)0b0000000000000001));
+	EXPECT_EQ(2,  cutil::popcnt((uint16_t)0b0000000000000011));
+	EXPECT_EQ(3,  cutil::popcnt((uint16_t)0b0000000000000111));
+	EXPECT_EQ(4,  cutil::popcnt((uint16_t)0b0000000000001111));
+	EXPECT_EQ(5,  cutil::popcnt((uint16_t)0b0000000000011111));
+	EXPECT_EQ(6,  cutil::popcnt((uint16_t)0b0000000000111111));
+	EXPECT_EQ(7,  cutil::popcnt((uint16_t)0b0000000001111111));
+	EXPECT_EQ(8,  cutil::popcnt((uint16_t)0b0000000011111111));
+	EXPECT_EQ(9,  cutil::popcnt((uint16_t)0b0000000111111111));
+	EXPECT_EQ(10, cutil::popcnt((uint16_t)0b1000001111011111));
+	EXPECT_EQ(10, cutil::popcnt((uint16_t)0b0001011111011110));
+	EXPECT_EQ(12, cutil::popcnt((uint16_t)0b0000111111111111));
+	EXPECT_EQ(13, cutil::popcnt((uint16_t)0b0001111111111111));
+	EXPECT_EQ(14, cutil::popcnt((uint16_t)0b0011111111111111));
+	EXPECT_EQ(13, cutil::popcnt((uint16_t)0b0111111011111011));
+	EXPECT_EQ(16, cutil::popcnt((uint16_t)0b1111111111111111));
+	
+	// byteswap
+	EXPECT_EQ(0x12345678, cutil::byteswap((uint32_t)0x78563412));
+	EXPECT_EQ(0x1234, cutil::byteswap((uint16_t)0x3412));
+	EXPECT_EQ(0x78563412,cutil::byteswap((uint32_t)0x12345678));
+	EXPECT_EQ(0x12345678ABCDEF01, cutil::byteswap((uint64_t)0x01EFCDAB78563412));
+	
 }
 
 TEST(Math, range)
