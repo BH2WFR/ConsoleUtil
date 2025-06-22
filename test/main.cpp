@@ -1239,6 +1239,17 @@ TEST(Math, floatingNumbers){
 
 
 }
+TEST(Math, IntegerCompare){
+	static_assert(cutil::cmp_less(-1, 1U), "");
+	EXPECT_EQ(true, cutil::cmp_less(-1, 1U));
+	static_assert(cutil::cmp_less(1, 2), "");
+	EXPECT_EQ(true, cutil::cmp_less_equal(-1, 1u));
+	EXPECT_EQ(false, cutil::cmp_greater(-1, 1u));
+	EXPECT_EQ(false, cutil::cmp_greater_equal(-1, 1u));
+	
+	EXPECT_EQ(true, cutil::cmp_not_equal(-1, 0xFFFFFFFFu));
+	
+}
 TEST(Math, midpoint){
 	EXPECT_EQ(cutil::math::midpoint(6.0, 9.0), 7.5);
 	EXPECT_EQ(cutil::math::midpoint(6, 9), 7);

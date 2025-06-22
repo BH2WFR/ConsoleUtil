@@ -22,6 +22,8 @@
 #include <numeric>
 #include <limits>
 #include <functional>
+#include <utility>
+#include <array>
 #ifdef CUTIL_CPP20_SUPPORTED
 	#include <bit>
 #endif
@@ -517,9 +519,13 @@ namespace internal{
 	struct float_to_int<double> {
 		using type = int64_t;
 	};
-
-	template<typename T, _CUTIL_CONCEPT_FLOAT_WITHOUT_LONGDOUBLE(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC _CUTIL_CONSTEXPR_CPP20
-	inline bool fequal_ulp_impl(T a, T b, int maxUlpDiff = 4) noexcept {
+	
+	struct long_double_8_bytes {};
+	struct long_double_16_bytes {};
+	using long_double_tag = std::conditional_t<sizeof(long double) == 8, long_double_8_bytes, long_double_16_bytes>;
+	
+	template<typename T, _CUTIL_CONCEPT_FLOAT_WITHOUT_LONGDOUBLE(T)> _CUTIL_FUNC_STATIC _CUTIL_CONSTEXPR_CPP20
+	inline bool fequal_ulp_impl(T a, T b, int32_t maxUlpDiff) noexcept {
 		using intType_t = typename cutil::internal::float_to_int<std::remove_cv_t<T>>::type;
 		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
 			return false; // NaN is not equal to anything, including itself
@@ -527,24 +533,51 @@ namespace internal{
 		if(cutil::math::isinf(a) || cutil::math::isinf(b)) {
 			return (a == b); // +inf == +inf, -inf == -inf, but +inf != -inf, inf != non-inf
 		}
-		const size_t size = sizeof(intType_t);
 		intType_t intA;
 		intType_t intB;
 	#ifdef CUTIL_CPP20_SUPPORTED
 		intA = std::bit_cast<intType_t>(a);
 		intB = std::bit_cast<intType_t>(b);
 	#else // C++14/17, not constexpr
-		memcpy(&intA, &a, size);
-		memcpy(&intB, &b, size);
+		memcpy(&intA, &a, sizeof(intType_t));
+		memcpy(&intB, &b, sizeof(intType_t));
 		// intA = *reinterpret_cast<volatile intType_t*>(&intA); // UB
 		// intB = *reinterpret_cast<volatile intType_t*>(&intB); // UB
 	#endif
 		if((intA < 0) != (intB < 0)) {
-			return (intA == intB); // one is negative, the other is positive
+			// return (intA == intB); // one is negative, the other is positive
+			return false;
 		}
 		intType_t diff = cutil::math::abs(intA - intB);
-		return (diff <= maxUlpDiff); // check if the difference is within the allowed ULP (Units in the Last Place)
+		return (diff <= cutil::math::abs(maxUlpDiff)); // check if the difference is within the allowed ULP (Units in the Last Place)
 	}
+	// in windows MSVC/MinGW, long double is 8-bytes, equals to double
+	inline _CUTIL_CONSTEXPR_CPP20 _CUTIL_FUNC_STATIC
+	bool fequal_ulp_impl(long double a, long double b, uint32_t maxUlpDiff, long_double_8_bytes) noexcept {
+		return cutil::internal::fequal_ulp_impl<double>(static_cast<double>(a), static_cast<double>(b), maxUlpDiff);
+	}
+	// in linux, long double is 16-bytes
+	inline _CUTIL_FUNC_STATIC
+	bool fequal_ulp_impl(long double a, long double b, uint32_t maxUlpDiff, long_double_16_bytes) noexcept {
+		static_assert(sizeof(long double) <= 16, "");
+		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
+			return false; // NaN is not equal to anything, including itself
+		}
+		if(cutil::math::isinf(a) || cutil::math::isinf(b)) {
+			return (a == b); // +inf == +inf, -inf == -inf, but +inf != -inf, inf != non-inf
+		}
+		constexpr size_t size = 16;
+		std::array<uint64_t, 2> intA {};
+		std::array<uint64_t, 2> intB {};
+		memcpy(intA.data(), &a, size);
+		memcpy(intB.data(), &b, size);
+		if((intA[1] & 0x8000000000000000ULL) != (intB[1] & 0x8000000000000000ULL)) {
+			return false; // one is negative, the other is positive
+		}
+		int64_t diff = cutil::math::abs(static_cast<int64_t>(intA[0]) - static_cast<int64_t>(intB[0]));
+		return (diff <= cutil::math::abs(maxUlpDiff));
+	}
+	
 	
 	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool fequal_eps_impl(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
@@ -622,8 +655,61 @@ namespace internal{
 		}
 	}
 #endif // C++17
+	
+	
+	template <typename T, typename U, _CUTIL_CONCEPT_SIGNED(T), _CUTIL_CONCEPT_SIGNED(U)>
+	constexpr inline bool cmp_equal_impl(T t, U u) noexcept {
+		return (t == u);
+	}
+	template <typename T, typename U, _CUTIL_CONCEPT_UNSIGNED(T), _CUTIL_CONCEPT_UNSIGNED(U)>
+	constexpr inline bool cmp_equal_impl(T t, U u) noexcept {
+		return (t == u);
+	}
+	template <typename T, typename U, _CUTIL_CONCEPT_SIGNED(T), _CUTIL_CONCEPT_UNSIGNED(U)>
+	constexpr inline bool cmp_equal_impl(T t, U u) noexcept {
+		return ((t >= 0) && (static_cast<std::make_unsigned_t<T>>(t) == u));
+	}
+	template <typename T, typename U, _CUTIL_CONCEPT_UNSIGNED(T), _CUTIL_CONCEPT_SIGNED(U)>
+	constexpr inline bool cmp_equal_impl(T t, U u) noexcept {
+		return ((u >= 0) && (t == static_cast<std::make_signed_t<U>>(u)));
+	}
 
+	template <typename T, typename U, _CUTIL_CONCEPT_SIGNED(T), _CUTIL_CONCEPT_SIGNED(U)>
+	constexpr inline bool cmp_less_impl(T t, U u) noexcept {
+		return (t < u);
+	}
+	template <typename T, typename U, _CUTIL_CONCEPT_UNSIGNED(T), _CUTIL_CONCEPT_UNSIGNED(U)>
+	constexpr inline bool cmp_less_impl(T t, U u) noexcept {
+		return (t < u);
+	}
+	template <typename T, typename U, _CUTIL_CONCEPT_SIGNED(T), _CUTIL_CONCEPT_UNSIGNED(U)>
+	constexpr inline bool cmp_less_impl(T t, U u) noexcept {
+		return (t < 0 || (static_cast<std::make_unsigned_t<T>>(t) < u));
+	}
+	template <typename T, typename U, _CUTIL_CONCEPT_UNSIGNED(T), _CUTIL_CONCEPT_SIGNED(U)>
+	constexpr inline bool cmp_less_impl(T t, U u) noexcept {
+		return (u >= 0 && (t < static_cast<std::make_unsigned_t<U>>(u)));
+	}
+	
+	template <typename R, typename T, _CUTIL_CONCEPT_SIGNED(R), _CUTIL_CONCEPT_SIGNED(T)>
+	constexpr inline bool in_range(T t) noexcept {
+		return (t >= std::numeric_limits<R>::min() && t <= std::numeric_limits<R>::max());
+	}
+	template <typename R, typename T, _CUTIL_CONCEPT_UNSIGNED(R), _CUTIL_CONCEPT_UNSIGNED(T)>
+	constexpr inline bool in_range(T t) noexcept {
+		return (t <= std::numeric_limits<R>::max());
+	}
+	template <typename R, typename T, _CUTIL_CONCEPT_SIGNED(R), _CUTIL_CONCEPT_UNSIGNED(T)>
+	constexpr inline bool in_range(T t) noexcept {
+		return (t <= std::make_unsigned_t<R>(std::numeric_limits<R>::max()));
+	}
+	template <typename R, typename T, _CUTIL_CONCEPT_UNSIGNED(R), _CUTIL_CONCEPT_SIGNED(T)>
+	constexpr inline bool in_range(T t) noexcept {
+		return (t >= 0 && std::make_unsigned_t<T>(t) <= std::numeric_limits<R>::max());
+	}
+	
 } // namespace internal
+
 
 inline namespace math { // inline
 	//* power function with unsigned integer exponent
@@ -726,12 +812,16 @@ inline namespace math { // inline
 	//* Compares two floating-point numbers for equality within a specified ULP (Units in the Last Place).
 	//  not constexpr in C++14/17, but constexpr in C++20
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline _CUTIL_CONSTEXPR_CPP20
-	bool fequal_ulp(float a, float b, int maxUlpDiff = 4) {
+	bool fequal_ulp(float a, float b, int32_t maxUlpDiff = 4) {
 		return cutil::internal::fequal_ulp_impl(a, b, maxUlpDiff);
 	}
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline _CUTIL_CONSTEXPR_CPP20
-	bool fequal_ulp(double a, double b, int maxUlpDiff = 4) {
+	bool fequal_ulp(double a, double b, int32_t maxUlpDiff = 4) {
 		return cutil::internal::fequal_ulp_impl(a, b, maxUlpDiff);
+	}
+	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline // not constexpr in linux
+	bool fequal_ulp(long double a, long double b, int32_t maxUlpDiff = 4) {
+		return cutil::internal::fequal_ulp_impl(a, b, maxUlpDiff, cutil::internal::long_double_tag{});
 	}
 /*
 	bool isEqual4 = cutil::math::fequal_eps(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
@@ -780,8 +870,91 @@ inline namespace math { // inline
 		return (radian * static_cast<F>(180.0) / cutil::Numbers<F>::pi);
 	}
 	
-	
+
+	//* safe integer comparison
+	// Unlike builtin comparison operators, negative signed integers always compare
+	// less than (and not equal to) unsigned integers: the comparison is safe against
+	// non-value-preserving integer conversion.
+	template<typename T, typename U, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(U)> _CUTIL_NODISCARD
+	constexpr inline bool cmp_equal(T t, U u) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::cmp_equal(t, u);
+	#endif // C++20
+		return cutil::internal::cmp_equal_impl(t, u);
+	}
+
+	template<typename T, typename U, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(U)> _CUTIL_NODISCARD
+	constexpr inline bool cmp_not_equal(T t, U u) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::cmp_not_equal(t, u);
+	#endif // C++20
+		return !cutil::internal::cmp_equal_impl(t, u);
+	}
+
+	template<typename T, typename U, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(U)> _CUTIL_NODISCARD
+	constexpr inline bool cmp_less(T t, U u) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::cmp_less(t, u);
+	#endif // C++20
+		return cutil::internal::cmp_less_impl(t, u);
+	}
+
+	template<typename T, typename U, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(U)> _CUTIL_NODISCARD
+	constexpr inline bool cmp_less_equal(T t, U u) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::cmp_less_equal(t, u);
+	#endif // C++20
+		return !cutil::internal::cmp_less_impl(u, t);
+	}
+
+	template<typename T, typename U, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(U)> _CUTIL_NODISCARD
+	constexpr inline bool cmp_greater(T t, U u) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::cmp_greater(t, u);
+	#endif // C++20
+		return cutil::internal::cmp_less_impl(u, t);
+	}
+
+	template<typename T, typename U, _CUTIL_CONCEPT_INTEGRAL(T), _CUTIL_CONCEPT_INTEGRAL(U)> _CUTIL_NODISCARD
+	constexpr inline bool cmp_greater_equal(T t, U u) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::cmp_greater_equal(t, u);
+	#endif // C++20
+		return !cutil::internal::cmp_less_impl(t, u);
+	}
+	/*
+	Instruction:
+		bool cmp;
+		cmp = cutil::cmp_less(-1, 1U); 			// true
+		cmp = cutil::cmp_less_equal(-1, 1u); 	// false
+		cmp = cutil::cmp_greater(-1, 1u); 		// false
+		cmp = cutil::cmp_not_equal(-1, 0xFFFFFFFFu); // true
+		
+		// signed-unsigned safe
+	*/
+
+
+
+	//* check if a value is within the range of a integer type
+	template<typename R, typename T, _CUTIL_CONCEPT_INTEGRAL(R), _CUTIL_CONCEPT_INTEGRAL(T)> _CUTIL_NODISCARD
+	constexpr inline bool in_range(T t) noexcept {
+	#ifdef CUTIL_CPP20_SUPPORTED
+		return std::in_range<R>(t);
+	#endif // C++20
+		return cutil::internal::in_range<R>(t);
+	}
+	/*
+		bool a = cutil::in_range<size_t>(-1); // false
+		bool b = cutil::in_range<int>(-1); // true
+		bool c = cutil::in_range<unsigned int>(-1); // false
+		static_assert(cutil::in_range<size_t>(999), "999 is in range of size_t");
+	*/
+
+
+
 } // namespace math
+
+
 _CUTIL_NAMESPACE_END
 
 #endif /* CONSOLEUTIL_CPP_UTIL_MATH_HPP__ */

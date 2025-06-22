@@ -146,6 +146,8 @@ namespace internal {
 			typename std::enable_if_t<std::is_same<std::remove_cv_t<T1>, std::remove_cv_t<T2>>::value, bool> = true
 #define _CUTIL_CONCEPT_UNSIGNED(T) 			\
 			typename std::enable_if_t<cutil::internal::is_uint<T>::value, bool> = false
+#define _CUTIL_CONCEPT_SIGNED(T)			\
+			typename std::enable_if_t<std::is_signed<T>::value && !std::is_same<std::remove_cv_t<T>, bool>::value, bool> = false
 #define _CUTIL_CONCEPT_INTEGRAL(T) 			\
 			typename std::enable_if_t<std::is_integral<T>::value && !std::is_same<std::remove_cv_t<T>, bool>::value, bool> = false
 #define _CUTIL_CONCEPT_FLOAT(T) 			\
