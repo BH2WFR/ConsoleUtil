@@ -127,6 +127,7 @@ _CUTIL_NAMESPACE_BEGIN
 		~scope_guard() noexcept; // highlight noexcept dtor
 
 		void dismiss() noexcept;
+		void execute_and_dismiss() noexcept;
 
 	public:
 		scope_guard() = delete;
@@ -198,7 +199,16 @@ inline void cutil::scope_guard_internal::scope_guard<Callback>::dismiss() noexce
 	m_active = false;
 }
 
-
+////////////////////////////////////////////////////////////////////////////////
+//* Execute the scope guard ahead, then dismiss it, it will not executed on destruction.
+template<typename Callback>
+inline void cutil::scope_guard_internal::scope_guard<Callback>::execute_and_dismiss() noexcept
+{
+	if(m_active){
+		m_callback();
+	}
+	m_active = false;
+}
 
 //*-----------------------------------------------------------------------------
 //* Invoke it to make a scope guard object.
