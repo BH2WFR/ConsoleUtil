@@ -168,6 +168,8 @@ namespace internal {
 // 			typename std::enable_if_t<std::is_same<T1, T2>::value, bool> = true
 // #define _CUTIL_CONCEPT_IS_DIFFERENT(T1, T2) \
 // 			typename std::enable_if_t<!std::is_same<T1, T2>::value, bool> = true
+#define _CUTIL_CONCEPT_IS_ENUM(T)	\
+			typename std::enable_if_t<std::is_enum<T>::value, bool> = false
 #define _CUTIL_CONCEPT_CONVERTIBLE(From, To) \
 			typename std::enable_if_t<std::is_convertible<From, To>::value, bool> = true
 #define _CUTIL_CONCEPT_POINTER_DIFFERENT_TYPES(P1, P2) \

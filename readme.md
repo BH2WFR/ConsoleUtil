@@ -72,6 +72,8 @@ Reference of Ansi Escape Codes:
 3. erase_vector:
 
 4. **bit_cast** for C++14/17 by memcpy:
+   
+5. enum utils:
 
 
 

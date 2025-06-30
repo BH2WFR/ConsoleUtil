@@ -286,6 +286,77 @@ inline size_t erase_if_vector(T& container, Pred pred) {
 
 } // namespace range
 
+//======================== Enum Utils =========================
+inline namespace enum_utils {
+	
+	//* convert enum to its underlying integer type
+	template<typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr auto enum_int(T e) noexcept {
+		return static_cast<std::underlying_type_t<T>>(e);
+	}
+} // namespace enum_utils
+
+
+namespace enum_bitwise { // not inline namespace, must use it explicitly
+	
+	//* bitwise operators for enum types
+	template <typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr T operator~(T e) noexcept {
+		return static_cast<T>(~enum_int(e));
+	}
+	template <typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr T operator|(T e1, T e2) noexcept {
+		return static_cast<T>(enum_int(e1) | enum_int(e2));
+	}
+	template <typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr T operator&(T e1, T e2) noexcept {
+		return static_cast<T>(enum_int(e1) & enum_int(e2));
+	}
+	template <typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr T operator^(T e1, T e2) noexcept {
+		return static_cast<T>(enum_int(e1) ^ enum_int(e2));
+	}
+	template <typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_FUNC_STATIC
+	inline constexpr T& operator|=(T& e1, T e2) noexcept {
+		return e1 = static_cast<T>(enum_int(e1) | enum_int(e2));;
+	}
+	template <typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_FUNC_STATIC
+	inline constexpr T& operator&=(T& e1, T e2) noexcept {
+		return e1 = static_cast<T>(enum_int(e1) & enum_int(e2));
+	}
+	template <typename T, _CUTIL_CONCEPT_IS_ENUM(T)> _CUTIL_FUNC_STATIC
+	inline constexpr T& operator^=(T& e1, T e2) noexcept {
+		return e1 = static_cast<T>(enum_int(e1) ^ enum_int(e2));
+	}
+} // namespace enum_bitwise
+
+/*
+	Example:
+	enum class MyEnum : uint8_t {
+		None = 0,
+		Flag1 = 1 << 0, // 0b00000001
+		Flag2 = 1 << 1, // 0b00000010
+		Flag3 = 1 << 2, // 0b00000100
+		Flag4 = 1 << 3, // 0b00001000
+	};
+	
+	// convert enum to its underlying integer type
+	auto value = cutil::enum_int(MyEnum::Flag1); // uint8_t, 0b00000011
+	
+	// bitwise operators for enum types
+	//  by default, `enum class` is not compatible with bitwise operators, not like `enum`
+	using namespace cutil::enum_bitwise; // you must include this namespace to use bitwise operators
+	auto flag = MyEnum::Flag1 | MyEnum::Flag2;
+	auto flag2 = MyEnum::Flag1 & MyEnum::Flag2;
+	auto flag3 = MyEnum::Flag1 ^ MyEnum::Flag2;
+	auto flag4 = ~MyEnum::Flag1;
+	flag |= MyEnum::Flag2;
+	flag &= MyEnum::Flag3;
+	flag ^= MyEnum::Flag4;
+	
+
+*/
+
 
 
 //======================= Type Conversions =========================

@@ -51,6 +51,16 @@ int main(int argc, char* argv[])
 	// std::getchar();
 	// std::cout << FLRed "ERROR\n" CReset;
 	
+	int i {1};
+	switch(i){
+		case 0 : [[likely]]
+			break;
+		case 1:
+			break;
+		default:
+			break;
+	}
+	
 	std::atexit([]{
 		fmt::println(FLYellow "EXIT! cpp lang={}" CRst, CUTIL_CPP_LANG);
 		// cutil::console::pause();
@@ -1533,4 +1543,54 @@ TEST(Type, Cast)
 	static_assert(std::is_invocable_v<decltype(f2), int>);
 	static_assert(! std::is_invocable_v<decltype(f2)>);
 #endif
+}
+
+TEST(Enum, Enum)
+{
+	enum class MyEnum : uint8_t {
+		Zero = 0,
+		Bit0 = 1 << 0,
+		Bit1 = 1 << 1,
+		Bit2 = 1 << 2,
+		Bit3 = 1 << 3,
+		Bit4 = 1 << 4,
+		Bit5 = 1 << 5,
+		Bit6 = 1 << 6,
+		Bit7 = 1 << 7,
+		All = Bit0 | Bit1 | Bit2 | Bit3 | Bit4 | Bit5 | Bit6 | Bit7
+	};
+	auto num = cutil::enum_int(MyEnum::Bit2);
+	static_assert(std::is_same<decltype(num), uint8_t>::value, "");
+	EXPECT_EQ(0x04, num);
+	
+	using namespace cutil::enum_bitwise;
+	MyEnum test1 = MyEnum::Bit0 | MyEnum::Bit1;
+	EXPECT_EQ(test1, static_cast<MyEnum>(0b0000'0011));
+	
+	MyEnum test2 = MyEnum::Bit7 | MyEnum::Bit3 | MyEnum::Bit4;
+	EXPECT_EQ(test2, static_cast<MyEnum>(0b1001'1000));
+	
+	MyEnum test3 = MyEnum::Bit2 & MyEnum::Bit3;
+	EXPECT_EQ(test3, MyEnum::Zero);
+	
+	MyEnum test4 = test2 & MyEnum::Bit3;
+	EXPECT_EQ(test4, MyEnum::Bit3);
+	
+	MyEnum test5 = ~MyEnum::Bit5;
+	EXPECT_EQ(test5, static_cast<MyEnum>(0b1101'1111));
+	
+	MyEnum test6 = test2 ^ test4;
+	EXPECT_EQ(test6, static_cast<MyEnum>(0b1001'0000));
+	
+	test6 |= MyEnum::Bit0;
+	EXPECT_EQ(test6, static_cast<MyEnum>(0b1001'0001));
+	
+	test6 &= MyEnum::Bit0;
+	EXPECT_EQ(test6, MyEnum::Bit0);
+	
+	test6 &= MyEnum::Bit1;
+	EXPECT_EQ(test6, MyEnum::Zero);
+	
+	test1 ^= MyEnum::Bit0;
+	EXPECT_EQ(test1, MyEnum::Bit1);
 }

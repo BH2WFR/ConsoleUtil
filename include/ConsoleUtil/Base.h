@@ -455,11 +455,14 @@ Updated:		10 JUN 2025
 
 //* likely and unlikely
 #ifdef CUTIL_CPP20_SUPPORTED // C++20
-	#define _CUTIL_LIKELY		[[likely]]
-	#define _CUTIL_UNLIKELY		[[unlikely]]
-#else
-	#define _CUTIL_LIKELY
-	#define _CUTIL_UNLIKELY
+	#define _CUTIL_IF_LIKELY(_EXPR)		(_EXPR) [[likely]]
+	#define _CUTIL_IF_UNLIKELY(_EXPR)	(_EXPR) [[unlikely]]
+#elif defined(CUTIL_COMPILER_GCC) || defined(CUTIL_COMPILER_CLANG) // GCC/Clang
+	#define _CUTIL_IF_LIKELY(_EXPR)		__builtin_expect(!!(_EXPR), 1)
+	#define _CUTIL_IF_UNLIKELY(_EXPR)	__builtin_expect(!!(_EXPR), 0)
+#else	// MSVC
+	#define _CUTIL_IF_LIKELY			(_EXPR)
+	#define _CUTIL_IF_UNLIKELY			(_EXPR)
 #endif // C++20
 
 //* `::` for C++
