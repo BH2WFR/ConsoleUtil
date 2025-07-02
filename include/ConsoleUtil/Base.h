@@ -454,6 +454,8 @@ Updated:		10 JUN 2025
 #endif
 
 //* likely and unlikely
+// 目前实现尚未测试，可能存在问题
+// current implementation is not tested, may have issues
 #ifdef CUTIL_CPP20_SUPPORTED // C++20
 	#define _CUTIL_IF_LIKELY(_EXPR)		(_EXPR) [[likely]]
 	#define _CUTIL_IF_UNLIKELY(_EXPR)	(_EXPR) [[unlikely]]
