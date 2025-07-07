@@ -51,16 +51,6 @@ int main(int argc, char* argv[])
 	// std::getchar();
 	// std::cout << FLRed "ERROR\n" CReset;
 	
-	int i {1};
-	switch(i){
-		case 0 : [[likely]]
-			break;
-		case 1:
-			break;
-		default:
-			break;
-	}
-	
 	std::atexit([]{
 		fmt::println(FLYellow "EXIT! cpp lang={}" CRst, CUTIL_CPP_LANG);
 		// cutil::console::pause();
@@ -1593,4 +1583,51 @@ TEST(Enum, Enum)
 	
 	test1 ^= MyEnum::Bit0;
 	EXPECT_EQ(test1, MyEnum::Bit1);
+}
+
+TEST(Convert, Overload)
+{
+	class ConvertTestClass{
+	public:
+		int func() 						{return 0;}
+		int func(int i) 				{return 1;}
+		int func(double i)				{return 2;}
+		int func(int i, double d) 		{return 3;}
+		int func() 						const {return 4;} 	// with const/non-const overload
+		int func(int i) 				const {return 5;}
+		int func(double i) 				const {return 6;}
+		int func(int i, double d) 		const {return 7;}
+		static int static_func() 				{return 8;} // non-member function
+		static int static_func(int i) 			{return 9;}
+		static int static_func(double i) 		{return 10;}
+		static int static_func(int i, double d) {return 11;}
+		int func2() 					{return 12;} 		// without const/non-const overload
+		int func2(int i) 				{return 13;}
+		int func2(double i) 			{return 14;}
+		int func2(int i, double d) 		{return 15;}
+	};
+	// using namespace cutil::internal;
+	ConvertTestClass c;
+	const ConvertTestClass cc;
+
+	EXPECT_EQ(8, cutil::overload<>(&ConvertTestClass::static_func)());
+	EXPECT_EQ(9, cutil::overload<int>(&ConvertTestClass::static_func)(1));
+	EXPECT_EQ(10, cutil::overload<double>(&ConvertTestClass::static_func)(1.0));
+	EXPECT_EQ(11, (cutil::overload<int, double>(&ConvertTestClass::static_func)(1, 1.0)));
+	
+	EXPECT_EQ(0, (c.*cutil::non_const_overload<>(&ConvertTestClass::func))());
+	EXPECT_EQ(1, (c.*cutil::non_const_overload<int>(&ConvertTestClass::func))(1));
+	EXPECT_EQ(2, (c.*cutil::non_const_overload<double>(&ConvertTestClass::func))(1.0));
+	EXPECT_EQ(3, (c.*cutil::non_const_overload<int, double>(&ConvertTestClass::func))(1, 1.0));
+	
+	EXPECT_EQ(4, (cc.*cutil::const_overload<>(&ConvertTestClass::func))());
+	EXPECT_EQ(5, (cc.*cutil::const_overload<int>(&ConvertTestClass::func))(1));
+	EXPECT_EQ(6, (cc.*cutil::const_overload<double>(&ConvertTestClass::func))(1.0));
+	EXPECT_EQ(7, (cc.*cutil::const_overload<int, double>(&ConvertTestClass::func))(1, 1.0));
+	
+	EXPECT_EQ(12, (c.*cutil::non_const_overload<>(&ConvertTestClass::func2))());
+	EXPECT_EQ(13, (c.*cutil::non_const_overload<int>(&ConvertTestClass::func2))(1));
+	EXPECT_EQ(14, (c.*cutil::non_const_overload<double>(&ConvertTestClass::func2))(1.0));
+	EXPECT_EQ(15, (c.*cutil::non_const_overload<int, double>(&ConvertTestClass::func2))(1, 1.0));
+	
 }

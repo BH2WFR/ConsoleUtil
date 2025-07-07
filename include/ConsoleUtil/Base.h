@@ -459,12 +459,18 @@ Updated:		10 JUN 2025
 #ifdef CUTIL_CPP20_SUPPORTED // C++20
 	#define _CUTIL_IF_LIKELY(_EXPR)		(_EXPR) [[likely]]
 	#define _CUTIL_IF_UNLIKELY(_EXPR)	(_EXPR) [[unlikely]]
+	#define _CUTIL_LIKELY				[[likely]]
+	#define _CUTIL_UNLIKELY				[[unlikely]]
 #elif defined(CUTIL_COMPILER_GCC) || defined(CUTIL_COMPILER_CLANG) // GCC/Clang
 	#define _CUTIL_IF_LIKELY(_EXPR)		__builtin_expect(!!(_EXPR), 1)
 	#define _CUTIL_IF_UNLIKELY(_EXPR)	__builtin_expect(!!(_EXPR), 0)
+	#define _CUTIL_LIKELY
+	#define _CUTIL_UNLIKELY
 #else	// MSVC
 	#define _CUTIL_IF_LIKELY			(_EXPR)
 	#define _CUTIL_IF_UNLIKELY			(_EXPR)
+	#define _CUTIL_LIKELY
+	#define _CUTIL_UNLIKELY
 #endif // C++20
 
 //* `::` for C++
@@ -514,7 +520,7 @@ Updated:		10 JUN 2025
 	#endif
 #endif //. ! __cplusplus
 
-
+// force use `NOMINMAX` for Windows
 #if defined(__cplusplus) && defined(CUTIL_OS_WINDOWS) && !defined(NOMINMAX)
 	#define NOMINMAX 	// before `#include <windows.h>`
 	#ifdef max
@@ -550,6 +556,14 @@ Updated:		10 JUN 2025
 		);
 	#endif // CUTIL_FORCE_UTF8
 #endif
+
+//* inline variable
+#ifdef CUTIL_CPP17_SUPPORTED // C++17
+	#define _CUTIL_INLINE_CPP17	inline
+#else
+	#define _CUTIL_INLINE_CPP17
+#endif
+
 
 
 //===================== Basic Macros =========================

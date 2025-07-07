@@ -38,7 +38,7 @@ Reference of Ansi Escape Codes:
 - features using ANSI Escape code (like color customizing, or cursor moving macros in this header file) **DO NOT SUPPORT Windows version lower than Windows 10 1511**, otherwise it can't display properly in windows cmd.
     - If you are using these operating systems, pls `#define CONSOLE_UTIL_ANSI_ESCAPE_UNSUPPORTED  1` before `#include <ConsoleUtil/ConsoleUtil.h>` to disable features by printing Ansi Escape Code.
 
-- C language version `≥ C99`, C++ language `≥ C++14` (≥C++17 recommanded)  , with `##__VA_ARGS__` extension support.
+- C language version `≥ C99`, C++ language `≥ C++14` (≥C++17 recommended)  , with `##__VA_ARGS__` extension support.
 
     (**MSVC supports `##__VA_ARGS__` since VS2015 Update 3**. if your MSVC or VS version is older, pls delete "`##`", MSVC eats trailing comma before `__VA_ARGS__` by default without `/Zc::preprocessor` command)
 
@@ -72,8 +72,10 @@ Reference of Ansi Escape Codes:
 3. erase_vector:
 
 4. **bit_cast** for C++14/17 by memcpy:
-   
+
 5. enum utils:
+
+6. function overload helper
 
 
 
