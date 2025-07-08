@@ -867,9 +867,12 @@ Updated:		8 JUN 2025
 //* determine if two float/double numbers are regarded as equal (within epsilon)
 // 	<float.h> must be included
 #define CUTIL_EQUAL_EPS(_F1, _F2, _EPSILON)		(( CUTIL_ABS((_F1) - (_F2)) < CUTIL_ABS((_EPSILON)) ) ? 1 : 0) // diff within (-epsilon, +epsilon)
-#define CUTIL_EQUAL_F(_F1, _F2)				CUTIL_EQUAL_EPS(_F1, _F2, FLT_EPSILON)	// float, using epsilon values defined in <float.h>
-#define CUTIL_EQUAL_D(_F1, _F2)				CUTIL_EQUAL_EPS(_F1, _F2, DBL_EPSILON)	// double
-#define CUTIL_EQUAL_LD(_F1, _F2)			CUTIL_EQUAL_EPS(_F1, _F2, LDBL_EPSILON) // long double
+#define CUTIL_EQUAL_EPS_F(_F1, _F2)				CUTIL_EQUAL_EPS(_F1, _F2, FLT_EPSILON)	// float, using epsilon values defined in <float.h>
+#define CUTIL_EQUAL_EPS_D(_F1, _F2)				CUTIL_EQUAL_EPS(_F1, _F2, DBL_EPSILON)	// double
+#define CUTIL_EQUAL_EPS_LD(_F1, _F2)			CUTIL_EQUAL_EPS(_F1, _F2, LDBL_EPSILON) // long double
+//* ULP-based float comparison (including UB conversions, be careful!)
+#define CUTIL_EQUAL_ULP_F(_F1, _F2, _ULP) 		((CUTIL_ABS(*(int32_t*)&(_F1) - *(int32_t*)&(_F2)) <= (_ULP)) ? 1 : 0)
+#define CUTIL_EQUAL_ULP_D(_D1, _D2, _ULP) 		((CUTIL_ABS(*(int64_t*)&(_D1) - *(int64_t*)&(_D2)) <= (_ULP)) ? 1 : 0)
 /*
 	// include <float.h> first
 	float a = -1.00000f, b = -0.99999f; // they can regarded as equal
@@ -878,9 +881,6 @@ Updated:		8 JUN 2025
 	bool isEqual1 = CUTIL_EQUAL_F(a, b); // fabs(a-b) within (-epsilon, +epsilon), epsilon == FLT_EPSILON in <float.h>
 	bool isEqual2 = CUTIL_EQUAL_D(c, d); // epsilon == DBL_EPSILON in <float.h>
 	bool isEqual3 = CUTIL_EQUAL_EPS(c, d, 0.0001); // custom epsilon value
-	
-	bool isEqual4 = cutil::math::fequal_eps(a, b); // (abs(a - b) <= std::numeric_limits<decltype(a)>::epsilon())
-	bool isEqual5 = cutil::math::fequal_eps(c, d, 0.0001); // equivalent
 */
 
 

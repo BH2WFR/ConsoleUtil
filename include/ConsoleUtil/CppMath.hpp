@@ -579,7 +579,7 @@ namespace internal{
 	}
 	
 	
-	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	template<typename T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr bool fequal_eps_impl(T a, T b, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
 		if(cutil::math::isnan(a) || cutil::math::isnan(b)) {
 			return false; // NaN is not equal to anything, including itself
@@ -590,7 +590,7 @@ namespace internal{
 		return (cutil::math::abs(a - b) <= cutil::math::abs(epsilon)); // overloaded abs() for floating number in <cstdlib>
 	}
 	
-	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	template<typename T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr T lerp_impl(T a, T b, T t) noexcept {
 	#ifdef CUTIL_CPP20_SUPPORTED
 		return std::lerp((a), (b), t);
@@ -613,7 +613,7 @@ namespace internal{
 	#endif
 	}
 	
-	template <typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	template <typename T, typename R = T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R pow_impl(const T base, const size_t exp) noexcept { // `base` should != 0
 		if(exp == 0){
 			return static_cast<R>(1);
@@ -636,7 +636,7 @@ namespace internal{
 	}
 	
 #ifdef CUTIL_CPP17_SUPPORTED
-	template <const size_t exp, typename T, typename R = T, _CUTIL_CONCEPT_ARITHMETIC(T), _CUTIL_CONCEPT_ARITHMETIC(R)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	template <const size_t exp, typename T, typename R = T> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr R pow_impl(const T base) noexcept { // `base` should != 0
 		if constexpr (exp == 0) {
 			return static_cast<R>(1);
@@ -797,6 +797,7 @@ inline namespace math { // inline
 #endif // C++17
 	
 	//* Compares two floating-point numbers for equality within a specified epsilon.
+	//  recommended to compare to zero.
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline constexpr
 	bool fequal_eps(float a, float b, float epsilon = std::numeric_limits<float>::epsilon()) noexcept {
 		return cutil::internal::fequal_eps_impl(a, b, epsilon);
@@ -809,7 +810,13 @@ inline namespace math { // inline
 	bool fequal_eps(long double a, long double b, long double epsilon = std::numeric_limits<long double>::epsilon()) noexcept {
 		return cutil::internal::fequal_eps_impl(a, b, epsilon);
 	}
+	template<typename T, _CUTIL_CONCEPT_FLOAT(T)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
+	inline constexpr bool fequal_zero(T a, T epsilon = std::numeric_limits<T>::epsilon()) noexcept {
+		return cutil::internal::fequal_eps_impl(a, static_cast<T>(0), epsilon);
+	}
+	
 	//* Compares two floating-point numbers for equality within a specified ULP (Units in the Last Place).
+	//  recommended to compare with two non-zero numbers.
 	//  not constexpr in C++14/17, but constexpr in C++20
 	_CUTIL_NODISCARD _CUTIL_FUNC_STATIC inline _CUTIL_CONSTEXPR_CPP20
 	bool fequal_ulp(float a, float b, int32_t maxUlpDiff = 4) {
@@ -854,9 +861,9 @@ inline namespace math { // inline
 	// `cutil::fequal_eps(cutil::numbers::pi_3, cutil::math::deg2rad(60.0)) == true`
 	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr F deg2rad(F degree) noexcept {
-		// if(cutil::math::isnan(degree) || cutil::math::isinf(degree)) {
-		// 	return degree; // NaN or inf, return as is
-		// }
+		if(cutil::math::isnan(degree) || cutil::math::isinf(degree)) {
+			return degree; // NaN or inf, return as is
+		}
 		return (degree * cutil::Numbers<F>::pi / static_cast<F>(180.0));
 	}
 	
@@ -864,9 +871,9 @@ inline namespace math { // inline
 	// `cutil::fequal_eps(60.0, cutil::math::rad2deg(cutil::numbers::pi_3)) == true`
 	template<typename F, _CUTIL_CONCEPT_FLOAT(F)> _CUTIL_NODISCARD _CUTIL_FUNC_STATIC
 	inline constexpr F rad2deg(F radian) noexcept {
-		// if(cutil::math::isnan(radian) || cutil::math::isinf(radian)) {
-		// 	return radian; // NaN or inf, return as is
-		// }
+		if(cutil::math::isnan(radian) || cutil::math::isinf(radian)) {
+			return radian; // NaN or inf, return as is
+		}
 		return (radian * static_cast<F>(180.0) / cutil::Numbers<F>::pi);
 	}
 	

@@ -1215,12 +1215,16 @@ TEST(Math, floatingNumbers){
 	a *= -1;
 	EXPECT_EQ(false, cutil::fequal_ulp(a, b, 3));
 	
+	EXPECT_EQ(false, cutil::fequal_ulp(1.0, 2.0, 3));
+	EXPECT_EQ(false, cutil::fequal_ulp(0.0001, 0.0002, 3));
 	
+	EXPECT_EQ(true, cutil::fequal_zero(0.000000001f));
+	EXPECT_EQ(false, cutil::fequal_zero(0.001f));
 	
 	EXPECT_EQ(true, CUTIL_EQUAL_EPS(0.00001, 0.00002, 0.0001));
 	EXPECT_EQ(false, CUTIL_EQUAL_EPS(0.00001, 0.00002, 0.0000001));
-	EXPECT_EQ(true, CUTIL_EQUAL_F(0.0000000000001, 0.0000000000002));
-	EXPECT_EQ(false, CUTIL_EQUAL_D(0.0000000000001, 0.0000000000002));
+	EXPECT_EQ(true, CUTIL_EQUAL_EPS_F(0.0000000000001, 0.0000000000002));
+	EXPECT_EQ(false, CUTIL_EQUAL_EPS_D(0.0000000000001, 0.0000000000002));
 	
 	EXPECT_EQ(true, (cutil::fequal_eps(cutil::numbers::pi_third, cutil::math::deg2rad(60.0))));
 	EXPECT_EQ(false, (cutil::numbers::pi_third == cutil::math::deg2rad(60.0)));
